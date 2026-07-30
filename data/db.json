@@ -1,0 +1,1463 @@
+{
+  "users": [
+    {
+      "id": "u-1",
+      "name": "PremDEV",
+      "email": "owner@smartmart.com",
+      "passwordHash": "$2b$10$NueljU9R9SmqkluB8.Ofz.a7RbbnbDckp/YnTKd6T3uF0l3V0fMWi",
+      "role": "ADMIN",
+      "workspaceId": "ws-1",
+      "createdAt": "2024-02-22"
+    },
+    {
+      "id": "u-2",
+      "name": "VaseegrahVeda Store",
+      "email": "vaseegrahvedastore@example.com",
+      "passwordHash": "$2b$10$NueljU9R9SmqkluB8.Ofz.a7RbbnbDckp/YnTKd6T3uF0l3V0fMWi",
+      "role": "ADMIN",
+      "workspaceId": "ws-2",
+      "createdAt": "2024-02-22"
+    },
+    {
+      "id": "u-3",
+      "name": "Skyline Enterprises Trichy",
+      "email": "skylineenterprisestrichy@example.com",
+      "passwordHash": "$2b$10$NueljU9R9SmqkluB8.Ofz.a7RbbnbDckp/YnTKd6T3uF0l3V0fMWi",
+      "role": "ADMIN",
+      "workspaceId": "ws-3",
+      "createdAt": "2024-08-03"
+    },
+    {
+      "id": "u-4",
+      "name": "A Bavin Sanjeev",
+      "email": "abavinsanjeev@example.com",
+      "passwordHash": "$2b$10$NueljU9R9SmqkluB8.Ofz.a7RbbnbDckp/YnTKd6T3uF0l3V0fMWi",
+      "role": "ADMIN",
+      "workspaceId": "ws-5",
+      "createdAt": "2024-11-19"
+    },
+    {
+      "id": "u-5",
+      "name": "Surendhar",
+      "email": "surendhar@example.com",
+      "passwordHash": "$2b$10$NueljU9R9SmqkluB8.Ofz.a7RbbnbDckp/YnTKd6T3uF0l3V0fMWi",
+      "role": "ADMIN",
+      "workspaceId": "ws-6",
+      "createdAt": "2024-10-26"
+    },
+    {
+      "id": "u-6",
+      "name": "Kishore",
+      "email": "kishore@example.com",
+      "passwordHash": "$2b$10$NueljU9R9SmqkluB8.Ofz.a7RbbnbDckp/YnTKd6T3uF0l3V0fMWi",
+      "role": "ADMIN",
+      "workspaceId": "ws-9",
+      "createdAt": "2024-12-22"
+    },
+    {
+      "name": "Rajesh",
+      "email": "tharikdev321@gmail.com",
+      "passwordHash": "$2b$10$Vb3PlicFj4Xm8yHMO9g0POYp6LjAzs97hgmoteWr.IXBelzZHIeta",
+      "role": "ADMIN",
+      "workspaceId": "ws-7",
+      "id": "u-7",
+      "createdAt": "2026-07-17T05:42:01.263Z"
+    },
+    {
+      "name": "Vaseegrah Veda",
+      "email": "vaseegrahveda@gmail.com",
+      "passwordHash": "$2b$10$hAQ0Ej9RidDsQJKwLPrrZOn.NtbkhDKlR5E3YgY/CHjfNfJ1aOyUK",
+      "role": "ADMIN",
+      "workspaceId": "ws-8",
+      "id": "u-8",
+      "createdAt": "2026-07-28T07:17:40.468Z"
+    }
+  ],
+  "workspaces": [
+    {
+      "id": "ws-1",
+      "name": "PremDEV",
+      "phone": "9080985805",
+      "shopName": "SmartMart",
+      "status": "ACTIVE",
+      "plan": "PRO",
+      "endDate": "2034-02-22",
+      "smsCount": 32,
+      "createdAt": "2024-02-22"
+    },
+    {
+      "id": "ws-2",
+      "name": "VaseegrahVeda Store",
+      "phone": "9786424450",
+      "shopName": "Factory Vaseegrah Veda",
+      "status": "ACTIVE",
+      "plan": "PRO",
+      "endDate": "2034-02-22",
+      "smsCount": 2341,
+      "createdAt": "2024-02-22"
+    },
+    {
+      "id": "ws-3",
+      "name": "Skyline Enterprises Trichy",
+      "phone": "9087044426",
+      "shopName": "SKYLINE ENTERPRISES",
+      "status": "ACTIVE",
+      "plan": "PRO",
+      "endDate": "2026-08-03",
+      "smsCount": 259,
+      "createdAt": "2024-08-03"
+    },
+    {
+      "id": "ws-5",
+      "name": "A Bavin Sanjeev",
+      "phone": "9080577302",
+      "shopName": "ABS Private Limited",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2025-11-19",
+      "smsCount": 0,
+      "createdAt": "2024-11-19"
+    },
+    {
+      "id": "ws-6",
+      "name": "Surendhar",
+      "phone": "8973386133",
+      "shopName": "Store Vaseegrah Veda",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2025-10-26",
+      "smsCount": 0,
+      "createdAt": "2024-10-26"
+    },
+    {
+      "id": "ws-9",
+      "name": "Kishore",
+      "phone": "6380755788",
+      "shopName": "Testing Business",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2025-12-22",
+      "smsCount": 0,
+      "createdAt": "2024-12-22"
+    },
+    {
+      "name": "Rajesh",
+      "phone": "7985641237",
+      "shopName": "healthaerupom",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2026-07-31",
+      "smsCount": 100,
+      "id": "ws-7",
+      "createdAt": "2026-07-17"
+    },
+    {
+      "name": "Vaseegrah Veda",
+      "phone": "9717219353",
+      "shopName": "Vaseegrah Veda",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2026-08-11",
+      "smsCount": 100,
+      "id": "ws-8",
+      "createdAt": "2026-07-28"
+    }
+  ],
+  "connectedAccounts": [
+    {
+      "id": "ca-ws-1",
+      "workspaceId": "ws-1",
+      "platform": "TIKTOK",
+      "username": "user9136354359278",
+      "status": "CONNECTED",
+      "expiresAt": "2026-08-27T06:52:56.573Z",
+      "accessToken": "act.aBx7qQCZ7msvcLoRv1uBwHmMv65YvoqgSykh3ZspesiAejRJdaXJ961uXzcZ!6234.s1",
+      "refreshToken": "rft.MErdiRddENzMClCsA6ePu48PfRS6NgZLFI56QsiJ54CnI05xUg0d9tFv8EQV!6203.s1",
+      "connectedAt": "July 28, 2026",
+      "followerCount": 0,
+      "followingCount": 0,
+      "likesCount": 3,
+      "display_name": "user9136354359278",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/dcf03b9d2ea7f6e6893da5d16cb210f3~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=cfaab412&x-expires=1785394800&x-signature=%2BTgg0y0yqthickUmWjhqlzr5MIw%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "open_id": "-000bVto-Q4uDwEUonxxYQpQEeIV18aIz1nw",
+      "union_id": "a09fb3b1-6d57-56fc-aafa-78b0c3250f63",
+      "videoCount": 2
+    },
+    {
+      "id": "ca-ws-2",
+      "workspaceId": "ws-2",
+      "platform": "TIKTOK",
+      "username": "factoryvaseegrahveda",
+      "status": "CONNECTED"
+    },
+    {
+      "id": "ca-ws-3",
+      "workspaceId": "ws-3",
+      "platform": "TIKTOK",
+      "username": "skylineenterprises",
+      "status": "CONNECTED"
+    },
+    {
+      "id": "ca-ws-5",
+      "workspaceId": "ws-5",
+      "platform": "TIKTOK",
+      "username": "absprivatelimited",
+      "status": "CONNECTED"
+    },
+    {
+      "id": "ca-ws-6",
+      "workspaceId": "ws-6",
+      "platform": "TIKTOK",
+      "username": "storevaseegrahveda",
+      "status": "CONNECTED"
+    },
+    {
+      "id": "ca-ws-9",
+      "workspaceId": "ws-9",
+      "platform": "TIKTOK",
+      "username": "testingbusiness",
+      "status": "CONNECTED"
+    },
+    {
+      "id": "ca-7",
+      "workspaceId": "ws-7",
+      "platform": "TIKTOK",
+      "username": "tharikdev",
+      "status": "CONNECTED",
+      "expiresAt": "2026-08-27T05:38:46.906Z",
+      "accessToken": "act.nF40PVDhCIC9tyXhFj3Xe0rnGK5xgIVlLxydj1fQFgbvrHIkrAj1jzh4Oyal!6225.s1",
+      "refreshToken": "rft.Xfhw9oDbYGLHk3sMuGdvreXrlJw4e7BhKKJ1kTBf7ickIswbiFPD0NNOg4Z9!6193.s1",
+      "connectedAt": "July 28, 2026",
+      "followerCount": 0,
+      "followingCount": 0,
+      "likesCount": 0,
+      "display_name": "tharikdev",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/b702141a94d6cda01eb9dbe062450088~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=a3658b92&x-expires=1785391200&x-signature=MV9p0ewxe70vKrpSfQKVYhd4kHM%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "open_id": "-000LIJguc_tdmzKZvXatD0tAtueBFkQQGip",
+      "union_id": "31129702-f72d-5f09-a5f3-50ed16d80916",
+      "videoCount": 2
+    },
+    {
+      "id": "ca-8",
+      "workspaceId": "ws-8",
+      "platform": "TIKTOK",
+      "username": "vaseegrah_veda",
+      "status": "CONNECTED",
+      "expiresAt": "2026-08-27T09:56:14.956Z",
+      "accessToken": "act.kRbW6kV1ECdQ7OobnV8Ek5V5HVNm4xTmC56sWK7gEV0OQ6FXCn6OpNqjB7le!6177.s1",
+      "refreshToken": "rft.57VOcxBxuNss6ZcWYCYF3xh0RxY3Bn9ou3nEdeL3xLUoJANGSmdkW9NVnt1n!6175.s1",
+      "connectedAt": "July 28, 2026",
+      "followerCount": 28694,
+      "followingCount": 11,
+      "likesCount": 436110,
+      "display_name": "vaseegrahveda",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/beed3364d3a47b228be8782016378a9a~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=d26580c1&x-expires=1785481200&x-signature=QGg9lRDBa%2BhXdyXYP%2FrW6InyM0A%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "open_id": "-000YfMYaBXESO8pejzO3qvXseU6wae_BqkW",
+      "union_id": "56ef0fa5-637c-547d-872c-44f3b2c044a0",
+      "videoCount": 483
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat-1",
+      "workspaceId": "ws-2",
+      "name": "Herbal Soaps",
+      "slug": "herbal-soaps"
+    },
+    {
+      "id": "cat-2",
+      "workspaceId": "ws-2",
+      "name": "Hair Care",
+      "slug": "hair-care"
+    },
+    {
+      "id": "cat-3",
+      "workspaceId": "ws-2",
+      "name": "Skin Serums",
+      "slug": "skin-serums"
+    },
+    {
+      "id": "cat-4",
+      "workspaceId": "ws-1",
+      "name": "Electronics",
+      "slug": "electronics"
+    },
+    {
+      "id": "cat-5",
+      "workspaceId": "ws-1",
+      "name": "Apparel",
+      "slug": "apparel"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "workspaceId": "ws-2",
+      "name": "Vaseegrah Nalangu Maavu Herbal Soap",
+      "sku": "VV-SOAP-01",
+      "barcode": "8901234567891",
+      "categoryId": "cat-1",
+      "description": "Made with 100% organic bath powder and pure coconut oil. Suitable for sensitive skin.",
+      "images": [
+        "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 180,
+      "tax": 18,
+      "stock": 450,
+      "warehouseId": "wh-1",
+      "variants": [
+        {
+          "id": "var-1a",
+          "sku": "VV-SOAP-01-100G",
+          "name": "100g Single pack",
+          "price": 180,
+          "stock": 300
+        },
+        {
+          "id": "var-1b",
+          "sku": "VV-SOAP-01-3PACK",
+          "name": "3-Pack Economy",
+          "price": 490,
+          "stock": 150
+        }
+      ],
+      "status": "ACTIVE",
+      "createdAt": "2024-03-01"
+    },
+    {
+      "id": "prod-2",
+      "workspaceId": "ws-2",
+      "name": "Vaseegrah Organic Hair Growth Oil",
+      "sku": "VV-OIL-02",
+      "barcode": "8901234567892",
+      "categoryId": "cat-2",
+      "description": "Infused with Bringharaj, Amla, and hibiscus extracts for nourishing roots and reducing hairfall.",
+      "images": [
+        "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 320,
+      "tax": 18,
+      "stock": 210,
+      "warehouseId": "wh-1",
+      "variants": [
+        {
+          "id": "var-2a",
+          "sku": "VV-OIL-02-200ML",
+          "name": "200ml Bottle",
+          "price": 320,
+          "stock": 210
+        }
+      ],
+      "status": "ACTIVE",
+      "createdAt": "2024-03-05"
+    },
+    {
+      "id": "prod-3",
+      "workspaceId": "ws-1",
+      "name": "Smart Watch Elite Tracker",
+      "sku": "SM-WATCH-E1",
+      "barcode": "8901234567801",
+      "categoryId": "cat-4",
+      "description": "High performance fitness and notification smartwatch with OLED screen and heart rate tracker.",
+      "images": [
+        "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 2499,
+      "tax": 12,
+      "stock": 120,
+      "warehouseId": "wh-2",
+      "variants": [
+        {
+          "id": "var-3a",
+          "sku": "SM-WATCH-BLACK",
+          "name": "Elite Black",
+          "price": 2499,
+          "stock": 75
+        },
+        {
+          "id": "var-3b",
+          "sku": "SM-WATCH-SILVER",
+          "name": "Stardust Silver",
+          "price": 2599,
+          "stock": 45
+        }
+      ],
+      "status": "ACTIVE",
+      "createdAt": "2024-04-01"
+    },
+    {
+      "workspaceId": "ws-7",
+      "name": "Sample Organic Soap Pack",
+      "sku": "SMP-SOAP-01",
+      "barcode": "8900000000001",
+      "categoryId": "cat-1",
+      "description": "A beautiful organic herbal soap pack with essential lavender and almond oils.",
+      "images": [
+        "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 150,
+      "tax": 18,
+      "stock": 100,
+      "status": "ACTIVE",
+      "variants": [],
+      "id": "prod-4",
+      "createdAt": "2026-07-17"
+    },
+    {
+      "workspaceId": "ws-8",
+      "name": "Sample Organic Soap Pack",
+      "sku": "SMP-SOAP-01",
+      "barcode": "8900000000001",
+      "categoryId": "cat-1",
+      "description": "A beautiful organic herbal soap pack with essential lavender and almond oils.",
+      "images": [
+        "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 150,
+      "tax": 18,
+      "stock": 100,
+      "status": "ACTIVE",
+      "variants": [],
+      "id": "prod-5",
+      "createdAt": "2026-07-28"
+    }
+  ],
+  "warehouses": [
+    {
+      "id": "wh-1",
+      "workspaceId": "ws-2",
+      "name": "Trichy Central Warehouse",
+      "location": "Trichy, India"
+    },
+    {
+      "id": "wh-2",
+      "workspaceId": "ws-1",
+      "name": "Chennai Hub",
+      "location": "Chennai, India"
+    }
+  ],
+  "inventoryLogs": [
+    {
+      "id": "log-1",
+      "workspaceId": "ws-2",
+      "productId": "prod-1",
+      "variantId": "var-1a",
+      "warehouseId": "wh-1",
+      "quantityChanged": 300,
+      "type": "INCOMING",
+      "notes": "Initial inventory batch from manufacturing unit",
+      "createdAt": "2024-03-01T10:00:00Z"
+    }
+  ],
+  "customers": [
+    {
+      "id": "cust-1",
+      "workspaceId": "ws-2",
+      "name": "Sarah Jenkins",
+      "phone": "+91 9443212345",
+      "email": "sarah.jenkins@gmail.com",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+      "tags": [
+        "PRO_USER",
+        "REPEAT_BUYER"
+      ],
+      "notes": "Prefers packing inside a cardboard box, very supportive and leaves glowing TikTok reviews.",
+      "lifetimeValue": 2450,
+      "createdAt": "2024-03-10"
+    },
+    {
+      "id": "cust-2",
+      "workspaceId": "ws-2",
+      "name": "Ramesh Kumar",
+      "phone": "+91 9845678901",
+      "email": "ramesh.k@yahoo.com",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+      "tags": [
+        "NEW_LEAD"
+      ],
+      "notes": "Enquired about shipment times to Mumbai.",
+      "lifetimeValue": 180,
+      "createdAt": "2024-07-01"
+    },
+    {
+      "id": "cust-3",
+      "workspaceId": "ws-1",
+      "name": "David Miller",
+      "phone": "+1 415 555 2671",
+      "email": "david.miller@gmail.com",
+      "tags": [
+        "HIGH_VALUE"
+      ],
+      "lifetimeValue": 4998,
+      "createdAt": "2024-04-15"
+    },
+    {
+      "id": "cust-8-tholasi",
+      "workspaceId": "ws-8",
+      "name": "Tholasi's Mehndi & Kolam",
+      "phone": "+91 9123456789",
+      "email": "tholasi@example.com",
+      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+      "tags": [
+        "TIKTOK_LEAD"
+      ],
+      "notes": "Interested in organic mehndi and custom design queries.",
+      "lifetimeValue": 0,
+      "createdAt": "2026-01-06"
+    },
+    {
+      "id": "cust-8-haridass",
+      "workspaceId": "ws-8",
+      "name": "Hari Dass",
+      "phone": "+91 9234567890",
+      "email": "haridass@example.com",
+      "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150",
+      "tags": [
+        "CUSTOMER"
+      ],
+      "notes": "Requires shipping assistance for trichy product orders.",
+      "lifetimeValue": 350,
+      "createdAt": "2025-12-19"
+    },
+    {
+      "id": "cust-8-yesha",
+      "workspaceId": "ws-8",
+      "name": "Yesha",
+      "phone": "+91 9345678901",
+      "email": "yesha@example.com",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+      "tags": [
+        "TIKTOK_LEAD"
+      ],
+      "notes": "Enquired about wholesale skin serums pricing.",
+      "lifetimeValue": 0,
+      "createdAt": "2025-11-21"
+    },
+    {
+      "id": "cust-8-amu",
+      "workspaceId": "ws-8",
+      "name": "Amu",
+      "phone": "+91 9456789012",
+      "email": "amu@example.com",
+      "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150",
+      "tags": [
+        "TIKTOK_LEAD"
+      ],
+      "notes": "Enquired about organic hair growth oil availability.",
+      "lifetimeValue": 0,
+      "createdAt": "2025-10-31"
+    },
+    {
+      "id": "cust-8-aliachotti",
+      "workspaceId": "ws-8",
+      "name": "Aliachotti",
+      "phone": "+91 9567890123",
+      "email": "aliachotti@example.com",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+      "tags": [
+        "TIKTOK_LEAD"
+      ],
+      "notes": "TikTok follower asking about body wash template lists.",
+      "lifetimeValue": 0,
+      "createdAt": "2025-10-30"
+    },
+    {
+      "id": "cust-8-darshini",
+      "workspaceId": "ws-8",
+      "name": "Darshini 229?",
+      "phone": "+91 9678901234",
+      "email": "darshini229@example.com",
+      "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
+      "tags": [
+        "TIKTOK_LEAD"
+      ],
+      "notes": "Asked if currently offering discounts or active promotions.",
+      "lifetimeValue": 0,
+      "createdAt": "2025-03-02"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "conv-1",
+      "workspaceId": "ws-2",
+      "customerId": "cust-1",
+      "status": "OPEN",
+      "aiEnabled": true,
+      "channel": "TIKTOK",
+      "lastMessageAt": "2026-07-12T21:45:00Z",
+      "unreadCount": 0
+    },
+    {
+      "id": "conv-2",
+      "workspaceId": "ws-2",
+      "customerId": "cust-2",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "lastMessageAt": "2026-07-12T22:00:00Z",
+      "unreadCount": 1
+    },
+    {
+      "workspaceId": "ws-1",
+      "customerId": "cust-123",
+      "status": "OPEN",
+      "aiEnabled": true,
+      "channel": "TIKTOK",
+      "unreadCount": 0,
+      "id": "conv-3",
+      "lastMessageAt": "2026-07-17T11:40:22.298Z"
+    },
+    {
+      "workspaceId": "ws-7",
+      "customerId": "cust-tharikh",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "unreadCount": 0,
+      "id": "conv-4",
+      "lastMessageAt": "2026-07-17T11:50:49.994Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "customerId": "cust-tharikh",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "unreadCount": 0,
+      "id": "conv-5",
+      "lastMessageAt": "2026-07-17T11:55:03.162Z"
+    },
+    {
+      "workspaceId": "ws-2",
+      "customerId": "cust-tharikh",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "unreadCount": 0,
+      "id": "conv-6",
+      "lastMessageAt": "2026-07-17T12:04:21.968Z"
+    },
+    {
+      "id": "conv-8-tholasi",
+      "workspaceId": "ws-8",
+      "customerId": "cust-8-tholasi",
+      "status": "OPEN",
+      "aiEnabled": true,
+      "channel": "TIKTOK",
+      "lastMessageAt": "2026-01-06T14:30:00Z",
+      "unreadCount": 0,
+      "lastMessageText": "hello sister do you have herbal hair growth pack in stock?"
+    },
+    {
+      "id": "conv-8-haridass",
+      "workspaceId": "ws-8",
+      "customerId": "cust-8-haridass",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "lastMessageAt": "2025-12-19T11:20:00Z",
+      "unreadCount": 1,
+      "lastMessageText": "Hi, can you help me find the link for shipping details?"
+    },
+    {
+      "id": "conv-8-yesha",
+      "workspaceId": "ws-8",
+      "customerId": "cust-8-yesha",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "lastMessageAt": "2025-11-21T09:15:00Z",
+      "unreadCount": 0,
+      "lastMessageText": "Hello, good day! I saw your post regarding skin serums."
+    },
+    {
+      "id": "conv-8-amu",
+      "workspaceId": "ws-8",
+      "customerId": "cust-8-amu",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "lastMessageAt": "2025-10-31T16:45:00Z",
+      "unreadCount": 0,
+      "lastMessageText": "Hi ma .. is there any organic oil for dandruff control?"
+    },
+    {
+      "id": "conv-8-aliachotti",
+      "workspaceId": "ws-8",
+      "customerId": "cust-8-aliachotti",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "lastMessageAt": "2025-10-30T10:05:00Z",
+      "unreadCount": 0,
+      "lastMessageText": "Good day mam ... Im looking for wholesale distributors list."
+    },
+    {
+      "id": "conv-8-darshini",
+      "workspaceId": "ws-8",
+      "customerId": "cust-8-darshini",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "lastMessageAt": "2025-03-02T13:40:00Z",
+      "unreadCount": 0,
+      "lastMessageText": "Hi, are you currently offering free delivery inside Chennai?"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-1",
+      "workspaceId": "ws-2",
+      "conversationId": "conv-1",
+      "senderId": "CUSTOMER",
+      "senderName": "Sarah Jenkins",
+      "text": "Hi, I ordered the herbal soap last week. When is it arriving? Can you check?",
+      "readStatus": true,
+      "isInternalNote": false,
+      "createdAt": "2026-07-12T21:40:00Z"
+    },
+    {
+      "id": "m-2",
+      "workspaceId": "ws-2",
+      "conversationId": "conv-1",
+      "senderId": "AI",
+      "senderName": "AI Assistant",
+      "text": "Hello Sarah! Let me fetch that for you. Your order #ORD-101 has been dispatched via BlueDart and is currently in transit. It is expected to arrive tomorrow, July 13th. Tracking URL: https://track.example.com/ORD-101",
+      "readStatus": true,
+      "isInternalNote": false,
+      "createdAt": "2026-07-12T21:41:00Z"
+    },
+    {
+      "id": "m-3",
+      "workspaceId": "ws-2",
+      "conversationId": "conv-1",
+      "senderId": "CUSTOMER",
+      "senderName": "Sarah Jenkins",
+      "text": "Wow, that was fast! Thank you so much! Is the Organic Hair Oil also in stock?",
+      "readStatus": true,
+      "isInternalNote": false,
+      "createdAt": "2026-07-12T21:45:00Z"
+    },
+    {
+      "id": "m-4",
+      "workspaceId": "ws-2",
+      "conversationId": "conv-2",
+      "senderId": "CUSTOMER",
+      "senderName": "Ramesh Kumar",
+      "text": "Hello! I am looking for the natural herbal hair oil. Do you ship to Mumbai?",
+      "readStatus": false,
+      "isInternalNote": false,
+      "createdAt": "2026-07-12T22:00:00Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "conversationId": "conv-3",
+      "senderId": "CUSTOMER",
+      "senderName": "Tharik Dev",
+      "text": "sr",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-5",
+      "createdAt": "2026-07-17T11:38:38.424Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "conversationId": "conv-3",
+      "senderId": "AI",
+      "senderName": "AI Assistant",
+      "text": "Hello! I am having a tiny technical glitch but a human teammate is on standby to assist you directly!",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-6",
+      "createdAt": "2026-07-17T11:38:39.042Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "conversationId": "conv-3",
+      "senderId": "CUSTOMER",
+      "senderName": "Tharik Dev",
+      "text": "sr",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-7",
+      "createdAt": "2026-07-17T11:40:22.264Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "conversationId": "conv-3",
+      "senderId": "AI",
+      "senderName": "Automation Bot",
+      "text": "Hello ",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-8",
+      "createdAt": "2026-07-17T11:40:22.298Z"
+    },
+    {
+      "workspaceId": "ws-7",
+      "conversationId": "conv-4",
+      "senderId": "CUSTOMER",
+      "senderName": "tharikhdev",
+      "text": "[Commented on Video 7663099289123491079] \"sr\"",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-9",
+      "createdAt": "2026-07-17T11:50:49.983Z"
+    },
+    {
+      "workspaceId": "ws-7",
+      "conversationId": "conv-4",
+      "senderId": "AI",
+      "senderName": "AI Assistant",
+      "text": "hello",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-10",
+      "createdAt": "2026-07-17T11:50:49.994Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "conversationId": "conv-5",
+      "senderId": "CUSTOMER",
+      "senderName": "tharikhdev",
+      "text": "[Commented on Video 7663099289123491079] \"sr\"",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-11",
+      "createdAt": "2026-07-17T11:55:03.153Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "conversationId": "conv-5",
+      "senderId": "AI",
+      "senderName": "AI Assistant",
+      "text": "Hello ",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-12",
+      "createdAt": "2026-07-17T11:55:03.162Z"
+    },
+    {
+      "workspaceId": "ws-2",
+      "conversationId": "conv-6",
+      "senderId": "CUSTOMER",
+      "senderName": "tharikhdev",
+      "text": "[Commented on Video post-999] \"what is the price of nail soap?\"",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-13",
+      "createdAt": "2026-07-17T12:04:21.948Z"
+    },
+    {
+      "workspaceId": "ws-2",
+      "conversationId": "conv-6",
+      "senderId": "AI",
+      "senderName": "AI Assistant",
+      "text": "Hello! I am having a tiny technical glitch but a human teammate is on standby to assist you directly!",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-14",
+      "createdAt": "2026-07-17T12:04:21.968Z"
+    },
+    {
+      "id": "m-8-tholasi-1",
+      "workspaceId": "ws-8",
+      "conversationId": "conv-8-tholasi",
+      "senderId": "CUSTOMER",
+      "senderName": "Tholasi's Mehndi & Kolam",
+      "text": "hello sister do you have herbal hair growth pack in stock?",
+      "readStatus": false,
+      "isInternalNote": false,
+      "createdAt": "2026-01-06T14:30:00Z"
+    },
+    {
+      "id": "m-8-haridass-1",
+      "workspaceId": "ws-8",
+      "conversationId": "conv-8-haridass",
+      "senderId": "CUSTOMER",
+      "senderName": "Hari Dass",
+      "text": "Hi, can you help me find the link for shipping details?",
+      "readStatus": false,
+      "isInternalNote": false,
+      "createdAt": "2025-12-19T11:20:00Z"
+    },
+    {
+      "id": "m-8-yesha-1",
+      "workspaceId": "ws-8",
+      "conversationId": "conv-8-yesha",
+      "senderId": "CUSTOMER",
+      "senderName": "Yesha",
+      "text": "Hello, good day! I saw your post regarding skin serums.",
+      "readStatus": false,
+      "isInternalNote": false,
+      "createdAt": "2025-11-21T09:15:00Z"
+    },
+    {
+      "id": "m-8-amu-1",
+      "workspaceId": "ws-8",
+      "conversationId": "conv-8-amu",
+      "senderId": "CUSTOMER",
+      "senderName": "Amu",
+      "text": "Hi ma .. is there any organic oil for dandruff control?",
+      "readStatus": false,
+      "isInternalNote": false,
+      "createdAt": "2025-10-31T16:45:00Z"
+    },
+    {
+      "id": "m-8-aliachotti-1",
+      "workspaceId": "ws-8",
+      "conversationId": "conv-8-aliachotti",
+      "senderId": "CUSTOMER",
+      "senderName": "Aliachotti",
+      "text": "Good day mam ... Im looking for wholesale distributors list.",
+      "readStatus": false,
+      "isInternalNote": false,
+      "createdAt": "2025-10-30T10:05:00Z"
+    },
+    {
+      "id": "m-8-darshini-1",
+      "workspaceId": "ws-8",
+      "conversationId": "conv-8-darshini",
+      "senderId": "CUSTOMER",
+      "senderName": "Darshini 229?",
+      "text": "Hi, are you currently offering free delivery inside Chennai?",
+      "readStatus": false,
+      "isInternalNote": false,
+      "createdAt": "2025-03-02T13:40:00Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-101",
+      "workspaceId": "ws-2",
+      "customerId": "cust-1",
+      "items": [
+        {
+          "productId": "prod-1",
+          "variantId": "var-1a",
+          "name": "Vaseegrah Nalangu Maavu Herbal Soap",
+          "sku": "VV-SOAP-01",
+          "price": 180,
+          "quantity": 2
+        },
+        {
+          "productId": "prod-2",
+          "variantId": "var-2a",
+          "name": "Vaseegrah Organic Hair Growth Oil",
+          "sku": "VV-OIL-02",
+          "price": 320,
+          "quantity": 1
+        }
+      ],
+      "totalAmount": 680,
+      "status": "SHIPPED",
+      "paymentStatus": "PAID",
+      "paymentMethod": "UPI",
+      "createdAt": "2026-07-10T11:30:00Z"
+    },
+    {
+      "id": "ORD-102",
+      "workspaceId": "ws-2",
+      "customerId": "cust-2",
+      "items": [
+        {
+          "productId": "prod-1",
+          "variantId": "var-1a",
+          "name": "Vaseegrah Nalangu Maavu Herbal Soap",
+          "sku": "VV-SOAP-01",
+          "price": 180,
+          "quantity": 1
+        }
+      ],
+      "totalAmount": 180,
+      "status": "PENDING",
+      "paymentStatus": "UNPAID",
+      "paymentMethod": "COD",
+      "createdAt": "2026-07-12T19:00:00Z"
+    }
+  ],
+  "automationRules": [
+    {
+      "id": "rule-1",
+      "workspaceId": "ws-2",
+      "name": "Price Inquiry",
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "price",
+        "cost",
+        "how much",
+        "rate"
+      ],
+      "actionType": "AI_REPLY",
+      "replyTemplate": "Hi! The price is listed below. I have also sent you a direct message with our order link. Let us know if you need any assistance!",
+      "isEnabled": true,
+      "usageCount": 43,
+      "createdAt": "2024-03-15"
+    },
+    {
+      "id": "rule-2",
+      "workspaceId": "ws-2",
+      "name": "Collaborations",
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "collab",
+        "pr",
+        "influncer",
+        "influencer"
+      ],
+      "actionType": "AUTO_DM",
+      "replyTemplate": "Hi there! We would love to collaborate. We have sent you a DM to discuss details. Talk soon!",
+      "isEnabled": true,
+      "usageCount": 15,
+      "createdAt": "2024-04-10"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "AI"
+      ],
+      "replyTemplate": "READ THIS ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "766284635610680583",
+      "replyCommentText": "JUST SEND TO YOU DM ",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-3",
+      "usageCount": 0,
+      "createdAt": "2026-07-14"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "ai"
+      ],
+      "replyTemplate": "hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663089208117955847",
+      "replyCommentText": "Just  Send to Dm",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-4",
+      "usageCount": 0,
+      "createdAt": "2026-07-16"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "ai"
+      ],
+      "replyTemplate": "hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663089208117955847",
+      "replyCommentText": "Just  Send to Dm",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-5",
+      "usageCount": 0,
+      "createdAt": "2026-07-16"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "ai"
+      ],
+      "replyTemplate": "hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663089208117955847",
+      "replyCommentText": "Just  Send to Dm",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-6",
+      "usageCount": 0,
+      "createdAt": "2026-07-16"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "ai"
+      ],
+      "replyTemplate": "hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663089208117955847",
+      "replyCommentText": "Just  Send to Dm",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-7",
+      "usageCount": 0,
+      "createdAt": "2026-07-16"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "ai"
+      ],
+      "replyTemplate": "hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663089208117955847",
+      "replyCommentText": "Just  Send to Dm",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-8",
+      "usageCount": 0,
+      "createdAt": "2026-07-16"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "ai"
+      ],
+      "replyTemplate": "hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663089208117955847",
+      "replyCommentText": "Just  Send to Dm",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-9",
+      "usageCount": 0,
+      "createdAt": "2026-07-16"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "ai"
+      ],
+      "replyTemplate": "hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663089208117955847",
+      "replyCommentText": "Just  Send to Dm",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-10",
+      "usageCount": 0,
+      "createdAt": "2026-07-16"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "sr"
+      ],
+      "replyTemplate": "hello",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663099289123491079",
+      "replyCommentText": "Just send to your dm ",
+      "followersOnly": false,
+      "workspaceId": "ws-7",
+      "id": "rule-11",
+      "usageCount": 1,
+      "createdAt": "2026-07-17"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "sr"
+      ],
+      "replyTemplate": "Hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663099289123491079",
+      "replyCommentText": "just send to your dm ",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-12",
+      "usageCount": 2,
+      "createdAt": "2026-07-17"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "sc"
+      ],
+      "replyTemplate": "hello",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663764690387913991",
+      "replyCommentText": "just send to your dm ",
+      "followersOnly": false,
+      "workspaceId": "ws-7",
+      "id": "rule-13",
+      "usageCount": 0,
+      "createdAt": "2026-07-20"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "sc"
+      ],
+      "replyTemplate": "Hello ",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7663764690387913991",
+      "replyCommentText": "just send to your dm",
+      "followersOnly": false,
+      "workspaceId": "ws-7",
+      "id": "rule-14",
+      "usageCount": 0,
+      "createdAt": "2026-07-21"
+    }
+  ],
+  "knowledgeBases": [
+    {
+      "id": "kb-1",
+      "workspaceId": "ws-2",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping all across India for orders above Rs. 499. For orders below Rs. 499, a flat shipping fee of Rs. 50 is charged.",
+      "createdAt": "2024-04-10"
+    },
+    {
+      "id": "kb-2",
+      "workspaceId": "ws-2",
+      "question": "Are your soaps safe for children?",
+      "answer": "Yes! Our Vaseegrah Nalangu Maavu soap is made of 100% natural, therapeutic herbs and contains no harsh sulfates or parabens. It is perfectly safe for toddlers and children above 1 year.",
+      "createdAt": "2024-04-10"
+    },
+    {
+      "id": "kb-3",
+      "workspaceId": "ws-2",
+      "question": "Where are you located?",
+      "answer": "Our manufacturing and warehousing unit is based in Trichy, Tamil Nadu. All orders are packed and shipped directly from our Trichy central warehouse.",
+      "createdAt": "2024-04-10"
+    },
+    {
+      "workspaceId": "ws-7",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
+      "id": "kb-4",
+      "createdAt": "2026-07-17T05:42:01.267Z"
+    },
+    {
+      "workspaceId": "ws-8",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
+      "id": "kb-5",
+      "createdAt": "2026-07-28T07:17:40.472Z"
+    }
+  ],
+  "comments": [
+    {
+      "id": "c-1",
+      "workspaceId": "ws-2",
+      "customerId": "cust-1",
+      "customerName": "Sarah J.",
+      "postType": "TIKTOK",
+      "postId": "post-12345",
+      "text": "How much is the organic hair oil?",
+      "replyText": "Hi! Our organic hair oil is Rs. 320 for a 200ml bottle. We have sent you a DM with a discount link!",
+      "dmSent": true,
+      "status": "REPLIED",
+      "createdAt": "2026-07-12T20:30:00Z"
+    },
+    {
+      "id": "c-2",
+      "workspaceId": "ws-2",
+      "customerId": "cust-2",
+      "customerName": "Ramesh_K",
+      "postType": "TIKTOK",
+      "postId": "post-12345",
+      "text": "Is this safe for dry skin?",
+      "status": "PENDING",
+      "createdAt": "2026-07-12T21:55:00Z"
+    },
+    {
+      "workspaceId": "ws-7",
+      "customerId": "cust-tharikh",
+      "customerName": "tharikhdev",
+      "postType": "TIKTOK",
+      "postId": "7663099289123491079",
+      "text": "sr",
+      "status": "REPLIED",
+      "id": "c-3",
+      "createdAt": "2026-07-17T11:50:49.974Z",
+      "replyText": "Just send to your dm ",
+      "dmSent": true
+    },
+    {
+      "workspaceId": "ws-1",
+      "customerId": "cust-tharikh",
+      "customerName": "tharikhdev",
+      "postType": "TIKTOK",
+      "postId": "7663099289123491079",
+      "text": "sr",
+      "status": "REPLIED",
+      "id": "c-4",
+      "createdAt": "2026-07-17T11:55:03.141Z",
+      "replyText": "just send to your dm ",
+      "dmSent": true
+    },
+    {
+      "workspaceId": "ws-2",
+      "customerId": "cust-tharikh",
+      "customerName": "tharikhdev",
+      "postType": "TIKTOK",
+      "postId": "post-999",
+      "text": "what is the price of nail soap?",
+      "status": "REPLIED",
+      "id": "c-5",
+      "createdAt": "2026-07-17T12:04:20.998Z",
+      "replyText": "Hello! I am having a tiny technical glitch but a human teammate is on standby to assist you directly!",
+      "dmSent": true
+    }
+  ],
+  "notifications": [
+    {
+      "id": "not-1",
+      "workspaceId": "ws-2",
+      "title": "New Order #ORD-102 Received",
+      "message": "Customer Ramesh Kumar placed a pending order for Rs. 180.",
+      "read": false,
+      "type": "INFO",
+      "createdAt": "2026-07-12T19:02:00Z"
+    },
+    {
+      "id": "not-2",
+      "workspaceId": "ws-2",
+      "title": "Low Stock Alert: Herbal Soap",
+      "message": "Vaseegrah Nalangu Maavu Herbal Soap stock is low (45 left in some variants).",
+      "read": false,
+      "type": "WARNING",
+      "createdAt": "2026-07-12T15:00:00Z"
+    }
+  ],
+  "analytics": [
+    {
+      "id": "an-ws2-2026-07-01",
+      "workspaceId": "ws-2",
+      "date": "2026-07-01",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 10,
+      "aiResponsesCount": 8,
+      "automationCount": 5
+    },
+    {
+      "id": "an-ws2-2026-07-02",
+      "workspaceId": "ws-2",
+      "date": "2026-07-02",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 13,
+      "aiResponsesCount": 10,
+      "automationCount": 6
+    },
+    {
+      "id": "an-ws2-2026-07-03",
+      "workspaceId": "ws-2",
+      "date": "2026-07-03",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 16,
+      "aiResponsesCount": 12,
+      "automationCount": 7
+    },
+    {
+      "id": "an-ws2-2026-07-04",
+      "workspaceId": "ws-2",
+      "date": "2026-07-04",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 19,
+      "aiResponsesCount": 14,
+      "automationCount": 8
+    },
+    {
+      "id": "an-ws2-2026-07-05",
+      "workspaceId": "ws-2",
+      "date": "2026-07-05",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 22,
+      "aiResponsesCount": 16,
+      "automationCount": 9
+    },
+    {
+      "id": "an-ws2-2026-07-06",
+      "workspaceId": "ws-2",
+      "date": "2026-07-06",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 25,
+      "aiResponsesCount": 18,
+      "automationCount": 10
+    },
+    {
+      "id": "an-ws2-2026-07-07",
+      "workspaceId": "ws-2",
+      "date": "2026-07-07",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 28,
+      "aiResponsesCount": 20,
+      "automationCount": 11
+    },
+    {
+      "id": "an-ws2-2026-07-08",
+      "workspaceId": "ws-2",
+      "date": "2026-07-08",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 31,
+      "aiResponsesCount": 22,
+      "automationCount": 12
+    },
+    {
+      "id": "an-ws2-2026-07-09",
+      "workspaceId": "ws-2",
+      "date": "2026-07-09",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 34,
+      "aiResponsesCount": 24,
+      "automationCount": 13
+    },
+    {
+      "id": "an-ws2-2026-07-10",
+      "workspaceId": "ws-2",
+      "date": "2026-07-10",
+      "revenue": 680,
+      "ordersCount": 1,
+      "conversionRate": 22,
+      "messagesCount": 37,
+      "aiResponsesCount": 26,
+      "automationCount": 14
+    },
+    {
+      "id": "an-ws2-2026-07-11",
+      "workspaceId": "ws-2",
+      "date": "2026-07-11",
+      "revenue": 0,
+      "ordersCount": 0,
+      "conversionRate": 5,
+      "messagesCount": 40,
+      "aiResponsesCount": 28,
+      "automationCount": 15
+    },
+    {
+      "id": "an-ws2-2026-07-12",
+      "workspaceId": "ws-2",
+      "date": "2026-07-12",
+      "revenue": 180,
+      "ordersCount": 1,
+      "conversionRate": 15,
+      "messagesCount": 43,
+      "aiResponsesCount": 30,
+      "automationCount": 16
+    }
+  ]
+}
