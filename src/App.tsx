@@ -87,7 +87,15 @@ const AuthPortal: React.FC = () => {
         body: JSON.stringify({ email, password })
       });
 
-      const data = await res.json();
+      let data: any = {};
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(text || `Login failed (${res.status})`);
+      }
+
       if (!res.ok) {
         throw new Error(data.error || "Login credentials failed.");
       }
@@ -117,7 +125,15 @@ const AuthPortal: React.FC = () => {
         body: JSON.stringify({ name, email, password, shopName, phone })
       });
 
-      const data = await res.json();
+      let data: any = {};
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(text || `Registration failed (${res.status})`);
+      }
+
       if (!res.ok) {
         throw new Error(data.error || "Registration failed.");
       }
@@ -130,6 +146,7 @@ const AuthPortal: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   const autofillSuperAdmin = () => {
     setEmail("admin@company.com");
