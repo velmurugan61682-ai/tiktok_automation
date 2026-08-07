@@ -39,6 +39,12 @@ const JWT_SECRET = (process.env.JWT_SECRET || "enterprise-tenant-saas-secret-key
 
 app.use(express.json());
 
+// TikTok Domain Verification File Route
+app.get("/tiktok*.txt", (req, res) => {
+  res.setHeader("Content-Type", "text/plain");
+  res.send("tiktok-developers-site-verification=Zc4q7v2q3I4r9bJoeG18kRqBk9KyjySG");
+});
+
 // --- SUPER ADMIN ENV CREDENTIALS ---
 const SUPER_ADMIN_EMAIL = (process.env.SUPER_ADMIN_EMAIL || "admin@company.com").replace(/^["']|["']$/g, "").trim();
 const SUPER_ADMIN_PASSWORD = (process.env.SUPER_ADMIN_PASSWORD || "adminpassword").replace(/^["']|["']$/g, "").trim(); // Plain text default or env
