@@ -15,11 +15,11 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
 
-    allowedHosts: [
-      "pronominally-unbelligerent-felisa.ngrok-free.dev",
-    ],
+    allowedHosts: true,
 
-    hmr: process.env.DISABLE_HMR !== "true",
-    watch: process.env.DISABLE_HMR === "true" ? null : {},
+    hmr: process.env.DISABLE_HMR !== "true" ? { clientPort: 443 } : false,
+    watch: {
+      ignored: ["**/data/**", "**/data/db.json"],
+    },
   },
 });

@@ -70,9 +70,18 @@ export const ProductCatalog: React.FC = () => {
         fetch("/api/warehouses", { headers: h })
       ]);
 
-      if (resProd.ok) setProducts(await resProd.ok ? resProd.json() : []);
-      if (resCat.ok) setCategories(await resCat.ok ? resCat.json() : []);
-      if (resWh.ok) setWarehouses(await resWh.ok ? resWh.json() : []);
+      if (resProd.ok) {
+        const prodData = await resProd.json();
+        setProducts(Array.isArray(prodData) ? prodData : []);
+      }
+      if (resCat.ok) {
+        const catData = await resCat.json();
+        setCategories(Array.isArray(catData) ? catData : []);
+      }
+      if (resWh.ok) {
+        const whData = await resWh.json();
+        setWarehouses(Array.isArray(whData) ? whData : []);
+      }
     } catch (e) {
       console.error(e);
     }

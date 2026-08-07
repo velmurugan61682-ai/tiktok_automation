@@ -156,32 +156,37 @@ export class TikTokService {
             }));
           }
         } else {
-          const errText = await apiResponse.text();
-          console.error("TikTok Video List API failed with status:", apiResponse.status, errText);
+          console.warn(`TikTok Video List API returned status ${apiResponse.status}. Using profile fallback.`);
         }
       } catch (apiErr) {
-        console.error("TikTok Video List API request error:", apiErr);
+        console.warn("TikTok Video List API request unavailable. Using profile fallback.");
       }
     }
 
     // 2. Fallback: Parse the public profile page if the official API is restricted in the sandbox
     const videoIds: string[] = [];
     try {
-      console.log(`Attempting profile page scrap fallback for user @${username}...`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       const response = await fetch(`https://www.tiktok.com/@${username}`, {
+        signal: controller.signal,
         headers: {
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
         }
       });
+      clearTimeout(timeoutId);
       if (response.ok) {
         const text = await response.text();
         const matches = [...text.matchAll(/\/video\/(\d+)/g)];
         const parsedIds = Array.from(new Set(matches.map(m => m[1])));
         videoIds.push(...parsedIds);
-        console.log(`Discovered video IDs from profile HTML:`, videoIds);
       }
-    } catch (err) {
-      console.error("Failed to parse public TikTok profile for videos list:", err);
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        console.warn(`Public profile fetch for @${username} timed out. Using fallback mock videos.`);
+      } else {
+        console.warn(`Public profile fetch for @${username} unavailable: ${err.message || err}`);
+      }
     }
 
     // 3. Resolve metadata via OEmbed for discovered video IDs
@@ -336,8 +341,7 @@ export class TikTokService {
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        console.error(`Failed to fetch TikTok conversations list: status ${res.status}, body: ${text}`);
+        console.warn(`TikTok conversations API endpoint returned status ${res.status}. Skipping remote DM sync.`);
         return;
       }
 

@@ -169,7 +169,7 @@
       "workspaceId": "ws-1",
       "platform": "TIKTOK",
       "username": "user9136354359278",
-      "status": "CONNECTED",
+      "status": "DISCONNECTED",
       "expiresAt": "2026-08-27T06:52:56.573Z",
       "accessToken": "act.aBx7qQCZ7msvcLoRv1uBwHmMv65YvoqgSykh3ZspesiAejRJdaXJ961uXzcZ!6234.s1",
       "refreshToken": "rft.MErdiRddENzMClCsA6ePu48PfRS6NgZLFI56QsiJ54CnI05xUg0d9tFv8EQV!6203.s1",
@@ -188,7 +188,13 @@
       "workspaceId": "ws-2",
       "platform": "TIKTOK",
       "username": "factoryvaseegrahveda",
-      "status": "CONNECTED"
+      "status": "CONNECTED",
+      "followerCount": 0,
+      "followingCount": 0,
+      "likesCount": 0,
+      "videoCount": 0,
+      "display_name": "factoryvaseegrahveda",
+      "avatar_url": ""
     },
     {
       "id": "ca-ws-3",
@@ -215,8 +221,20 @@
       "id": "ca-ws-9",
       "workspaceId": "ws-9",
       "platform": "TIKTOK",
-      "username": "testingbusiness",
-      "status": "CONNECTED"
+      "username": "tech.vaseegrah",
+      "status": "CONNECTED",
+      "expiresAt": "2026-09-05T12:28:17.166Z",
+      "accessToken": "act.Em5VLQxoV17AQErWgynoek389rLpoyxYnnmF3J1hycSMP4Os0JwZVqBOZSdV!5157.s1",
+      "refreshToken": "rft.HPG652aya6OsSyCTXm08bMLqmIZqbGUeyDYn4cXXeJnePyILfJQPY3gQWxHa!5167.s1",
+      "connectedAt": "August 6, 2026",
+      "followerCount": 2274,
+      "followingCount": 1,
+      "likesCount": 11713,
+      "display_name": "Tech Vaseegrah",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=73ad3615&x-expires=1786194000&x-signature=GdDgqdlZEfpZ2jklwY%2FzHwVIW10%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
+      "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
+      "videoCount": 229
     },
     {
       "id": "ca-7",
