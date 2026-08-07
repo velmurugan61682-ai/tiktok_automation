@@ -33,7 +33,7 @@ import { ordersRouter } from "./src/api/orders/route.js";
 import { customersRouter } from "./src/api/customers/route.js";
 import { automationRouter } from "./src/api/automation/route.js";
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 const JWT_SECRET = (process.env.JWT_SECRET || "enterprise-tenant-saas-secret-key-998").replace(/^["']|["']$/g, "").trim();
 

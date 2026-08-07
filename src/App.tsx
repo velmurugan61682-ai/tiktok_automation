@@ -172,9 +172,7 @@ const AuthPortal: React.FC = () => {
         <div className="bg-slate-900 text-white p-12 flex flex-col justify-between md:w-[42%] shrink-0">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="bg-indigo-600 p-2.5 rounded-xl text-white">
-                <Building2 className="w-6 h-6" />
-              </div>
+              <img src="/logo.png" alt="TikTok Automation Logo" className="w-10 h-10 rounded-xl object-cover border border-white/10 shadow-md" />
               <span className="font-extrabold tracking-tight text-xl text-white">TikTok Automation</span>
             </div>
             

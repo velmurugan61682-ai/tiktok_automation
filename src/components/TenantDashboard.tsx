@@ -310,9 +310,7 @@ export const TenantDashboard: React.FC = () => {
         <div>
           {/* Brand header */}
           <div className="flex h-16 items-center px-6 border-b border-slate-150">
-            <div className="bg-indigo-600 p-2 rounded-lg text-white font-extrabold text-sm flex items-center justify-center h-8 w-8">
-              T
-            </div>
+            <img src="/logo.png" alt="TikTok Automation Logo" className="h-8 w-8 rounded-lg object-cover shadow-sm border border-slate-200" />
             <span className="ml-3 text-base font-extrabold tracking-tight text-slate-800">TikTok Automation</span>
           </div>
 
