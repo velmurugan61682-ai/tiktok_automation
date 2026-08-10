@@ -225,8 +225,8 @@ export const SuperAdminDashboard: React.FC = () => {
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0">
         <div>
           <div className="flex h-16 items-center px-6 border-b border-slate-150">
-            <img src="/logo.png" alt="TikTok Automation Logo" className="h-8 w-8 rounded-lg object-cover shadow-sm border border-slate-200" />
-            <span className="ml-3 text-base font-extrabold tracking-tight text-slate-800">TikTok Automation</span>
+            <img src="/logo.png" alt="CreatorFlow AI Logo" className="h-8 w-8 rounded-lg object-cover shadow-sm border border-slate-200" />
+            <span className="ml-3 text-base font-extrabold tracking-tight text-slate-800">CreatorFlow AI</span>
           </div>
 
           <nav className="py-4 space-y-0.5">

@@ -62,7 +62,7 @@ async function connectMongo() {
     await mongoClient.connect();
     mongoDbConnected = true;
     console.log("Connected successfully to MongoDB");
-    return mongoClient.db();
+    return mongoClient.db("creatorflow_ai");
   } catch (err) {
     console.error("Failed to connect to MongoDB, falling back to local JSON database", err);
     return null;
@@ -93,7 +93,7 @@ function getInitialDb(): DatabaseSchema {
 async function saveDbToMongo(data: DatabaseSchema): Promise<void> {
   if (!mongoClient || !mongoDbConnected) return;
   try {
-    const db = mongoClient.db();
+    const db = mongoClient.db("creatorflow_ai");
     for (const key of Object.keys(data)) {
       const collectionName = key;
       const items = (data as any)[key];

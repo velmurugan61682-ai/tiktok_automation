@@ -31,7 +31,7 @@ export const ContactPage: React.FC = () => {
               Contact Us
             </h1>
             <p className="text-slate-400 text-xs mt-1.5 font-medium uppercase tracking-wider">
-              TikTokAuto Support and Inquiries
+              CreatorFlow AI Support and Inquiries
             </p>
           </div>
         </div>
@@ -88,7 +88,7 @@ export const ContactPage: React.FC = () => {
 
       {/* Footer */}
       <div className="text-center py-6 text-[10px] text-slate-400 font-bold uppercase tracking-wider relative z-10">
-        &copy; {new Date().getFullYear()} TikTokAuto. All rights reserved.
+        &copy; {new Date().getFullYear()} CreatorFlow AI. All rights reserved.
       </div>
     </div>
   );
