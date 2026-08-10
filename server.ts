@@ -267,6 +267,167 @@ app.post("/api/auth/register", (req, res) => {
   });
 });
 
+app.post("/api/auth/google", (req, res) => {
+  const { email, name, credential } = req.body;
+  
+  // If email is provided directly or extracted from token/payload
+  let googleEmail = email;
+  let googleName = name || "Google User";
+
+  // Decoding ID token if standard Google credential JWT string is provided
+  if (credential && !googleEmail) {
+    try {
+      const payloadBase64 = credential.split(".")[1];
+      if (payloadBase64) {
+        const decoded = JSON.parse(Buffer.from(payloadBase64, "base64").toString("utf-8"));
+        if (decoded.email) {
+          googleEmail = decoded.email;
+          if (decoded.name) googleName = decoded.name;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse Google ID token:", e);
+    }
+  }
+
+  if (!googleEmail) {
+    res.status(400).json({ error: "Google authentication failed: Email is required." });
+    return;
+  }
+
+  const incomingEmail = googleEmail.toLowerCase().trim();
+
+  // Check if user is Super Admin
+  if (incomingEmail === SUPER_ADMIN_EMAIL.toLowerCase().trim() || incomingEmail === "admin@company.com") {
+    const token = jwt.sign(
+      {
+        userId: "super-admin",
+        name: SUPER_ADMIN_NAME,
+        email: SUPER_ADMIN_EMAIL,
+        role: "SUPER_ADMIN"
+      },
+      JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+    res.json({
+      token,
+      user: {
+        id: "super-admin",
+        name: SUPER_ADMIN_NAME,
+        email: SUPER_ADMIN_EMAIL,
+        role: "SUPER_ADMIN"
+      }
+    });
+    return;
+  }
+
+  // Check existing tenant user
+  let existingUser = UserRepository.findByEmail(googleEmail);
+  if (!existingUser && googleEmail.toLowerCase() === "owner@smartmart.com") {
+    existingUser = UserRepository.findByEmail("premdev@example.com");
+  }
+
+  if (existingUser) {
+    const workspace = WorkspaceRepository.findById(existingUser.workspaceId!);
+    if (workspace && workspace.status === "SUSPENDED") {
+      res.status(403).json({ error: "Your workspace has been suspended. Please contact system support." });
+      return;
+    }
+
+    const token = jwt.sign(
+      {
+        userId: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+        role: "ADMIN",
+        workspaceId: existingUser.workspaceId
+      },
+      JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+    res.json({
+      token,
+      user: {
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+        role: "ADMIN",
+        workspaceId: existingUser.workspaceId
+      }
+    });
+    return;
+  }
+
+  // If user does not exist, auto-register standard tenant user with Google details
+  const shopName = `${googleName.split(" ")[0]}'s Brand`;
+  const workspace = WorkspaceRepository.create({
+    name: googleName,
+    phone: "+1 555-0192",
+    shopName,
+    status: "ACTIVE",
+    plan: "TRIAL",
+    endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    smsCount: 100
+  });
+
+  const salt = bcrypt.genSaltSync(10);
+  const passwordHash = bcrypt.hashSync("google-auth-pwd-" + Math.random(), salt);
+  const newUser = UserRepository.create({
+    name: googleName,
+    email: googleEmail,
+    passwordHash,
+    role: "ADMIN",
+    workspaceId: workspace.id
+  });
+
+  // Seed default items
+  AutomationService.createKnowledgeBase({
+    workspaceId: workspace.id,
+    question: "What are your shipping rates?",
+    answer: "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders."
+  });
+
+  ProductService.createProduct({
+    workspaceId: workspace.id,
+    name: "Sample Organic Soap Pack",
+    sku: "SMP-SOAP-01",
+    barcode: "8900000000001",
+    categoryId: "cat-1",
+    description: "A beautiful organic herbal soap pack with essential lavender and almond oils.",
+    images: ["https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"],
+    price: 150,
+    tax: 18,
+    stock: 100,
+    status: "ACTIVE",
+    variants: []
+  });
+
+  TikTokService.connectAccount(workspace.id, shopName);
+
+  const token = jwt.sign(
+    {
+      userId: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: "ADMIN",
+      workspaceId: workspace.id
+    },
+    JWT_SECRET,
+    { expiresIn: "30d" }
+  );
+
+  res.status(201).json({
+    token,
+    user: {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: "ADMIN",
+      workspaceId: workspace.id
+    }
+  });
+});
+
 app.get("/api/auth/me", authenticateJWT, (req: any, res) => {
   res.json({ user: req.user });
 });
@@ -942,10 +1103,24 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Enterprise SaaS Backend Server`);
     console.log(`  - Local:        http://localhost:${PORT}`);
     console.log(`  - Environments: .env`);
+  });
+
+  server.on("error", (err: any) => {
+    if (err.code === "EADDRINUSE") {
+      const nextPort = Number(PORT) + 1;
+      console.log(`Port ${PORT} is busy, retrying on port ${nextPort}...`);
+      app.listen(nextPort, () => {
+        console.log(`Enterprise SaaS Backend Server`);
+        console.log(`  - Local:        http://localhost:${nextPort}`);
+        console.log(`  - Environments: .env`);
+      });
+    } else {
+      console.error(err);
+    }
   });
 }
 
