@@ -31,7 +31,7 @@ export const PrivacyPage: React.FC = () => {
               Privacy Policy
             </h1>
             <p className="text-slate-400 text-xs mt-1.5 font-medium uppercase tracking-wider">
-              CreatorFlow AI Privacy Standards
+              CreatorConnect Pro Privacy Standards
             </p>
           </div>
         </div>
@@ -44,7 +44,7 @@ export const PrivacyPage: React.FC = () => {
               Respect for Privacy
             </h2>
             <p className="text-slate-650 text-sm leading-relaxed font-medium">
-              CreatorFlow AI respects user privacy. We are committed to protecting your personal data and ensuring transparency in how we collect and process information.
+              CreatorConnect Pro respects user privacy. We are committed to protecting your personal data and ensuring transparency in how we collect and process information.
             </p>
           </div>
 
@@ -94,7 +94,7 @@ export const PrivacyPage: React.FC = () => {
 
       {/* Footer */}
       <div className="text-center py-6 text-[10px] text-slate-400 font-bold uppercase tracking-wider relative z-10">
-        &copy; {new Date().getFullYear()} CreatorFlow AI. All rights reserved.
+        &copy; {new Date().getFullYear()} CreatorConnect Pro. All rights reserved.
       </div>
     </div>
   );
