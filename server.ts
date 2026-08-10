@@ -516,7 +516,7 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
 });
 
 app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => {
-  // 10. Validate environment variables before starting OAuth
+  // Validate environment variables before starting OAuth
   const missing = [];
   if (!process.env.TIKTOK_CLIENT_KEY) missing.push("TIKTOK_CLIENT_KEY");
   if (!process.env.TIKTOK_CLIENT_SECRET) missing.push("TIKTOK_CLIENT_SECRET");
@@ -530,12 +530,11 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
   }
 
   res.json({
-    clientKey: process.env.TIKTOK_CLIENT_KEY,
-    clientSecret: process.env.TIKTOK_CLIENT_SECRET,
+    clientKey: (process.env.TIKTOK_CLIENT_KEY || "").replace(/^["']|["']$/g, "").trim(),
     scope: (process.env.TIKTOK_SCOPE || "").replace(/^["']|["']$/g, "").trim(),
     authUrl: (process.env.TIKTOK_AUTH_URL || "https://www.tiktok.com/v2/auth/authorize/").replace(/^["']|["']$/g, "").trim(),
     loginUrl: (process.env.TIKTOK_LOGIN_URL || "https://www.tiktok.com/login").replace(/^["']|["']$/g, "").trim(),
-    redirectUri: process.env.TIKTOK_REDIRECT_URI
+    redirectUri: (process.env.TIKTOK_REDIRECT_URI || "").replace(/^["']|["']$/g, "").trim()
   });
 });
 
@@ -943,7 +942,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen(PORT, () => {
     console.log(`Enterprise SaaS Backend Server`);
     console.log(`  - Local:        http://localhost:${PORT}`);
     console.log(`  - Environments: .env`);

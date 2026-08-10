@@ -322,7 +322,7 @@ export const AutomationControl: React.FC = () => {
         <div className="space-y-1">
           <h2 className="text-xl font-bold text-slate-855 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-indigo-505 animate-pulse" />
-            TikTok Automation Suite
+            CreatorConnect Pro Automation Suite
           </h2>
           <p className="text-xs text-slate-400">Configure triggers, deploy auto-comment bots, story mention replies, and manage toxic comments.</p>
         </div>

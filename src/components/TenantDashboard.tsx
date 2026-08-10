@@ -242,7 +242,7 @@ export const TenantDashboard: React.FC = () => {
       setTiktokConnected(true);
       setTiktokUsername(usernameParam);
       window.history.replaceState({}, document.title, window.location.pathname);
-      alert(`TikTok account @${usernameParam} successfully authorized and connected!`);
+      alert(`TikTok connected successfully! Account @${usernameParam} is now connected.`);
     } else if (errorParam) {
       window.history.replaceState({}, document.title, window.location.pathname);
       alert(`TikTok Connection Failed: ${errorParam}${descParam ? ` - ${descParam}` : ""}`);
@@ -310,8 +310,8 @@ export const TenantDashboard: React.FC = () => {
         <div>
           {/* Brand header */}
           <div className="flex h-16 items-center px-6 border-b border-slate-150">
-            <img src="/logo.png" alt="TikTok Automation Logo" className="h-8 w-8 rounded-lg object-cover shadow-sm border border-slate-200" />
-            <span className="ml-3 text-base font-extrabold tracking-tight text-slate-800">TikTok Automation</span>
+            <img src="/logo.png" alt="CreatorConnect Pro Logo" className="h-8 w-8 rounded-lg object-cover shadow-sm border border-slate-200" />
+            <span className="ml-3 text-base font-extrabold tracking-tight text-slate-800">CreatorConnect Pro</span>
           </div>
 
           {/* Nav List */}
@@ -696,7 +696,7 @@ export const TenantDashboard: React.FC = () => {
                         <p className="text-xs text-slate-400 leading-relaxed">
                           {tiktokConnected 
                             ? `Your workspace is currently linked with TikTok profile @${tiktokUsername}. Orders, products, comments, and story replies will sync automatically.` 
-                            : "Automate your TikTok interactions, DMs, and comment moderator features with TikTok Automation!"}
+                            : "Automate your TikTok interactions, DMs, and comment moderator features with CreatorConnect Pro!"}
                         </p>
                       </div>
 
