@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext.js";
+import { useTheme } from "./ThemeContext.js";
+import { NotificationBell } from "./NotificationBell.js";
 import { 
   Users, 
   ShieldCheck, 
@@ -16,7 +18,11 @@ import {
   LogOut, 
   Building2,
   Trash2,
-  Lock
+  Lock,
+  Sun,
+  Moon,
+  Menu,
+  X
 } from "lucide-react";
 
 interface Workspace {
@@ -33,6 +39,8 @@ interface Workspace {
 
 export const SuperAdminDashboard: React.FC = () => {
   const { token, logout, impersonate } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"orgs" | "templates" | "keys">("orgs");
@@ -220,48 +228,70 @@ export const SuperAdminDashboard: React.FC = () => {
   });
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans antialiased text-slate-900 overflow-hidden">
+    <div className="tt-app-shell flex h-screen font-sans antialiased text-slate-900 dark:text-slate-100 overflow-hidden transition-colors duration-300">
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 md:hidden animate-fade-in"
+        />
+      )}
+
       {/* Sidebar - Matches Screenshot style */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0">
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#161823] border-r border-slate-200 dark:border-[#2f3142] flex flex-col justify-between shrink-0 transform transition-transform duration-300 ease-in-out
+        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+      `}>
         <div>
-          <div className="flex h-16 items-center px-6 border-b border-slate-150">
-            <img src="/logo.png" alt="CreatorConnect Pro Logo" className="h-8 w-8 rounded-lg object-cover shadow-sm border border-slate-200" />
-            <span className="ml-3 text-base font-extrabold tracking-tight text-slate-800">CreatorConnect Pro</span>
+          <div className="flex h-16 items-center justify-between px-6 border-b border-slate-150 dark:border-[#2f3142]">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1 rounded-xl bg-gradient-to-tr from-[#FE2C55] to-[#25F4EE] shadow-xs">
+                <img src="/logo.png" alt="CreatorConnect Pro Logo" className="tt-brand-mark h-7 w-7 rounded-lg object-cover bg-slate-900" />
+              </div>
+              <span className="text-base font-extrabold tracking-tight text-slate-800 dark:text-slate-100">CreatorConnect</span>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          <nav className="py-4 space-y-0.5">
+          <nav className="py-4 space-y-1">
             <div className="px-6 mb-2 mt-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Management</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Management</p>
             </div>
 
             <button
-              onClick={() => setActiveTab("orgs")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("orgs"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "orgs"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <Building2 className="w-4 h-4 mr-3 opacity-80" />
               Organizations
             </button>
             <button
-              onClick={() => setActiveTab("templates")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("templates"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "templates"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <FileText className="w-4 h-4 mr-3 opacity-80" />
               Print Templates
             </button>
             <button
-              onClick={() => setActiveTab("keys")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("keys"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "keys"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <Key className="w-4 h-4 mr-3 opacity-80" />
@@ -270,28 +300,59 @@ export const SuperAdminDashboard: React.FC = () => {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-slate-150 bg-slate-50">
+        <div className="p-4 border-t border-slate-150 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2.5 px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
           </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            {/* Theme toggle button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
+              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-[#25F4EE]" />}
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-6 flex flex-col">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col">
+        {/* Top Header Mobile Menu Bar */}
+        <div className="md:hidden flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100">Super Admin Panel</span>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+          >
+            {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-[#25F4EE]" />}
+          </button>
+        </div>
+
         {activeTab === "orgs" ? (
-          <div className="space-y-8 max-w-7xl mx-auto">
+          <div className="space-y-8 max-w-7xl mx-auto w-full">
             {/* Header Metrics Widgets - Matches exact numbers & colors of screenshot */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:-translate-y-0.5 transition-all">
                 <div className="space-y-0.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Shops</span>
-                  <p className="text-2xl font-bold text-slate-900">{stats.totalShops}</p>
-                  <p className="text-[10px] text-green-600 font-bold">↑ 8.2% vs last month</p>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Total Shops</span>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.totalShops}</p>
+                  <p className="text-[10px] text-green-600 font-bold">â†‘ 8.2% vs last month</p>
                 </div>
                 <div className="bg-blue-50 p-2.5 rounded-lg text-blue-600">
                   <Users className="w-5 h-5" />
@@ -302,7 +363,7 @@ export const SuperAdminDashboard: React.FC = () => {
                 <div className="space-y-0.5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pro Users</span>
                   <p className="text-2xl font-bold text-slate-900">{stats.proUsers}</p>
-                  <p className="text-[10px] text-emerald-600 font-bold">★ Active licenses</p>
+                  <p className="text-[10px] text-emerald-600 font-bold">â˜… Active licenses</p>
                 </div>
                 <div className="bg-emerald-50 p-2.5 rounded-lg text-emerald-600">
                   <ShieldCheck className="w-5 h-5" />
@@ -313,7 +374,7 @@ export const SuperAdminDashboard: React.FC = () => {
                 <div className="space-y-0.5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Trial Users</span>
                   <p className="text-2xl font-bold text-slate-900">{stats.trialUsers}</p>
-                  <p className="text-[10px] text-indigo-600 font-bold">↑ 12 new this week</p>
+                  <p className="text-[10px] text-[#25F4EE] font-bold">â†‘ 12 new this week</p>
                 </div>
                 <div className="bg-purple-50 p-2.5 rounded-lg text-purple-600">
                   <Zap className="w-5 h-5" />
@@ -354,7 +415,7 @@ export const SuperAdminDashboard: React.FC = () => {
 
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm shadow-indigo-100 transition-all"
+                    className="flex items-center gap-1 bg-[#FE2C55] hover:bg-[#e02447] text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm shadow-indigo-100 transition-all"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     New Org
@@ -385,7 +446,7 @@ export const SuperAdminDashboard: React.FC = () => {
                       return (
                         <tr key={w.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="py-2.5 px-4 font-mono text-[10px] text-slate-400">#{i + 1}</td>
-                          <td className="py-2.5 px-4 font-bold text-slate-800">{w.phone || "—"}</td>
+                          <td className="py-2.5 px-4 font-bold text-slate-800">{w.phone || "â€”"}</td>
                           <td className="py-2.5 px-4 text-slate-600 font-medium">{w.name}</td>
                           <td className="py-2.5 px-4 text-slate-900 font-bold">{w.shopName}</td>
                           <td className="py-2.5 px-4 text-center">
@@ -421,7 +482,7 @@ export const SuperAdminDashboard: React.FC = () => {
                             <button
                               onClick={() => handleImpersonate(w.id, w.name)}
                               title="Open Workspace Impersonation"
-                              className="inline-flex items-center justify-center p-1 text-indigo-600 hover:bg-indigo-50 rounded transition-all"
+                              className="inline-flex items-center justify-center p-1 text-[#25F4EE] hover:bg-indigo-50 rounded transition-all"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </button>
@@ -575,7 +636,7 @@ export const SuperAdminDashboard: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all shadow-sm shadow-indigo-100"
+                className="w-full bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold py-2.5 rounded-xl text-sm transition-all shadow-sm shadow-indigo-100"
               >
                 Create and Seed Workspace
               </button>
@@ -586,3 +647,4 @@ export const SuperAdminDashboard: React.FC = () => {
     </div>
   );
 };
+

@@ -17,7 +17,7 @@ export default defineConfig({
 
     allowedHosts: true,
 
-    hmr: process.env.DISABLE_HMR !== "true" ? { clientPort: 443 } : false,
+    hmr: process.env.DISABLE_HMR === "true" ? false : undefined,
     watch: {
       ignored: ["**/data/**", "**/data/db.json"],
     },

@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import {BrowserRouter} from 'react-router-dom';
 import App from './App.tsx';
 import './index.css';
+import { registerPwa } from './pwa.ts';
 
 // Global fetch interceptor to handle token expiration/invalid errors
 const originalFetch = window.fetch;
@@ -22,6 +23,8 @@ window.fetch = async (input, init) => {
   }
   return response;
 };
+
+registerPwa();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -16,7 +16,15 @@ export class NotificationService {
     });
   }
 
-  static markAllAsRead(workspaceId: string): void {
+  static markAllAsRead(workspaceId?: string): void {
     NotificationRepository.markAllAsRead(workspaceId);
+  }
+
+  static markOneAsRead(id: string): void {
+    NotificationRepository.markOneAsRead(id);
+  }
+
+  static deleteNotification(id: string): void {
+    NotificationRepository.delete(id);
   }
 }

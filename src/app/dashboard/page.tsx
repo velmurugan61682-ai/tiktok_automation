@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { NotificationBell } from "../../components/NotificationBell.js";
 import { 
   DollarSign, 
   Package, 
@@ -98,41 +99,45 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ metrics, setActive
           <p className="text-xs text-slate-400">Real-time overview of your store's performance and bot automations.</p>
         </div>
 
-        {/* AI Agent / Human Agent Dropdown selector */}
-        <div className="relative">
-          <button 
-            onClick={() => setShowAgentDropdown(!showAgentDropdown)}
-            className="flex items-center gap-2 bg-slate-55 hover:bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-700 transition-all shadow-sm"
-          >
-            <Bot className="w-4 h-4 text-indigo-650" />
-            <span>{agentMode}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-          </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
 
-          {showAgentDropdown && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-30 animate-fade-in">
-              <button
-                onClick={() => {
-                  setAgentMode("AI Agent");
-                  setShowAgentDropdown(false);
-                }}
-                className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-slate-55 flex items-center gap-2 text-slate-705"
-              >
-                <Bot className="w-4 h-4 text-indigo-650" />
-                AI Agent
-              </button>
-              <button
-                onClick={() => {
-                  setAgentMode("Human Agent");
-                  setShowAgentDropdown(false);
-                }}
-                className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-slate-55 flex items-center gap-2 text-slate-705"
-              >
-                <User className="w-4 h-4 text-indigo-655" />
-                Human Agent
-              </button>
-            </div>
-          )}
+          {/* AI Agent / Human Agent Dropdown selector */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowAgentDropdown(!showAgentDropdown)}
+              className="flex items-center gap-2 bg-slate-55 hover:bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-700 transition-all shadow-sm"
+            >
+              <Bot className="w-4 h-4 text-indigo-650" />
+              <span>{agentMode}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+
+            {showAgentDropdown && (
+              <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-30 animate-fade-in">
+                <button
+                  onClick={() => {
+                    setAgentMode("AI Agent");
+                    setShowAgentDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-slate-55 flex items-center gap-2 text-slate-705"
+                >
+                  <Bot className="w-4 h-4 text-indigo-650" />
+                  AI Agent
+                </button>
+                <button
+                  onClick={() => {
+                    setAgentMode("Human Agent");
+                    setShowAgentDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-slate-55 flex items-center gap-2 text-slate-705"
+                >
+                  <User className="w-4 h-4 text-indigo-655" />
+                  Human Agent
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

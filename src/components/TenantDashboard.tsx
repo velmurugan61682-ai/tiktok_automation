@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext.js";
+import { useTheme } from "./ThemeContext.js";
+import { SubscriptionPage } from "./SubscriptionPage.js";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { ChatPage } from "../app/chat/page.js";
 import { ProductsPage } from "../app/products/page.js";
@@ -16,6 +18,7 @@ import {
   Users, 
   Sparkles, 
   Settings, 
+  CreditCard,
   LogOut, 
   DollarSign, 
   CheckCircle, 
@@ -32,7 +35,15 @@ import {
   Plus,
   Layers,
   Shield,
-  User
+  User,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  Mail,
+  Phone,
+  Lock,
+  Save
 } from "lucide-react";
 
 interface Metrics {
@@ -50,6 +61,8 @@ interface Metrics {
 
 export const TenantDashboard: React.FC = () => {
   const { user, token, logout, exitImpersonation } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -67,6 +80,9 @@ export const TenantDashboard: React.FC = () => {
         return "customers";
       case "/comments_chat":
         return "automation";
+      case "/subscription":
+      case "/billing":
+        return "subscription";
       case "/settings":
         return "settings";
       default:
@@ -96,6 +112,10 @@ export const TenantDashboard: React.FC = () => {
       case "automation":
         navigate("/comments_chat");
         break;
+      case "subscription":
+      case "billing":
+        navigate("/subscription");
+        break;
       case "settings":
         navigate("/settings");
         break;
@@ -122,6 +142,45 @@ export const TenantDashboard: React.FC = () => {
   const [tiktokRedirectUri, setTiktokRedirectUri] = useState(`${window.location.origin}/api/tiktok/oauth/callback`);
   const [tiktokClientKey, setTiktokClientKey] = useState("sbawfeqyhmuf4nrhdk");
   const [settingsSubTab, setSettingsSubTab] = useState("connected_accounts");
+  const [profileName, setProfileName] = useState(user?.name || "");
+  const [profileImagePreview, setProfileImagePreview] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [profilePasswordMessage, setProfilePasswordMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setProfileImagePreview(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  const handleProfilePasswordSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setProfilePasswordMessage({ text: "Fill all password fields.", type: "error" });
+      return;
+    }
+    if (newPassword.length < 8) {
+      setProfilePasswordMessage({ text: "New password must be at least 8 characters.", type: "error" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setProfilePasswordMessage({ text: "New password and confirm password do not match.", type: "error" });
+      return;
+    }
+
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setProfilePasswordMessage({ text: "Password change ready. Connect this form to backend when API is available.", type: "success" });
+  };
   const [tiktokScope, setTiktokScope] = useState("user.info.basic,user.info.profile,user.info.stats,video.list");
 
   // Template settings state
@@ -303,29 +362,51 @@ export const TenantDashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans antialiased text-slate-900 overflow-hidden">
+    <div className="tt-app-shell flex h-screen font-sans antialiased text-slate-900 dark:text-slate-100 overflow-hidden transition-colors duration-300">
       
+      {/* Mobile Drawer Overlay Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 md:hidden animate-fade-in"
+        />
+      )}
+
       {/* 1. Side navigation menu */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0">
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#161823] border-r border-slate-200 dark:border-[#2f3142] flex flex-col justify-between shrink-0 transform transition-transform duration-300 ease-in-out
+        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+      `}>
         <div>
           {/* Brand header */}
-          <div className="flex h-16 items-center px-6 border-b border-slate-150">
-            <img src="/logo.png" alt="CreatorConnect Pro Logo" className="h-8 w-8 rounded-lg object-cover shadow-sm border border-slate-200" />
-            <span className="ml-3 text-base font-extrabold tracking-tight text-slate-800">CreatorConnect Pro</span>
+          <div className="flex h-16 items-center justify-between px-6 border-b border-slate-150 dark:border-[#2f3142]">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1 rounded-xl bg-gradient-to-tr from-[#FE2C55] to-[#25F4EE] shadow-xs">
+                <img src="/logo.png" alt="CreatorConnect Pro Logo" className="tt-brand-mark h-7 w-7 rounded-lg object-cover bg-slate-900" />
+              </div>
+              <span className="text-base font-extrabold tracking-tight text-slate-800 dark:text-slate-100">CreatorConnect</span>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Nav List */}
-          <nav className="py-4 space-y-0.5">
+          <nav className="py-4 space-y-1">
             <div className="px-6 mb-2 mt-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Workspace</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Workspace</p>
             </div>
             
             <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("dashboard"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "dashboard"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <LayoutDashboard className="w-4 h-4 mr-3 opacity-80" />
@@ -333,11 +414,11 @@ export const TenantDashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab("chat")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("chat"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "chat"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <MessageSquare className="w-4 h-4 mr-3 opacity-80" />
@@ -345,11 +426,11 @@ export const TenantDashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab("products")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("products"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "products"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <ShoppingBag className="w-4 h-4 mr-3 opacity-80" />
@@ -357,11 +438,11 @@ export const TenantDashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab("orders")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("orders"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "orders"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <Package className="w-4 h-4 mr-3 opacity-80" />
@@ -369,15 +450,15 @@ export const TenantDashboard: React.FC = () => {
             </button>
 
             <div className="px-6 mb-2 mt-5">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Management</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Management</p>
             </div>
 
             <button
-              onClick={() => setActiveTab("customers")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("customers"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "customers"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <Users className="w-4 h-4 mr-3 opacity-80" />
@@ -385,11 +466,11 @@ export const TenantDashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab("automation")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("automation"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "automation"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <Sparkles className="w-4 h-4 mr-3 opacity-80" />
@@ -397,11 +478,23 @@ export const TenantDashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab("settings")}
-              className={`w-full flex items-center px-6 py-2 text-xs font-semibold border-r-4 transition-all ${
+              onClick={() => { setActiveTab("subscription"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
+                activeTab === "subscription"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
+              }`}
+            >
+              <CreditCard className="w-4 h-4 mr-3 opacity-80" />
+              Billing & Subscription
+            </button>
+
+            <button
+              onClick={() => { setActiveTab("settings"); setMobileMenuOpen(false); }}
+              className={`w-full flex items-center px-6 py-2.5 text-xs font-semibold border-r-4 transition-all ${
                 activeTab === "settings"
-                  ? "text-indigo-600 bg-indigo-50/70 border-indigo-600 font-bold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent"
+                  ? "text-[#FE2C55] dark:text-[#FE2C55] bg-[#FE2C55]/10 dark:bg-[#FE2C55]/15 border-[#FE2C55] font-extrabold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1e202e] hover:text-slate-900 dark:hover:text-slate-200 border-transparent"
               }`}
             >
               <Settings className="w-4 h-4 mr-3 opacity-80" />
@@ -411,7 +504,7 @@ export const TenantDashboard: React.FC = () => {
         </div>
 
         {/* User profile at bottom */}
-        <div className="p-4 border-t border-slate-150 bg-slate-50 space-y-2">
+        <div className="p-4 border-t border-slate-150 dark:border-slate-800 bg-white dark:bg-[#161823] space-y-3">
           {user?.isImpersonated && (
             <button
               onClick={exitImpersonation}
@@ -421,24 +514,33 @@ export const TenantDashboard: React.FC = () => {
             </button>
           )}
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center overflow-hidden mr-2">
-              <div className="h-8 w-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-300">
-                {user?.name.charAt(0) || "U"}
-              </div>
-              <div className="ml-2 overflow-hidden">
-                <p className="text-xs font-bold text-slate-700 truncate leading-tight">{user?.name || "User"}</p>
-                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tenant Admin</p>
-              </div>
+          <div className="flex items-center justify-center gap-3 rounded-2xl bg-slate-100 dark:bg-[#252838] px-4 py-3">
+            <div className="h-9 w-9 rounded-full bg-white dark:bg-[#161823] border border-[#25F4EE]/50 text-[#FE2C55] flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden">
+              {user?.name.charAt(0) || "U"}
             </div>
-            <button
-              onClick={logout}
-              title="Sign Out"
-              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            <div className="min-w-0">
+              <p className="text-xs font-extrabold text-slate-950 dark:text-slate-100 truncate leading-tight">{user?.name || "User"}</p>
+              <p className="text-[10px] text-[#FE2C55] uppercase font-extrabold tracking-wider leading-tight">ONLINE</p>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#252838] transition-colors text-sm font-extrabold"
+          >
+            {theme === "dark" ? <Sun className="w-4 h-4 text-[#25F4EE]" /> : <Moon className="w-4 h-4 text-slate-500" />}
+            <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={logout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-[#FE2C55] transition-colors text-sm font-extrabold"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 
@@ -448,7 +550,7 @@ export const TenantDashboard: React.FC = () => {
         {/* Floating Impersonation Alert Banner */}
         {user?.isImpersonated && (
           <div className="bg-amber-500 text-white px-6 py-2 flex items-center justify-between text-xs font-extrabold animate-pulse">
-            <span>⚠️ ADMIN VIEW IMPERSONATION ACTIVE: Modifying data live for tenant workspace: "{user.name}"</span>
+            <span>âš ï¸ ADMIN VIEW IMPERSONATION ACTIVE: Modifying data live for tenant workspace: "{user.name}"</span>
             <button
               onClick={exitImpersonation}
               className="bg-white text-amber-700 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider"
@@ -458,27 +560,18 @@ export const TenantDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Top Navbar */}
-        <header className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">Active Workspace</span>
-            <span className="bg-slate-100 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg border border-slate-200">
-              {user?.name}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Simulation Status Dot */}
-            <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1 rounded-xl text-[10px] font-extrabold">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-              TikTok Gateway: Online
-            </div>
-
-            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">
-              {user?.name.charAt(0) || "U"}
-            </div>
-          </div>
-        </header>
+        {/* Mobile Header (Hidden on Desktop) */}
+        <div className="md:hidden h-14 border-b border-slate-200 dark:border-[#2f3142] bg-white dark:bg-[#161823] flex items-center justify-between px-4 shrink-0">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1e202e] transition-colors"
+            title="Toggle Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <span className="text-sm font-extrabold text-slate-800 dark:text-slate-100">CreatorConnect</span>
+        </div>
 
         {/* Content Panel Tab routing */}
         <div className="flex-1 overflow-y-auto p-8">
@@ -498,6 +591,8 @@ export const TenantDashboard: React.FC = () => {
             <CustomersPage />
           ) : activeTab === "automation" ? (
             <AutomationPage />
+          ) : activeTab === "subscription" ? (
+            <SubscriptionPage />
           ) : (
             /* Settings Panel with Channels Integration */
             <div className="bg-white rounded-2xl border border-slate-150 overflow-hidden font-sans text-slate-800 antialiased max-w-6xl mx-auto shadow-sm">
@@ -522,7 +617,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("connected_accounts")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "connected_accounts"
-                          ? "bg-indigo-50/50 text-indigo-650 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-[#25F4EE] font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-850 hover:bg-slate-50"
                       }`}
                     >
@@ -543,7 +638,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("flow_studio")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "flow_studio"
-                          ? "bg-indigo-50/50 text-indigo-650 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-[#25F4EE] font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-850 hover:bg-slate-50"
                       }`}
                     >
@@ -559,7 +654,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("templates")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "templates"
-                          ? "bg-indigo-50/50 text-indigo-650 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-[#25F4EE] font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-855 hover:bg-slate-50"
                       }`}
                     >
@@ -575,7 +670,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("template_message")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "template_message"
-                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-855 hover:bg-slate-50"
                       }`}
                     >
@@ -591,7 +686,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("icebreaker")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "icebreaker"
-                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-855 hover:bg-slate-50"
                       }`}
                     >
@@ -607,7 +702,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("persistent_menu")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "persistent_menu"
-                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-855 hover:bg-slate-50"
                       }`}
                     >
@@ -628,7 +723,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("rag_dashboard")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "rag_dashboard"
-                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-855 hover:bg-slate-50"
                       }`}
                     >
@@ -644,7 +739,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("api_key")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "api_key"
-                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-indigo-655 font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-850 hover:bg-slate-50"
                       }`}
                     >
@@ -665,7 +760,7 @@ export const TenantDashboard: React.FC = () => {
                       onClick={() => setSettingsSubTab("account_profile")}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-2.5 ${
                         settingsSubTab === "account_profile"
-                          ? "bg-indigo-50/50 text-indigo-650 font-bold border-l-4 border-indigo-600 pl-2"
+                          ? "bg-indigo-50/50 text-[#25F4EE] font-bold border-l-4 border-[#FE2C55] pl-2"
                           : "text-slate-500 hover:text-slate-855 hover:bg-slate-50"
                       }`}
                     >
@@ -686,7 +781,7 @@ export const TenantDashboard: React.FC = () => {
                       
                       {/* Brand Logo Display Circle */}
                       <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 via-blue-600 to-purple-600 flex items-center justify-center text-white text-3xl font-extrabold shadow-md relative overflow-hidden shrink-0">
-                        {tiktokConnected ? "✓" : "T"}
+                        {tiktokConnected ? "âœ“" : "T"}
                       </div>
 
                       <div className="space-y-2">
@@ -706,7 +801,7 @@ export const TenantDashboard: React.FC = () => {
                           <div className="p-5 bg-emerald-50/50 border border-emerald-100 rounded-2xl space-y-3.5">
                             
                             <div className="flex items-center gap-2 text-emerald-700 text-xs font-bold">
-                              <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[10px]">✓</span>
+                              <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[10px]">âœ“</span>
                               <span>TikTok Connected</span>
                             </div>
 
@@ -759,7 +854,7 @@ export const TenantDashboard: React.FC = () => {
                             const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${user?.workspaceId || "ws-1"}`;
                             window.location.href = redirectTarget;
                           }}
-                          className="w-full py-3 bg-indigo-650 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors"
+                          className="w-full py-3 bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors"
                         >
                           Connect TikTok
                         </button>
@@ -767,9 +862,9 @@ export const TenantDashboard: React.FC = () => {
 
                       <div className="space-y-1">
                         <p className="text-[10px] text-slate-400 font-semibold flex items-center justify-center gap-1">
-                          <span>🔒</span> Your data is secure with us.
+                          <span>ðŸ”’</span> Your data is secure with us.
                         </p>
-                        <Link to="/privacy" className="text-[10px] text-indigo-650 font-bold hover:underline block">Privacy Policy</Link>
+                        <Link to="/privacy" className="text-[10px] text-[#25F4EE] font-bold hover:underline block">Privacy Policy</Link>
                       </div>
 
                     </div>
@@ -816,7 +911,7 @@ export const TenantDashboard: React.FC = () => {
                             type="button"
                             onClick={saveSettings}
                             disabled={savingSettings}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-sm transition-colors disabled:opacity-50"
+                            className="bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold text-xs px-4 py-2 rounded-xl shadow-sm transition-colors disabled:opacity-50"
                           >
                             {savingSettings ? "Saving Settings..." : "Save Template Settings"}
                           </button>
@@ -828,7 +923,7 @@ export const TenantDashboard: React.FC = () => {
                   {/* Flow Studio / Icebreaker / Persistent Menu / RAG Dashboard */}
                   {(settingsSubTab === "flow_studio" || settingsSubTab === "icebreaker" || settingsSubTab === "persistent_menu" || settingsSubTab === "rag_dashboard") && (
                     <div className="space-y-4 max-w-xl animate-fade-in">
-                      <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
+                      <div className="flex items-center gap-2 text-[#25F4EE] font-bold text-sm">
                         <Sparkles className="w-5 h-5 animate-pulse" />
                         <span>Interactive Feature Tethered</span>
                       </div>
@@ -838,7 +933,7 @@ export const TenantDashboard: React.FC = () => {
                       
                       <div className="p-4 bg-slate-50 border border-slate-150 rounded-xl flex justify-between items-center text-xs font-bold text-slate-700">
                         <span>Gateway Sync Agent Mode</span>
-                        <span className="text-indigo-600 uppercase">ONLINE</span>
+                        <span className="text-[#25F4EE] uppercase">ONLINE</span>
                       </div>
                     </div>
                   )}
@@ -853,40 +948,147 @@ export const TenantDashboard: React.FC = () => {
 
                       <div className="p-4 border border-slate-200 rounded-xl bg-slate-50/50 flex justify-between items-center text-xs font-mono text-slate-500">
                         <span className="truncate">tok_auth_live_948f29ea18b2c4e578...</span>
-                        <button onClick={() => alert("API Token copied!")} className="text-[10px] font-bold text-indigo-600 hover:underline">Copy</button>
+                        <button onClick={() => alert("API Token copied!")} className="text-[10px] font-bold text-[#25F4EE] hover:underline">Copy</button>
                       </div>
                     </div>
                   )}
 
-                  {/* Account Profile / Billing tab */}
+                  {/* Account Profile */}
                   {settingsSubTab === "account_profile" && (
-                    <div className="space-y-6 max-w-xl animate-fade-in">
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Account Billing & Plan</h3>
-                        <p className="text-xs text-slate-400 mt-1">Check limits, usage quotas, and active subscription packs for your tenant organization.</p>
-                      </div>
+                    <div className="max-w-5xl animate-fade-in">
+                      <h3 className="text-2xl font-extrabold text-slate-950 tracking-tight mb-7">Profile Settings</h3>
 
-                      <div className="p-5 bg-indigo-50/50 border border-indigo-100 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-1">
-                          <p className="text-sm font-bold text-indigo-950">14-Day Free CRM Trial Pack</p>
-                          <p className="text-xs text-indigo-700 font-semibold leading-relaxed">TRIAL period is active. Expiring in 14 days. Limit: 100 SMS logs.</p>
+                      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+                        <div className="bg-white border border-slate-100 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+                          <label
+                            htmlFor="profile-image-upload"
+                            className="group h-28 w-28 rounded-[28px] bg-[#161823] p-1 shadow-lg shadow-slate-200 overflow-hidden cursor-pointer relative focus-within:ring-2 focus-within:ring-[#25F4EE]"
+                            title="Choose profile image"
+                          >
+                            {profileImagePreview ? (
+                              <img src={profileImagePreview} alt="Profile" className="h-full w-full rounded-[24px] object-cover" />
+                            ) : (
+                              <div className="h-full w-full rounded-[24px] bg-gradient-to-br from-[#25F4EE] via-slate-900 to-[#FE2C55] flex items-center justify-center text-white text-4xl font-black">
+                                {profileName?.charAt(0) || user?.name?.charAt(0) || "U"}
+                              </div>
+                            )}
+                            <span className="absolute inset-x-1 bottom-1 rounded-b-[24px] bg-slate-950/70 py-1 text-[10px] font-extrabold text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                              Choose
+                            </span>
+                            <input
+                              id="profile-image-upload"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleProfileImageChange}
+                              className="sr-only"
+                            />
+                          </label>
+
+                          <input
+                            type="text"
+                            value={profileName}
+                            onChange={e => setProfileName(e.target.value)}
+                            className="mt-5 w-full text-center text-lg font-extrabold text-slate-950 bg-transparent border-b border-transparent hover:border-slate-200 focus:border-[#25F4EE] focus:outline-none"
+                          />
                         </div>
 
-                        <button
-                          onClick={() => alert("Simulation checkout gateway. Upgraded to Unlimited Commercial PRO plan!")}
-                          className="bg-indigo-600 text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-indigo-700 shadow-sm shrink-0"
-                        >
-                          Upgrade to PRO
-                        </button>
+                        <form onSubmit={handleProfilePasswordSave} className="bg-white border border-slate-100 rounded-lg shadow-md p-6 space-y-5">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Email Address</label>
+                              <div className="relative">
+                                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <input
+                                  type="email"
+                                  value={user?.email || ""}
+                                  readOnly
+                                  className="w-full pl-10 pr-3.5 py-2.5 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50 text-slate-700 cursor-not-allowed focus:outline-none"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Phone Number</label>
+                              <div className="relative">
+                                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <input
+                                  type="tel"
+                                  value={profilePhone}
+                                  onChange={e => setProfilePhone(e.target.value)}
+                                  placeholder="Enter phone number"
+                                  className="w-full pl-10 pr-3.5 py-2.5 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#25F4EE]/20 focus:border-[#25F4EE]"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="border-t border-slate-100 pt-5 space-y-4">
+                            <div>
+                              <h4 className="text-sm font-extrabold text-slate-950">Change Password</h4>
+                              <p className="text-xs text-slate-400 mt-2">Leave blank if you don't want to change it.</p>
+                            </div>
+
+                            {profilePasswordMessage && (
+                              <div className={`p-3 rounded-xl border text-xs font-semibold ${
+                                profilePasswordMessage.type === "success"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                  : "bg-rose-50 text-rose-700 border-rose-100"
+                              }`}>
+                                {profilePasswordMessage.text}
+                              </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">New Password</label>
+                                <div className="relative">
+                                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                  <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    autoComplete="new-password"
+                                    className="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#25F4EE]/20 focus:border-[#25F4EE]"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Confirm Password</label>
+                                <div className="relative">
+                                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                  <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={e => setConfirmPassword(e.target.value)}
+                                    autoComplete="new-password"
+                                    className="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#25F4EE]/20 focus:border-[#25F4EE]"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end pt-1">
+                              <button
+                                type="submit"
+                                className="inline-flex items-center justify-center gap-2 bg-[#FE2C55] hover:bg-[#e02447] text-white font-extrabold text-sm px-6 py-3 rounded-xl shadow-lg shadow-[#25F4EE]/30 focus:outline-none focus:ring-2 focus:ring-[#25F4EE]/40 transition-colors"
+                              >
+                                <Save className="w-4 h-4" />
+                                Save Changes
+                              </button>
+                            </div>
+                          </div>
+                        </form>
                       </div>
                     </div>
                   )}
+                </div>
+
 
                 </div>
 
               </div>
 
-            </div>
           )}
         </div>
       </div>
@@ -902,19 +1104,19 @@ export const TenantDashboard: React.FC = () => {
               <div className="flex items-center gap-1.5">
                 {/* Simulated Chrome tab favicon */}
                 <div className="w-3.5 h-3.5 rounded-full bg-slate-900 flex items-center justify-center text-[8px] font-extrabold text-white">T</div>
-                <span className="text-[11px] text-slate-700 font-medium">Login • TikTok - Google Chrome</span>
+                <span className="text-[11px] text-slate-700 font-medium">Login â€¢ TikTok - Google Chrome</span>
               </div>
               
               {/* Window controls */}
               <div className="flex items-center gap-4 text-slate-600">
-                <span className="text-xs cursor-pointer font-bold">—</span>
-                <span className="text-xs cursor-pointer">☐</span>
+                <span className="text-xs cursor-pointer font-bold">â€”</span>
+                <span className="text-xs cursor-pointer">â˜</span>
                 <button 
                   type="button"
                   onClick={() => setShowTikTokLoginModal(false)}
                   className="text-sm font-bold font-mono hover:text-rose-600 transition-colors"
                 >
-                  ✕
+                  âœ•
                 </button>
               </div>
             </div>
@@ -923,14 +1125,14 @@ export const TenantDashboard: React.FC = () => {
             <div className="h-9 bg-[#f1f3f4] flex items-center gap-2 px-3 border-b border-slate-200 shrink-0 select-none">
               {/* Browser control arrows */}
               <div className="flex items-center gap-2.5 text-slate-400 text-[10px]">
-                <span className="cursor-not-allowed">◀</span>
-                <span className="cursor-not-allowed">▶</span>
-                <span className="cursor-pointer hover:text-slate-600">⟳</span>
+                <span className="cursor-not-allowed">â—€</span>
+                <span className="cursor-not-allowed">â–¶</span>
+                <span className="cursor-pointer hover:text-slate-600">âŸ³</span>
               </div>
               
               {/* URL Address container */}
               <div className="flex-1 bg-white border border-slate-200 rounded-full px-3 py-0.5 flex items-center gap-1.5 text-[10px] text-slate-500 font-mono overflow-hidden">
-                <span className="text-emerald-600 text-[9px] shrink-0">🔒 Secure</span>
+                <span className="text-emerald-600 text-[9px] shrink-0">ðŸ”’ Secure</span>
                 <span className="truncate">
                   {oauthStep === "authorize" && `${tiktokAuthUrl}?client_key=aw8n9283ha9d&redirect_uri=${tiktokRedirectUri}&response_type=code&scope=user.info.basic,comment.reply`}
                   {oauthStep === "login" && tiktokLoginUrl}
@@ -1002,7 +1204,7 @@ export const TenantDashboard: React.FC = () => {
                       name="tiktok_password"
                       type="password"
                       required
-                      placeholder="••••••••"
+                      placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                       className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none"
                     />
                   </div>
@@ -1035,7 +1237,7 @@ export const TenantDashboard: React.FC = () => {
                     <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-black text-lg">
                       T
                     </div>
-                    <div className="text-slate-300 font-bold text-sm">◀ ── ▶</div>
+                    <div className="text-slate-300 font-bold text-sm">â—€ â”€â”€ â–¶</div>
                     <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-sm">
                       SaaS
                     </div>
@@ -1053,21 +1255,21 @@ export const TenantDashboard: React.FC = () => {
                   {/* Permissions Checklist */}
                   <div className="bg-white border border-slate-150 rounded-xl p-3.5 space-y-2.5 text-[10.5px] text-slate-600">
                     <div className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-extrabold">✓</span>
+                      <span className="text-emerald-500 font-extrabold">âœ“</span>
                       <div>
                         <p className="font-bold text-slate-700">Read basic profile info</p>
                         <p className="text-[9.5px] text-slate-400">Access display name, avatar, and handle.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-extrabold">✓</span>
+                      <span className="text-emerald-500 font-extrabold">âœ“</span>
                       <div>
                         <p className="font-bold text-slate-700">Manage direct messages</p>
                         <p className="text-[9.5px] text-slate-400">Receive DMs, load threads, and automate replies.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-extrabold">✓</span>
+                      <span className="text-emerald-500 font-extrabold">âœ“</span>
                       <div>
                         <p className="font-bold text-slate-700">Manage video comments</p>
                         <p className="text-[9.5px] text-slate-400">Listen for keyword triggers and add comment replies.</p>
@@ -1086,7 +1288,7 @@ export const TenantDashboard: React.FC = () => {
                   </button>
                   <button
                     onClick={() => setOauthStep("callback")}
-                    className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs transition-colors shadow-sm"
+                    className="flex-1 py-2.5 bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold rounded-lg text-xs transition-colors shadow-sm"
                   >
                     Allow & Authorize
                   </button>
@@ -1113,3 +1315,4 @@ export const TenantDashboard: React.FC = () => {
     </div>
   );
 };
+

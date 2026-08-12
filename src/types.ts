@@ -23,6 +23,9 @@ export interface Workspace {
   plan: "TRIAL" | "PRO";
   endDate: string;
   smsCount: number;
+  razorpaySubscriptionId?: string;
+  razorpaySubscriptionStatus?: string;
+  razorpayPaymentId?: string;
   aiTemplateEnabled?: boolean;
   aiTemplateText?: string;
   createdAt: string;

@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import { initDb, getCollection } from "./src/lib/db.js";
@@ -54,6 +55,14 @@ const SUPER_ADMIN_NAME = (process.env.SUPER_ADMIN_NAME || "System Administrator"
 const TIKTOK_CLIENT_KEY = (process.env.TIKTOK_CLIENT_KEY || "6kbe0cpgmrg86").replace(/^["']|["']$/g, "").trim();
 const TIKTOK_CLIENT_SECRET = (process.env.TIKTOK_CLIENT_SECRET || "Lh1mxI9rzlLh7xfdUFmOjJS98i8on1U6").replace(/^["']|["']$/g, "").trim();
 const TIKTOK_REDIRECT_URI = (process.env.TIKTOK_REDIRECT_URI || "http://localhost:3000/api/tiktok/oauth/callback").replace(/^["']|["']$/g, "").trim();
+
+// --- RAZORPAY SUBSCRIPTION CREDENTIALS ---
+const cleanEnv = (value?: string) => (value || "").replace(/^["']|["']$/g, "").trim();
+const RAZORPAY_KEY_ID = cleanEnv(process.env.RAZORPAY_KEY_ID);
+const RAZORPAY_KEY_SECRET = cleanEnv(process.env.RAZORPAY_KEY_SECRET);
+const RAZORPAY_PLAN_ID = cleanEnv(process.env.RAZORPAY_PLAN_ID);
+const RAZORPAY_PRO_PRICE = Number(cleanEnv(process.env.RAZORPAY_PRO_PRICE) || "499");
+const RAZORPAY_SUBSCRIPTION_CYCLES = Number(cleanEnv(process.env.RAZORPAY_SUBSCRIPTION_CYCLES) || "12");
 
 // ==========================================
 // MIDDLEWARES
@@ -519,7 +528,20 @@ app.get("/api/tiktok/accounts", authenticateJWT, requireAdmin, async (req: any, 
 });
 
 app.post("/api/tiktok/connect", authenticateJWT, requireAdmin, (req: any, res) => {
-  const account = TikTokService.connectAccount(req.user.workspaceId, req.body.username);
+  const workspaceId = req.user.workspaceId;
+  const workspace = WorkspaceRepository.findById(workspaceId);
+  const existingAccounts = TikTokService.getConnectedAccounts(workspaceId);
+  const connectedCount = existingAccounts.filter((a: any) => a.status === "CONNECTED").length;
+
+  if (workspace && workspace.plan !== "PRO" && connectedCount >= 1) {
+    return res.status(403).json({
+      error: "ACCOUNT_LIMIT_REACHED",
+      message: "Free Plan allows only 1 connected account. Upgrade to PRO Plan for unlimited accounts!",
+      accountLimitReached: true
+    });
+  }
+
+  const account = TikTokService.connectAccount(workspaceId, req.body.username);
   res.json(account);
 });
 
@@ -858,6 +880,289 @@ app.post("/api/admin/impersonate/:workspaceId", authenticateJWT, requireSuperAdm
   res.json({ token: impersonateToken, workspaceName: workspace.name });
 });
 
+// ==========================================
+// NOTIFICATION ENDPOINTS
+// ==========================================
+
+// Get all notifications for current workspace
+app.get("/api/notifications", authenticateJWT, (req: any, res) => {
+  try {
+    const workspaceId = req.user?.role === "SUPER_ADMIN" ? undefined : req.user?.workspaceId;
+    const notifications = NotificationService.getNotifications(workspaceId);
+    res.json(notifications);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to fetch notifications." });
+  }
+});
+
+// Mark all notifications as read
+app.post("/api/notifications/read-all", authenticateJWT, (req: any, res) => {
+  try {
+    const workspaceId = req.user?.role === "SUPER_ADMIN" ? "system" : req.user?.workspaceId;
+    if (workspaceId) {
+      NotificationService.markAllAsRead(workspaceId);
+    }
+    const notifications = NotificationService.getNotifications(req.user?.workspaceId);
+    res.json({ success: true, notifications });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to mark notifications as read." });
+  }
+});
+
+// Create new notification
+app.post("/api/notifications/create", authenticateJWT, (req: any, res) => {
+  try {
+    const { title, message, type } = req.body;
+    const workspaceId = req.user?.role === "SUPER_ADMIN" ? undefined : req.user?.workspaceId;
+    const newNotif = NotificationService.createNotification(workspaceId, title, message, type || "INFO");
+    res.status(201).json(newNotif);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to create notification." });
+  }
+});
+
+// ==========================================
+// RAZORPAY SUBSCRIPTION ENDPOINTS
+// ==========================================
+
+const isDummyRazorpaySubscription = (subscriptionId?: string, paymentId?: string, signature?: string) =>
+  Boolean(subscriptionId?.startsWith("sub_dummy_") && paymentId?.startsWith("pay_dummy_") && signature === "dummy_signature");
+
+const ensureRazorpayConfig = () => {
+  const missing = [];
+  if (!RAZORPAY_KEY_ID) missing.push("RAZORPAY_KEY_ID");
+  if (!RAZORPAY_KEY_SECRET) missing.push("RAZORPAY_KEY_SECRET");
+  return missing;
+};
+
+const razorpayRequest = async (endpoint: string, body?: Record<string, unknown>) => {
+  const authHeader = "Basic " + Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64");
+  const response = await fetch(`https://api.razorpay.com/v1${endpoint}`, {
+    method: body ? "POST" : "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": authHeader
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const description = payload?.error?.description || payload?.error || `Razorpay API failed with ${response.status}`;
+    throw new Error(description);
+  }
+  return payload;
+};
+
+app.get("/api/subscription/config", authenticateJWT, (req: any, res) => {
+  res.json({
+    keyId: RAZORPAY_KEY_ID,
+    currency: "INR",
+    proPrice: RAZORPAY_PRO_PRICE,
+    subscriptionCycles: RAZORPAY_SUBSCRIPTION_CYCLES,
+    configured: ensureRazorpayConfig().length === 0
+  });
+});
+
+app.get("/api/subscription/status", authenticateJWT, (req: any, res) => {
+  try {
+    const workspaceId = req.user?.workspaceId;
+    const workspace = WorkspaceRepository.findById(workspaceId);
+    if (!workspace) {
+      return res.status(404).json({ error: "Workspace not found." });
+    }
+
+    const accounts = getCollection("connectedAccounts") || [];
+    const workspaceAccounts = accounts.filter((ca: any) => ca.workspaceId === workspaceId && ca.status === "CONNECTED");
+    const isPro = workspace.plan === "PRO";
+    const maxAllowedAccounts = isPro ? 999 : 1;
+
+    res.json({
+      plan: workspace.plan || "TRIAL",
+      endDate: workspace.endDate,
+      connectedAccountsCount: workspaceAccounts.length,
+      maxAllowedAccounts,
+      accountLimitReached: !isPro && workspaceAccounts.length >= 1,
+      keyId: RAZORPAY_KEY_ID,
+      razorpaySubscriptionId: workspace.razorpaySubscriptionId,
+      razorpaySubscriptionStatus: workspace.razorpaySubscriptionStatus,
+      configured: ensureRazorpayConfig().length === 0
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to fetch subscription status." });
+  }
+});
+
+const resolveRazorpayPlanId = async () => {
+  if (RAZORPAY_PLAN_ID) return RAZORPAY_PLAN_ID;
+
+  const plan = await razorpayRequest("/plans", {
+    period: "monthly",
+    interval: 1,
+    item: {
+      name: "CreatorConnect Pro Monthly",
+      amount: RAZORPAY_PRO_PRICE * 100,
+      currency: "INR",
+      description: "Monthly PRO plan subscription"
+    },
+    notes: {
+      source: "creatorconnect_auto_plan"
+    }
+  });
+
+  return plan.id;
+};
+
+const createRazorpaySubscription = async (req: any, res: any) => {
+  try {
+    const workspaceId = req.user?.workspaceId;
+    const workspace = WorkspaceRepository.findById(workspaceId);
+    if (!workspace) {
+      return res.status(404).json({ error: "Workspace not found." });
+    }
+
+    const missing = ensureRazorpayConfig();
+    if (missing.length > 0) {
+      const dummySubscriptionId = `sub_dummy_${Date.now()}`;
+      WorkspaceRepository.update(workspaceId, {
+        razorpaySubscriptionId: dummySubscriptionId,
+        razorpaySubscriptionStatus: "dummy_created"
+      });
+
+      return res.json({
+        subscriptionId: dummySubscriptionId,
+        status: "dummy_created",
+        keyId: RAZORPAY_KEY_ID || "rzp_dummy_local",
+        currency: "INR",
+        amount: RAZORPAY_PRO_PRICE * 100,
+        planName: "CreatorConnect Pro Monthly",
+        dummy: true
+      });
+    }
+
+    const planId = await resolveRazorpayPlanId();
+    const subscription = await razorpayRequest("/subscriptions", {
+      plan_id: planId,
+      total_count: RAZORPAY_SUBSCRIPTION_CYCLES,
+      quantity: 1,
+      customer_notify: true,
+      notes: {
+        workspaceId,
+        userId: req.user?.userId || "",
+        plan: "PRO"
+      }
+    });
+
+    WorkspaceRepository.update(workspaceId, {
+      razorpaySubscriptionId: subscription.id,
+      razorpaySubscriptionStatus: subscription.status || "created"
+    });
+
+    res.json({
+      subscriptionId: subscription.id,
+      status: subscription.status,
+      shortUrl: subscription.short_url,
+      keyId: RAZORPAY_KEY_ID,
+      currency: "INR",
+      amount: RAZORPAY_PRO_PRICE * 100,
+      planName: "CreatorConnect Pro Monthly"
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to create Razorpay subscription." });
+  }
+};
+
+app.post("/api/subscription/create-subscription", authenticateJWT, createRazorpaySubscription);
+app.post("/api/subscription/create-order", authenticateJWT, createRazorpaySubscription);
+app.post("/api/subscription/verify-payment", authenticateJWT, (req: any, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = req.body;
+    const workspaceId = req.user?.workspaceId;
+
+    if (!workspaceId) {
+      return res.status(400).json({ error: "Invalid user workspace." });
+    }
+    if (!razorpay_payment_id || !razorpay_subscription_id || !razorpay_signature) {
+      return res.status(400).json({ error: "Missing Razorpay subscription payment fields." });
+    }
+
+    const isDummyPayment = isDummyRazorpaySubscription(razorpay_subscription_id, razorpay_payment_id, razorpay_signature);
+    if (!isDummyPayment && !RAZORPAY_KEY_SECRET) {
+      return res.status(503).json({ error: "Razorpay verification secret is not configured." });
+    }
+
+    const workspace = WorkspaceRepository.findById(workspaceId);
+    if (!workspace) {
+      return res.status(404).json({ error: "Workspace not found." });
+    }
+    if (workspace.razorpaySubscriptionId && workspace.razorpaySubscriptionId !== razorpay_subscription_id) {
+      return res.status(400).json({ error: "Razorpay subscription does not match this workspace." });
+    }
+
+    if (!isDummyPayment) {
+      const generatedSignature = crypto
+        .createHmac("sha256", RAZORPAY_KEY_SECRET)
+        .update(`${razorpay_payment_id}|${razorpay_subscription_id}`)
+        .digest("hex");
+
+      if (generatedSignature !== razorpay_signature) {
+        return res.status(400).json({ error: "Razorpay payment verification failed. Invalid signature." });
+      }
+    }
+
+    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const updatedWorkspace = WorkspaceRepository.update(workspaceId, {
+      plan: "PRO",
+      endDate,
+      razorpaySubscriptionId: razorpay_subscription_id,
+      razorpaySubscriptionStatus: isDummyPayment ? "dummy_active" : "active",
+      razorpayPaymentId: razorpay_payment_id
+    });
+
+    NotificationService.createNotification(
+      workspaceId,
+      "Subscription Upgraded to PRO",
+      "Your workspace has been upgraded to the PRO Plan with unlimited connected accounts and AI automation.",
+      "INFO"
+    );
+
+    res.json({
+      success: true,
+      message: "Subscription successfully upgraded to PRO Plan.",
+      plan: "PRO",
+      endDate,
+      workspace: updatedWorkspace
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to verify subscription payment." });
+  }
+});
+
+app.post("/api/subscription/switch-free", authenticateJWT, (req: any, res) => {
+  try {
+    const workspaceId = req.user?.workspaceId;
+    if (!workspaceId) {
+      return res.status(400).json({ error: "Invalid workspace." });
+    }
+
+    const updatedWorkspace = WorkspaceRepository.update(workspaceId, {
+      plan: "TRIAL",
+      endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      razorpaySubscriptionStatus: "cancelled"
+    });
+
+    NotificationService.createNotification(
+      workspaceId,
+      "Subscription Switched to Free Plan",
+      "Your workspace is now on the Free Plan. Max 1 connected account allowed.",
+      "WARNING"
+    );
+
+    res.json({ success: true, plan: "FREE", workspace: updatedWorkspace });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to switch plan." });
+  }
+});
 // Super Admin Analytics
 app.get("/api/admin/analytics", authenticateJWT, requireSuperAdmin, (req, res) => {
   const workspaces = WorkspaceRepository.find();

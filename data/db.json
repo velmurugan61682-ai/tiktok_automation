@@ -71,6 +71,15 @@
       "workspaceId": "ws-8",
       "id": "u-8",
       "createdAt": "2026-07-28T07:17:40.468Z"
+    },
+    {
+      "name": "Google User",
+      "email": "gow@gmail.com",
+      "passwordHash": "$2b$10$U60sGzZe3PFc4br5tWZ3ee8URnl9HmatBajaqDLpSy4EYxQiqBt8K",
+      "role": "ADMIN",
+      "workspaceId": "ws-9",
+      "id": "u-9",
+      "createdAt": "2026-08-10T13:13:46.854Z"
     }
   ],
   "workspaces": [
@@ -80,10 +89,13 @@
       "phone": "9080985805",
       "shopName": "SmartMart",
       "status": "ACTIVE",
-      "plan": "PRO",
-      "endDate": "2034-02-22",
+      "plan": "TRIAL",
+      "endDate": "2026-08-26",
       "smsCount": 32,
-      "createdAt": "2024-02-22"
+      "createdAt": "2024-02-22",
+      "razorpaySubscriptionStatus": "cancelled",
+      "razorpaySubscriptionId": "sub_TOlv2LIgoKxyLU",
+      "razorpayPaymentId": "pay_TOlvjxmqpJJiKy"
     },
     {
       "id": "ws-2",
@@ -161,6 +173,17 @@
       "smsCount": 100,
       "id": "ws-8",
       "createdAt": "2026-07-28"
+    },
+    {
+      "name": "Google User",
+      "phone": "+1 555-0192",
+      "shopName": "Google's Brand",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2026-08-24",
+      "smsCount": 100,
+      "id": "ws-9",
+      "createdAt": "2026-08-10"
     }
   ],
   "connectedAccounts": [
@@ -221,20 +244,20 @@
       "id": "ca-ws-9",
       "workspaceId": "ws-9",
       "platform": "TIKTOK",
-      "username": "tech.vaseegrah",
+      "username": "google'sbrand",
       "status": "CONNECTED",
-      "expiresAt": "2026-09-05T12:28:17.166Z",
-      "accessToken": "act.Em5VLQxoV17AQErWgynoek389rLpoyxYnnmF3J1hycSMP4Os0JwZVqBOZSdV!5157.s1",
-      "refreshToken": "rft.HPG652aya6OsSyCTXm08bMLqmIZqbGUeyDYn4cXXeJnePyILfJQPY3gQWxHa!5167.s1",
-      "connectedAt": "August 6, 2026",
-      "followerCount": 2274,
-      "followingCount": 1,
-      "likesCount": 11713,
-      "display_name": "Tech Vaseegrah",
-      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=73ad3615&x-expires=1786194000&x-signature=GdDgqdlZEfpZ2jklwY%2FzHwVIW10%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
-      "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
-      "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
-      "videoCount": 229
+      "expiresAt": "2026-09-09T13:13:46.862Z",
+      "accessToken": "mock_access_token_xyz123",
+      "refreshToken": "mock_refresh_token_abc987",
+      "connectedAt": "August 10, 2026",
+      "followerCount": 0,
+      "followingCount": 0,
+      "likesCount": 0,
+      "display_name": "google'sbrand",
+      "avatar_url": "",
+      "open_id": "",
+      "union_id": "",
+      "videoCount": 0
     },
     {
       "id": "ca-7",
@@ -438,6 +461,24 @@
       "variants": [],
       "id": "prod-5",
       "createdAt": "2026-07-28"
+    },
+    {
+      "workspaceId": "ws-9",
+      "name": "Sample Organic Soap Pack",
+      "sku": "SMP-SOAP-01",
+      "barcode": "8900000000001",
+      "categoryId": "cat-1",
+      "description": "A beautiful organic herbal soap pack with essential lavender and almond oils.",
+      "images": [
+        "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 150,
+      "tax": 18,
+      "stock": 100,
+      "status": "ACTIVE",
+      "variants": [],
+      "id": "prod-6",
+      "createdAt": "2026-08-10"
     }
   ],
   "warehouses": [
@@ -1257,6 +1298,13 @@
       "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
       "id": "kb-5",
       "createdAt": "2026-07-28T07:17:40.472Z"
+    },
+    {
+      "workspaceId": "ws-9",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
+      "id": "kb-6",
+      "createdAt": "2026-08-10T13:13:46.856Z"
     }
   ],
   "comments": [
@@ -1325,6 +1373,51 @@
     }
   ],
   "notifications": [
+    {
+      "workspaceId": "ws-1",
+      "title": "Subscription Switched to Free Plan",
+      "message": "Your workspace is now on the Free Plan. Max 1 connected account allowed.",
+      "read": false,
+      "type": "WARNING",
+      "id": "not-1786521150473-398",
+      "createdAt": "2026-08-12T07:52:30.473Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "title": "Subscription Upgraded to PRO",
+      "message": "Your workspace has been upgraded to the PRO Plan with unlimited connected accounts and AI automation.",
+      "read": false,
+      "type": "INFO",
+      "id": "not-1786518881737-498",
+      "createdAt": "2026-08-12T07:14:41.737Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "title": "Subscription Upgraded to PRO",
+      "message": "Your workspace has been upgraded to the PRO Plan with unlimited connected accounts and AI automation.",
+      "read": false,
+      "type": "INFO",
+      "id": "not-1786518467057-939",
+      "createdAt": "2026-08-12T07:07:47.057Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "title": "Subscription Upgraded to PRO",
+      "message": "Your workspace has been upgraded to the PRO Plan with unlimited connected accounts and AI automation.",
+      "read": false,
+      "type": "INFO",
+      "id": "not-1786518399466-838",
+      "createdAt": "2026-08-12T07:06:39.466Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "title": "Subscription Switched to Free Plan",
+      "message": "Your workspace is now on the Free Plan. Max 1 connected account allowed.",
+      "read": false,
+      "type": "WARNING",
+      "id": "not-1786517291274-716",
+      "createdAt": "2026-08-12T06:48:11.274Z"
+    },
     {
       "id": "not-1",
       "workspaceId": "ws-2",
