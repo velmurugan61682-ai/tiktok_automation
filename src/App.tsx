@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./components/AuthContext.js";
 import { ThemeProvider, useTheme } from "./components/ThemeContext.js";
 import { SuperAdminDashboard } from "./components/SuperAdminDashboard.js";
@@ -511,9 +511,9 @@ const AuthPortal: React.FC = () => {
             {/* Footer Links */}
             <div className="flex justify-center gap-4 pt-6 border-t border-slate-100 text-[11px] font-bold text-slate-400">
               <Link to="/privacy" className="hover:text-[#25F4EE] transition-colors">Privacy Policy</Link>
-              <span>â€¢</span>
+              <span>•</span>
               <Link to="/terms" className="hover:text-[#25F4EE] transition-colors">Terms of Service</Link>
-              <span>â€¢</span>
+              <span>•</span>
               <Link to="/contact" className="hover:text-[#25F4EE] transition-colors">Contact Support</Link>
             </div>
           </div>

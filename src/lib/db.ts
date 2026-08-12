@@ -135,9 +135,13 @@ export async function initDb(): Promise<void> {
           });
         }
 
-        dbCache = loadedData as DatabaseSchema;
-        console.log("Database initialized from MongoDB successfully");
-        return;
+        if (loadedData.users && loadedData.users.length > 0) {
+          dbCache = loadedData as DatabaseSchema;
+          console.log("Database initialized from MongoDB successfully");
+          return;
+        } else {
+          console.log("MongoDB is empty. Seeding initial data from local JSON into MongoDB...");
+        }
       }
     } catch (err) {
       console.error("Failed to initialize database from MongoDB, falling back to local JSON", err);
@@ -150,6 +154,11 @@ export async function initDb(): Promise<void> {
       const data = fs.readFileSync(DB_FILE, "utf-8");
       dbCache = JSON.parse(data);
       console.log("Database initialized from local JSON file");
+      if (mongoDbConnected && dbCache) {
+        saveDbToMongo(dbCache).catch(err => {
+          console.error("Failed to seed MongoDB with initial data", err);
+        });
+      }
       return;
     } catch (e) {
       console.error("Failed to parse db.json, generating initial database", e);
