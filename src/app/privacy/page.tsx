@@ -31,7 +31,7 @@ export const PrivacyPage: React.FC = () => {
               Privacy Policy
             </h1>
             <p className="text-slate-400 text-xs mt-1.5 font-medium uppercase tracking-wider">
-              Taqbot Privacy Standards
+              Taqbot Pro Privacy Standards
             </p>
           </div>
         </div>
@@ -44,14 +44,14 @@ export const PrivacyPage: React.FC = () => {
               Respect for Privacy
             </h2>
             <p className="text-slate-655 text-sm leading-relaxed font-medium">
-              Taqbot respects user privacy. We are committed to protecting your personal data and ensuring transparency in how we collect and process information.
+              Taqbot Pro respects user privacy. We are committed to protecting your personal data and ensuring transparency in how we collect and process information.
             </p>
           </div>
 
           {/* Tokens storage details */}
           <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
             <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Database className="w-4 h-4 text-indigo-505" />
+              <Database className="w-4 h-4 text-indigo-500" />
               Secure Token Management
             </h2>
             <p className="text-slate-655 text-sm leading-relaxed font-medium">
@@ -62,7 +62,7 @@ export const PrivacyPage: React.FC = () => {
           {/* Sell statement */}
           <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
             <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-indigo-505" />
+              <Share2 className="w-4 h-4 text-indigo-500" />
               No Data Monetization
             </h2>
             <p className="text-slate-655 text-sm leading-relaxed font-medium">
@@ -72,7 +72,7 @@ export const PrivacyPage: React.FC = () => {
 
           {/* Contact Details */}
           <div className="p-5 bg-indigo-50/30 rounded-2xl border border-indigo-100/50 space-y-3">
-            <h2 className="text-sm font-bold text-indigo-955 uppercase tracking-wider flex items-center gap-2">
+            <h2 className="text-sm font-bold text-indigo-950 uppercase tracking-wider flex items-center gap-2">
               <Mail className="w-4 h-4 text-indigo-600" />
               Get In Touch
             </h2>
@@ -94,7 +94,7 @@ export const PrivacyPage: React.FC = () => {
 
       {/* Footer */}
       <div className="text-center py-6 text-[10px] text-slate-400 font-bold uppercase tracking-wider relative z-10">
-        &copy; {new Date().getFullYear()} Taqbot. All rights reserved.
+        &copy; {new Date().getFullYear()} Taqbot Pro. All rights reserved.
       </div>
     </div>
   );

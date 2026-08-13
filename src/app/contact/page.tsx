@@ -31,7 +31,7 @@ export const ContactPage: React.FC = () => {
               Contact Us
             </h1>
             <p className="text-slate-400 text-xs mt-1.5 font-medium uppercase tracking-wider">
-              Taqbot Support and Inquiries
+              Taqbot Pro Support and Inquiries
             </p>
           </div>
         </div>
@@ -88,7 +88,7 @@ export const ContactPage: React.FC = () => {
 
       {/* Footer */}
       <div className="text-center py-6 text-[10px] text-slate-400 font-bold uppercase tracking-wider relative z-10">
-        &copy; {new Date().getFullYear()} Taqbot. All rights reserved.
+        &copy; {new Date().getFullYear()} Taqbot Pro. All rights reserved.
       </div>
     </div>
   );

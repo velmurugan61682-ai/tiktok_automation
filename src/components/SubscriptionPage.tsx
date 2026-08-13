@@ -132,7 +132,7 @@ export const SubscriptionPage: React.FC = () => {
       const options = {
         key: subscriptionData.keyId,
         subscription_id: subscriptionData.subscriptionId,
-        name: "Taqbot",
+        name: "Taqbot Pro",
         description: subscriptionData.planName || "Monthly PRO Plan Subscription",
         handler: async function (response: any) {
           try {

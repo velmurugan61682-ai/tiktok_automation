@@ -31,7 +31,7 @@ export const TermsPage: React.FC = () => {
               Terms of Service
             </h1>
             <p className="text-slate-400 text-xs mt-1.5 font-medium uppercase tracking-wider">
-              Taqbot Platform Terms
+              Taqbot Pro Platform Terms
             </p>
           </div>
         </div>
@@ -44,7 +44,7 @@ export const TermsPage: React.FC = () => {
               Creator Automation Tools
             </h2>
             <p className="text-slate-655 text-sm leading-relaxed font-medium">
-              Taqbot provides advanced automation tools for creators. These tools are designed to streamline content management, comment moderation, and inbox interactions.
+              Taqbot Pro provides advanced automation tools for creators. These tools are designed to streamline content management, comment moderation, and inbox interactions.
             </p>
           </div>
 
@@ -66,7 +66,7 @@ export const TermsPage: React.FC = () => {
               User Content Responsibility
             </h2>
             <p className="text-slate-655 text-sm leading-relaxed font-medium">
-              Users are completely responsible for their own content, campaigns, and direct messages sent or automated via the Taqbot platform.
+              Users are completely responsible for their own content, campaigns, and direct messages sent or automated via the Taqbot Pro platform.
             </p>
           </div>
         </div>
@@ -74,7 +74,7 @@ export const TermsPage: React.FC = () => {
 
       {/* Footer */}
       <div className="text-center py-6 text-[10px] text-slate-400 font-bold uppercase tracking-wider relative z-10">
-        &copy; {new Date().getFullYear()} Taqbot. All rights reserved.
+        &copy; {new Date().getFullYear()} Taqbot Pro. All rights reserved.
       </div>
     </div>
   );

@@ -1036,7 +1036,7 @@ const resolveRazorpayPlanId = async () => {
     period: "monthly",
     interval: 1,
     item: {
-      name: "Taqbot Monthly",
+      name: "Taqbot Pro Monthly",
       amount: RAZORPAY_PRO_PRICE * 100,
       currency: "INR",
       description: "Monthly PRO plan subscription"
@@ -1071,7 +1071,7 @@ const createRazorpaySubscription = async (req: any, res: any) => {
         keyId: RAZORPAY_KEY_ID || "rzp_dummy_local",
         currency: "INR",
         amount: RAZORPAY_PRO_PRICE * 100,
-        planName: "Taqbot Monthly",
+        planName: "Taqbot Pro Monthly",
         dummy: true
       });
     }
@@ -1101,7 +1101,7 @@ const createRazorpaySubscription = async (req: any, res: any) => {
       keyId: RAZORPAY_KEY_ID,
       currency: "INR",
       amount: RAZORPAY_PRO_PRICE * 100,
-      planName: "Taqbot Monthly"
+      planName: "Taqbot Pro Monthly"
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to create Razorpay subscription." });
