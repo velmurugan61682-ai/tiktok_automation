@@ -326,7 +326,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ metrics, setActive
               <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Total Bot Responses</p>
-                  <p className="text-2xl font-extrabold text-slate-850">{metrics.aiResponsesCount}</p>
+                  <p className="text-2xl font-extrabold text-slate-800">{metrics.aiResponsesCount}</p>
                   <span className="inline-flex items-center gap-0.5 text-[8px] bg-emerald-50 text-emerald-600 font-extrabold px-1 py-0.2 rounded">Live Today</span>
                 </div>
                 <div className="bg-rose-50 p-2.5 rounded-xl text-rose-500">
@@ -338,7 +338,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ metrics, setActive
               <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Bot Messages</p>
-                  <p className="text-2xl font-extrabold text-slate-855">{metrics.aiResponsesCount}</p>
+                  <p className="text-2xl font-extrabold text-slate-800">{metrics.aiResponsesCount}</p>
                   <span className="text-[9px] text-slate-400 font-semibold">Today</span>
                 </div>
                 <div className="bg-indigo-50 p-2.5 rounded-xl text-indigo-500">
@@ -374,7 +374,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ metrics, setActive
               <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between md:col-span-2">
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Replies</p>
-                  <p className="text-xl font-extrabold text-slate-850">0</p>
+                  <p className="text-xl font-extrabold text-slate-800">0</p>
                   <span className="text-[9px] text-slate-400 font-semibold">Today</span>
                 </div>
                 <div className="bg-[#eef2ff] p-2.5 rounded-xl text-indigo-600">

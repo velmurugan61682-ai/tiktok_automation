@@ -9,7 +9,8 @@ import {
   Warehouse, 
   Search, 
   TrendingDown, 
-  AlertTriangle 
+  AlertTriangle,
+  Package
 } from "lucide-react";
 
 interface Product {
@@ -278,8 +279,20 @@ export const ProductCatalog: React.FC = () => {
                   <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden shrink-0">
-                          <img src={p.images && p.images.length > 0 ? p.images[0] : "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=100&auto=format&fit=crop"} alt={p.name} className="w-full h-full object-cover" />
+                        <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-slate-200/60">
+                          {p.images && p.images.length > 0 && p.images[0] ? (
+                            <img
+                              src={p.images[0]}
+                              alt={p.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).onerror = null;
+                                (e.currentTarget as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <Package className="w-5 h-5 text-slate-400" />
+                          )}
                         </div>
                         <div>
                           <p className="font-bold text-slate-800 leading-tight">{p.name}</p>

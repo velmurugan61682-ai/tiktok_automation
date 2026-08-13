@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext.js";
 import { useTheme } from "./ThemeContext.js";
 import { SubscriptionPage } from "./SubscriptionPage.js";
@@ -43,7 +43,8 @@ import {
   Mail,
   Phone,
   Lock,
-  Save
+  Save,
+  Video
 } from "lucide-react";
 
 interface Metrics {
@@ -129,6 +130,8 @@ export const TenantDashboard: React.FC = () => {
   // TikTok connection states matching database sync
   const [tiktokConnected, setTiktokConnected] = useState(false);
   const [tiktokUsername, setTiktokUsername] = useState("");
+  const [tiktokDisplayName, setTiktokDisplayName] = useState("");
+  const [tiktokAvatar, setTiktokAvatar] = useState("");
   const [tiktokConnectedAt, setTiktokConnectedAt] = useState("");
   const [tiktokFollowers, setTiktokFollowers] = useState(0);
   const [tiktokFollowing, setTiktokFollowing] = useState(0);
@@ -209,6 +212,8 @@ export const TenantDashboard: React.FC = () => {
         if (activeTiktok) {
           setTiktokConnected(true);
           setTiktokUsername(activeTiktok.username);
+          setTiktokDisplayName(activeTiktok.display_name || activeTiktok.username);
+          setTiktokAvatar(activeTiktok.avatar_url || "");
           setTiktokConnectedAt(activeTiktok.connectedAt || "Not Available");
           setTiktokFollowers(activeTiktok.followerCount || 0);
           setTiktokFollowing(activeTiktok.followingCount || 0);
@@ -216,6 +221,8 @@ export const TenantDashboard: React.FC = () => {
         } else {
           setTiktokConnected(false);
           setTiktokUsername("");
+          setTiktokDisplayName("");
+          setTiktokAvatar("");
           setTiktokConnectedAt("");
           setTiktokFollowers(0);
           setTiktokFollowing(0);
@@ -780,17 +787,30 @@ export const TenantDashboard: React.FC = () => {
                     <div className="flex flex-col items-center justify-center py-12 max-w-md mx-auto space-y-6 text-center animate-fade-in">
                       
                       {/* Brand Logo Display Circle */}
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 via-blue-600 to-purple-600 flex items-center justify-center text-white text-3xl font-extrabold shadow-md relative overflow-hidden shrink-0">
-                        {tiktokConnected ? "âœ“" : "T"}
+                      <div className="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center text-white text-3xl font-extrabold shadow-md relative overflow-hidden shrink-0 border-2 border-indigo-500/20">
+                        {tiktokConnected && tiktokAvatar ? (
+                          <img
+                            src={tiktokAvatar}
+                            alt={tiktokUsername}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        ) : tiktokConnected ? (
+                          <span className="text-2xl font-bold uppercase">{tiktokUsername.charAt(0)}</span>
+                        ) : (
+                          <span className="text-2xl font-bold">T</span>
+                        )}
                       </div>
 
                       <div className="space-y-2">
-                        <h3 className="text-lg font-bold text-slate-805">
-                          {tiktokConnected ? "Connected to TikTok" : "Connect TikTok"}
+                        <h3 className="text-lg font-bold text-slate-800">
+                          {tiktokConnected ? (tiktokDisplayName ? `${tiktokDisplayName} (@${tiktokUsername})` : `@${tiktokUsername}`) : "Connect TikTok"}
                         </h3>
                         <p className="text-xs text-slate-400 leading-relaxed">
                           {tiktokConnected 
-                            ? `Your workspace is currently linked with TikTok profile @${tiktokUsername}. Orders, products, comments, and story replies will sync automatically.` 
+                            ? `Your workspace is currently linked with TikTok profile @${tiktokUsername}. Orders, products, comments, and DMs sync automatically.` 
                             : "Automate your TikTok interactions, DMs, and comment moderator features with CreatorConnect Pro!"}
                         </p>
                       </div>
@@ -801,15 +821,21 @@ export const TenantDashboard: React.FC = () => {
                           <div className="p-5 bg-emerald-50/50 border border-emerald-100 rounded-2xl space-y-3.5">
                             
                             <div className="flex items-center gap-2 text-emerald-700 text-xs font-bold">
-                              <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[10px]">âœ“</span>
+                              <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] text-emerald-700">✓</span>
                               <span>TikTok Connected</span>
                             </div>
 
                             <div className="border-t border-slate-100 pt-3 space-y-2">
                               <div className="flex justify-between text-xs">
-                                <span className="text-slate-400 font-semibold">Account:</span>
+                                <span className="text-slate-400 font-semibold">Username:</span>
                                 <span className="text-slate-800 font-bold">@{tiktokUsername}</span>
                               </div>
+                              {tiktokDisplayName && (
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-slate-400 font-semibold">Display Name:</span>
+                                  <span className="text-slate-800 font-bold">{tiktokDisplayName}</span>
+                                </div>
+                              )}
                               <div className="flex justify-between text-xs">
                                 <span className="text-slate-400 font-semibold">Connected:</span>
                                 <span className="text-slate-800 font-bold">{tiktokConnectedAt}</span>
@@ -849,15 +875,27 @@ export const TenantDashboard: React.FC = () => {
                           </div>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => {
-                            const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${user?.workspaceId || "ws-1"}`;
-                            window.location.href = redirectTarget;
-                          }}
-                          className="w-full py-3 bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors"
-                        >
-                          Connect TikTok
-                        </button>
+                        <div className="w-full space-y-3">
+                          <button
+                            onClick={() => {
+                              const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${user?.workspaceId || "ws-1"}`;
+                              window.location.href = redirectTarget;
+                            }}
+                            className="w-full py-3 bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            Connect TikTok
+                          </button>
+
+                          <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-left space-y-1 text-amber-900 shadow-2xs">
+                            <p className="text-[11px] font-bold flex items-center gap-1.5 text-amber-800">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                              <span>TikTok Sandbox Mode Notice:</span>
+                            </p>
+                            <p className="text-[10px] text-amber-700 leading-relaxed">
+                              If TikTok shows <code className="bg-amber-100/90 text-amber-900 px-1 py-0.5 rounded font-mono text-[9px] font-semibold">non_sandbox_target</code>, add the TikTok username you are logging into in your browser under <strong>TikTok Developer Portal &gt; Sandbox &gt; Target Users</strong>.
+                            </p>
+                          </div>
+                        </div>
                       )}
 
                       <div className="space-y-1">

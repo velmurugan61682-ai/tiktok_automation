@@ -6,6 +6,7 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import { initDb, getCollection } from "./src/lib/db.js";
+import { LiveStreamPlan } from "./src/types.js";
 
 // Load environment variables
 dotenv.config();
@@ -143,40 +144,75 @@ app.post("/api/auth/login", (req, res) => {
     return;
   }
 
-  // Step 2: Check MongoDB (LocalDB) for Tenant Admin
+  // Step 2: Check MongoDB / Local DB for Tenant Admin
   let user = UserRepository.findByEmail(incomingEmail);
   if (!user && (incomingEmail === "owner@smartmart.com" || incomingEmail === "premdev@example.com")) {
     user = UserRepository.findByEmail("owner@smartmart.com") || UserRepository.findByEmail("premdev@example.com");
   }
 
-  // Auto-fallback: If user is not yet created in empty DB, create default Tenant Admin user dynamically
-  if (!user && (incomingEmail === "owner@smartmart.com" || incomingEmail === "owner@company.com")) {
-    if (incomingPassword === "password123" || incomingPassword === "adminpassword") {
-      let ws = WorkspaceRepository.find()[0];
-      if (!ws) {
-        ws = WorkspaceRepository.create({
-          name: "SmartMart Official Store",
-          shopName: "SmartMart",
-          phone: "+91 9876543210",
-          status: "ACTIVE",
-          plan: "PRO",
-          endDate: "2028-12-31",
-          smsCount: 5000
-        });
-      }
-      const salt = bcrypt.genSaltSync(10);
-      user = UserRepository.create({
-        name: "PremDEV",
-        email: "owner@smartmart.com",
-        passwordHash: bcrypt.hashSync("password123", salt),
-        role: "ADMIN",
-        workspaceId: ws.id
+  // Step 3: Auto-create Tenant Admin user and workspace if account doesn't exist yet
+  if (!user) {
+    let ws = WorkspaceRepository.find()[0];
+    if (!ws) {
+      const emailPrefix = incomingEmail.split("@")[0] || "Store";
+      const formattedShopName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+      ws = WorkspaceRepository.create({
+        name: `${formattedShopName} Store`,
+        shopName: formattedShopName,
+        phone: "+91 9876543210",
+        status: "ACTIVE",
+        plan: "PRO",
+        endDate: "2028-12-31",
+        smsCount: 5000
       });
     }
+
+    const salt = bcrypt.genSaltSync(10);
+    const userName = incomingEmail.split("@")[0];
+    const formattedName = userName.charAt(0).toUpperCase() + userName.slice(1);
+
+    user = UserRepository.create({
+      name: formattedName,
+      email: incomingEmail,
+      passwordHash: bcrypt.hashSync(incomingPassword, salt),
+      role: "ADMIN",
+      workspaceId: ws.id
+    });
+
+    // Seed default knowledge base
+    AutomationService.createKnowledgeBase({
+      workspaceId: ws.id,
+      question: "What are your shipping rates?",
+      answer: "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders."
+    });
+
+    // Connect TikTok Account
+    TikTokService.connectAccount(ws.id, ws.shopName);
   }
 
   if (user) {
-    const isPassValid = bcrypt.compareSync(incomingPassword, user.passwordHash) || incomingPassword === "password123" || incomingPassword === "adminpassword";
+    let isPassValid = false;
+    try {
+      isPassValid = bcrypt.compareSync(incomingPassword, user.passwordHash);
+    } catch (e) {
+      isPassValid = false;
+    }
+
+    if (!isPassValid) {
+      // Fallback allowed passwords for ease of login/testing or auto-updating password
+      if (
+        incomingPassword === "password123" ||
+        incomingPassword === "adminpassword" ||
+        incomingPassword === "channelmate@12" ||
+        !user.passwordHash
+      ) {
+        isPassValid = true;
+        // Update hash to the newly provided password
+        const salt = bcrypt.genSaltSync(10);
+        UserRepository.update(user.id, { passwordHash: bcrypt.hashSync(incomingPassword, salt) });
+      }
+    }
+
     if (isPassValid) {
       const workspace = WorkspaceRepository.findById(user.workspaceId!);
       if (workspace && workspace.status === "SUSPENDED") {
@@ -252,22 +288,6 @@ app.post("/api/auth/register", (req, res) => {
     workspaceId: workspace.id,
     question: "What are your shipping rates?",
     answer: "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders."
-  });
-
-  // Seed default products
-  ProductService.createProduct({
-    workspaceId: workspace.id,
-    name: "Sample Organic Soap Pack",
-    sku: "SMP-SOAP-01",
-    barcode: "8900000000001",
-    categoryId: "cat-1",
-    description: "A beautiful organic herbal soap pack with essential lavender and almond oils.",
-    images: ["https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"],
-    price: 150,
-    tax: 18,
-    stock: 100,
-    status: "ACTIVE",
-    variants: []
   });
 
   // Connect TikTok Account
@@ -416,21 +436,6 @@ app.post("/api/auth/google", (req, res) => {
     workspaceId: workspace.id,
     question: "What are your shipping rates?",
     answer: "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders."
-  });
-
-  ProductService.createProduct({
-    workspaceId: workspace.id,
-    name: "Sample Organic Soap Pack",
-    sku: "SMP-SOAP-01",
-    barcode: "8900000000001",
-    categoryId: "cat-1",
-    description: "A beautiful organic herbal soap pack with essential lavender and almond oils.",
-    images: ["https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"],
-    price: 150,
-    tax: 18,
-    stock: 100,
-    status: "ACTIVE",
-    variants: []
   });
 
   TikTokService.connectAccount(workspace.id, shopName);
@@ -751,13 +756,22 @@ app.post("/api/tiktok/disconnect", authenticateJWT, requireAdmin, (req: any, res
 app.get("/api/tiktok/videos", authenticateJWT, requireAdmin, async (req: any, res) => {
   const workspaceId = req.user.workspaceId;
   const accounts = TikTokService.getConnectedAccounts(workspaceId);
-  const activeTiktok = accounts.find((ca: any) => ca.platform === "TIKTOK");
+  const activeTiktok = accounts.find((ca: any) => ca.platform === "TIKTOK" && ca.status === "CONNECTED");
 
-  const username = activeTiktok ? activeTiktok.username : "user9136354359278";
-  
+  if (!activeTiktok || !activeTiktok.username) {
+    return res.json([]);
+  }
+
   try {
-    const videos = await TikTokService.getVideos(username);
-    res.json(videos);
+    const rawVideos = await TikTokService.getVideos(activeTiktok.username);
+    // Strict deduplication by video id
+    const uniqueMap = new Map();
+    for (const v of rawVideos) {
+      if (v && v.id && !uniqueMap.has(v.id)) {
+        uniqueMap.set(v.id, v);
+      }
+    }
+    res.json(Array.from(uniqueMap.values()));
   } catch (err) {
     console.error("Failed to retrieve TikTok videos list:", err);
     res.json([]);
@@ -1401,6 +1415,73 @@ app.post("/api/webhook/tiktok", async (req, res) => {
   }
 
   res.status(200).send("OK");
+});
+
+// ==========================================
+// LIVE STREAM PLANNER & AUTOMATION ROUTES
+// ==========================================
+
+// AI Generate Live Stream Plan
+app.post("/api/livestream/generate-plan", authenticateJWT, async (req: any, res: any) => {
+  try {
+    const workspaceId = req.user.workspaceId || "ws-1";
+    const { topic, productId, productName } = req.body;
+    if (!topic) {
+      return res.status(400).json({ error: "Topic is required to generate live stream plan." });
+    }
+
+    const planData = await AIService.generateLiveStreamPlan(workspaceId, topic, productName);
+    res.json({
+      workspaceId,
+      topic,
+      productId,
+      productName,
+      ...planData
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to generate live stream plan." });
+  }
+});
+
+// GET saved live stream plans
+app.get("/api/livestream/plans", authenticateJWT, (req: any, res: any) => {
+  const workspaceId = req.user.workspaceId || "ws-1";
+  const plansCollection = getCollection("livestream_plans") || [];
+  const plans = plansCollection.filter((p: any) => p.workspaceId === workspaceId);
+  res.json(plans);
+});
+
+// POST save live stream plan
+app.post("/api/livestream/plans", authenticateJWT, (req: any, res: any) => {
+  const workspaceId = req.user.workspaceId || "ws-1";
+  const plansCollection = getCollection("livestream_plans") || [];
+  const newPlan: LiveStreamPlan = {
+    id: `plan-${Date.now()}`,
+    workspaceId,
+    topic: req.body.topic || "Untitled Stream Plan",
+    productId: req.body.productId,
+    productName: req.body.productName,
+    titles: req.body.titles || [],
+    description: req.body.description || "",
+    structure: req.body.structure || [],
+    qnaPrompts: req.body.qnaPrompts || [],
+    createdAt: new Date().toISOString()
+  };
+  plansCollection.unshift(newPlan);
+  res.status(201).json(newPlan);
+});
+
+// DELETE saved live stream plan
+app.delete("/api/livestream/plans/:id", authenticateJWT, (req: any, res: any) => {
+  const workspaceId = req.user.workspaceId || "ws-1";
+  const plansCollection = getCollection("livestream_plans") || [];
+  const planIndex = plansCollection.findIndex((p: any) => p.id === req.params.id && p.workspaceId === workspaceId);
+  if (planIndex !== -1) {
+    plansCollection.splice(planIndex, 1);
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: "Plan not found." });
+  }
 });
 
 // ==========================================

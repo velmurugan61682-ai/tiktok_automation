@@ -80,6 +80,42 @@
       "workspaceId": "ws-9",
       "id": "u-9",
       "createdAt": "2026-08-10T13:13:46.854Z"
+    },
+    {
+      "name": "p.velmurugan",
+      "email": "velmurugan61682@gmail.com",
+      "passwordHash": "$2b$10$ccdUSt5tRXFCX60yVr1VpuOcx1gQO/Z/qk3EavPWfPcYNuawpzL8K",
+      "role": "ADMIN",
+      "workspaceId": "ws-10",
+      "id": "u-10",
+      "createdAt": "2026-08-13T04:48:16.766Z"
+    },
+    {
+      "name": "techvaseegrah",
+      "email": "techtiktok@gmail.com",
+      "passwordHash": "$2b$10$AK9lktF8X0g2g6O5KVskMu2tqlGKID.wv0k.xo9o8f6dt2yYlD3y2",
+      "role": "ADMIN",
+      "workspaceId": "ws-11",
+      "id": "u-11",
+      "createdAt": "2026-08-13T06:10:13.965Z"
+    },
+    {
+      "name": "tiktok",
+      "email": "tiktok@gmail.com",
+      "passwordHash": "$2b$10$ncB50WfFyDyREAiaHwKtweE0q7Wv7dJqndlhef.mgmVrgBn0eKRoq",
+      "role": "ADMIN",
+      "workspaceId": "ws-12",
+      "id": "u-12",
+      "createdAt": "2026-08-13T06:38:19.727Z"
+    },
+    {
+      "name": "tiktok",
+      "email": "tiktoktech@gmail.com",
+      "passwordHash": "$2b$10$PWC54REcISehYcTtlEL42uALGCC9ccgouSyuduwNajqhHxpdMD6G2",
+      "role": "ADMIN",
+      "workspaceId": "ws-13",
+      "id": "u-13",
+      "createdAt": "2026-08-13T06:40:30.082Z"
     }
   ],
   "workspaces": [
@@ -184,6 +220,50 @@
       "smsCount": 100,
       "id": "ws-9",
       "createdAt": "2026-08-10"
+    },
+    {
+      "name": "p.velmurugan",
+      "phone": "9047544059",
+      "shopName": "titok user",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2026-08-27",
+      "smsCount": 100,
+      "id": "ws-10",
+      "createdAt": "2026-08-13"
+    },
+    {
+      "name": "techvaseegrah",
+      "phone": "5478968574",
+      "shopName": "techvaseegrah",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2026-08-27",
+      "smsCount": 100,
+      "id": "ws-11",
+      "createdAt": "2026-08-13"
+    },
+    {
+      "name": "tiktok",
+      "phone": "1478596458",
+      "shopName": "shop",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2026-08-27",
+      "smsCount": 100,
+      "id": "ws-12",
+      "createdAt": "2026-08-13"
+    },
+    {
+      "name": "tiktok",
+      "phone": "1245789887",
+      "shopName": "tech.vaseegrah",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2026-08-27",
+      "smsCount": 100,
+      "id": "ws-13",
+      "createdAt": "2026-08-13"
     }
   ],
   "connectedAccounts": [
@@ -191,20 +271,20 @@
       "id": "ca-ws-1",
       "workspaceId": "ws-1",
       "platform": "TIKTOK",
-      "username": "user9136354359278",
-      "status": "DISCONNECTED",
-      "expiresAt": "2026-08-27T06:52:56.573Z",
-      "accessToken": "act.aBx7qQCZ7msvcLoRv1uBwHmMv65YvoqgSykh3ZspesiAejRJdaXJ961uXzcZ!6234.s1",
-      "refreshToken": "rft.MErdiRddENzMClCsA6ePu48PfRS6NgZLFI56QsiJ54CnI05xUg0d9tFv8EQV!6203.s1",
-      "connectedAt": "July 28, 2026",
+      "username": "velmuruganr45",
+      "status": "CONNECTED",
+      "expiresAt": "2026-09-12T04:55:31.424Z",
+      "accessToken": "act.qIhKqvYBvRyYf0SXp5tpJaKSrxNh6YgxxrNveWOm90OlK3H5gYDZYDC9YcxR!6413.u1",
+      "refreshToken": "rft.acHtET9gHwMjLptHZwrbwiIJ8ENnVbm8gBGpZo697CCjLUTSTU4OgdbUtmL6!6439.u1",
+      "connectedAt": "August 13, 2026",
       "followerCount": 0,
       "followingCount": 0,
-      "likesCount": 3,
-      "display_name": "user9136354359278",
-      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/dcf03b9d2ea7f6e6893da5d16cb210f3~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=cfaab412&x-expires=1785394800&x-signature=%2BTgg0y0yqthickUmWjhqlzr5MIw%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
-      "open_id": "-000bVto-Q4uDwEUonxxYQpQEeIV18aIz1nw",
-      "union_id": "a09fb3b1-6d57-56fc-aafa-78b0c3250f63",
-      "videoCount": 2
+      "likesCount": 4,
+      "display_name": "wwqui8lm",
+      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=1344d1b0&x-expires=1786788000&x-signature=w4ZRZzOBogbHjmyBHA2m8effNSs%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
+      "open_id": "-000NEF0ocsmR0PAumKE3gTE253VXCN2UR2M",
+      "union_id": "976d35e6-29b4-50bc-bfe7-fef2d9ff91bd",
+      "videoCount": 1
     },
     {
       "id": "ca-ws-2",
@@ -296,6 +376,82 @@
       "open_id": "-000YfMYaBXESO8pejzO3qvXseU6wae_BqkW",
       "union_id": "56ef0fa5-637c-547d-872c-44f3b2c044a0",
       "videoCount": 483
+    },
+    {
+      "id": "ca-9",
+      "workspaceId": "ws-10",
+      "platform": "TIKTOK",
+      "username": "velmuruganr45",
+      "status": "CONNECTED",
+      "expiresAt": "2026-09-12T04:55:10.090Z",
+      "accessToken": "act.qIhKqvYBvRyYf0SXp5tpJaKSrxNh6YgxxrNveWOm90OlK3H5gYDZYDC9YcxR!6413.u1",
+      "refreshToken": "rft.acHtET9gHwMjLptHZwrbwiIJ8ENnVbm8gBGpZo697CCjLUTSTU4OgdbUtmL6!6439.u1",
+      "connectedAt": "August 13, 2026",
+      "followerCount": 0,
+      "followingCount": 0,
+      "likesCount": 0,
+      "display_name": "wwqui8lm",
+      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=b96abd18&x-expires=1786773600&x-signature=5ZCMJWY5FjEMr1GyGW%2FDtQePPxs%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
+      "open_id": "-000NEF0ocsmR0PAumKE3gTE253VXCN2UR2M",
+      "union_id": "976d35e6-29b4-50bc-bfe7-fef2d9ff91bd",
+      "videoCount": 0
+    },
+    {
+      "id": "ca-10",
+      "workspaceId": "ws-11",
+      "platform": "TIKTOK",
+      "username": "velmuruganr45",
+      "status": "CONNECTED",
+      "expiresAt": "2026-09-12T06:36:40.801Z",
+      "accessToken": "act.qIhKqvYBvRyYf0SXp5tpJaKSrxNh6YgxxrNveWOm90OlK3H5gYDZYDC9YcxR!6413.u1",
+      "refreshToken": "rft.acHtET9gHwMjLptHZwrbwiIJ8ENnVbm8gBGpZo697CCjLUTSTU4OgdbUtmL6!6439.u1",
+      "connectedAt": "August 13, 2026",
+      "followerCount": 0,
+      "followingCount": 0,
+      "likesCount": 4,
+      "display_name": "wwqui8lm",
+      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=8201e7c7&x-expires=1786780800&x-signature=Vc2vAeSPKhhAGCv1mtEwlxnRbaA%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
+      "open_id": "-000NEF0ocsmR0PAumKE3gTE253VXCN2UR2M",
+      "union_id": "976d35e6-29b4-50bc-bfe7-fef2d9ff91bd",
+      "videoCount": 1
+    },
+    {
+      "id": "ca-11",
+      "workspaceId": "ws-12",
+      "platform": "TIKTOK",
+      "username": "shop",
+      "status": "DISCONNECTED",
+      "expiresAt": "2026-09-12T06:38:19.735Z",
+      "accessToken": "mock_access_token_xyz123",
+      "refreshToken": "mock_refresh_token_abc987",
+      "connectedAt": "August 13, 2026",
+      "followerCount": 0,
+      "followingCount": 0,
+      "likesCount": 0,
+      "display_name": "shop",
+      "avatar_url": "",
+      "open_id": "",
+      "union_id": "",
+      "videoCount": 0
+    },
+    {
+      "id": "ca-12",
+      "workspaceId": "ws-13",
+      "platform": "TIKTOK",
+      "username": "tech.vaseegrah",
+      "status": "CONNECTED",
+      "expiresAt": "2026-09-12T06:41:02.267Z",
+      "accessToken": "act.elbOlnIWGMF0PIfwtv4x4WE9ZuhC7saWezCkkwVoKx4DUvbVJxgX3B9lzSeK!5222.s1",
+      "refreshToken": "rft.X0JyGnV4fMvjWIQE1ruLem2SJD7utQ6C7zJrfxp8RZt77LDRVB6eeeAo6S7P!5167.s1",
+      "connectedAt": "August 13, 2026",
+      "followerCount": 2276,
+      "followingCount": 1,
+      "likesCount": 11767,
+      "display_name": "Tech Vaseegrah",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=63f9dd09&x-expires=1786791600&x-signature=0HVZML5T3OUyangTRK%2BMl0ynzwE%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
+      "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
+      "videoCount": 233
     }
   ],
   "categories": [
@@ -479,6 +635,78 @@
       "variants": [],
       "id": "prod-6",
       "createdAt": "2026-08-10"
+    },
+    {
+      "workspaceId": "ws-10",
+      "name": "Sample Organic Soap Pack",
+      "sku": "SMP-SOAP-01",
+      "barcode": "8900000000001",
+      "categoryId": "cat-1",
+      "description": "A beautiful organic herbal soap pack with essential lavender and almond oils.",
+      "images": [
+        "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 150,
+      "tax": 18,
+      "stock": 100,
+      "status": "ACTIVE",
+      "variants": [],
+      "id": "prod-7",
+      "createdAt": "2026-08-13"
+    },
+    {
+      "workspaceId": "ws-11",
+      "name": "Sample Organic Soap Pack",
+      "sku": "SMP-SOAP-01",
+      "barcode": "8900000000001",
+      "categoryId": "cat-1",
+      "description": "A beautiful organic herbal soap pack with essential lavender and almond oils.",
+      "images": [
+        "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 150,
+      "tax": 18,
+      "stock": 100,
+      "status": "ACTIVE",
+      "variants": [],
+      "id": "prod-8",
+      "createdAt": "2026-08-13"
+    },
+    {
+      "workspaceId": "ws-12",
+      "name": "Sample Organic Soap Pack",
+      "sku": "SMP-SOAP-01",
+      "barcode": "8900000000001",
+      "categoryId": "cat-1",
+      "description": "A beautiful organic herbal soap pack with essential lavender and almond oils.",
+      "images": [
+        "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 150,
+      "tax": 18,
+      "stock": 100,
+      "status": "ACTIVE",
+      "variants": [],
+      "id": "prod-9",
+      "createdAt": "2026-08-13"
+    },
+    {
+      "workspaceId": "ws-13",
+      "name": "Sample Organic Soap Pack",
+      "sku": "SMP-SOAP-01",
+      "barcode": "8900000000001",
+      "categoryId": "cat-1",
+      "description": "A beautiful organic herbal soap pack with essential lavender and almond oils.",
+      "images": [
+        "https://images.unsplash.com/photo-1607006342411-985c181e57a4?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 150,
+      "tax": 18,
+      "stock": 100,
+      "status": "ACTIVE",
+      "variants": [],
+      "id": "prod-10",
+      "createdAt": "2026-08-13"
     }
   ],
   "warehouses": [
@@ -1305,6 +1533,34 @@
       "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
       "id": "kb-6",
       "createdAt": "2026-08-10T13:13:46.856Z"
+    },
+    {
+      "workspaceId": "ws-10",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
+      "id": "kb-7",
+      "createdAt": "2026-08-13T04:48:16.769Z"
+    },
+    {
+      "workspaceId": "ws-11",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
+      "id": "kb-8",
+      "createdAt": "2026-08-13T06:10:13.967Z"
+    },
+    {
+      "workspaceId": "ws-12",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
+      "id": "kb-9",
+      "createdAt": "2026-08-13T06:38:19.729Z"
+    },
+    {
+      "workspaceId": "ws-13",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
+      "id": "kb-10",
+      "createdAt": "2026-08-13T06:40:30.086Z"
     }
   ],
   "comments": [

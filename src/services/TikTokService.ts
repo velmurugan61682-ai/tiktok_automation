@@ -132,31 +132,61 @@ export class TikTokService {
     if (accessToken) {
       try {
         console.log(`Calling TikTok Video List API for user @${username}...`);
-        const apiResponse = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,embed_link,view_count,like_count,comment_count,share_count,create_time", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ max_count: 20 })
-        });
-        if (apiResponse.ok) {
-          const apiData = await apiResponse.json();
-          console.log("TikTok Video List API Success Payload:", JSON.stringify(apiData));
-          if (apiData.data && apiData.data.videos && apiData.data.videos.length > 0) {
-            return apiData.data.videos.map((v: any) => ({
-              id: v.id,
-              name: v.title || "TikTok Video",
-              sku: `TT-VIDEO-${v.id.slice(-4)}`,
-              price: 0,
-              stock: 1,
-              images: [v.cover_image_url || ""],
-              description: v.video_description || "",
-              url: v.embed_link || `https://www.tiktok.com/@${username}/video/${v.id}`
-            }));
+        let hasMore = true;
+        let cursor: number | undefined = undefined;
+        let page = 0;
+        const allFetchedVideos: any[] = [];
+
+        while (hasMore && page < 15) {
+          page++;
+          const reqBody: any = { max_count: 100 };
+          if (cursor !== undefined) {
+            reqBody.cursor = cursor;
           }
-        } else {
-          console.warn(`TikTok Video List API returned status ${apiResponse.status}. Using profile fallback.`);
+
+          const apiResponse = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,embed_link,view_count,like_count,comment_count,share_count,create_time", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${accessToken}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(reqBody)
+          });
+
+          if (apiResponse.ok) {
+            const apiData = await apiResponse.json();
+            console.log(`TikTok Video List API page ${page} response payload:`, JSON.stringify(apiData));
+            if (apiData.data && apiData.data.videos && apiData.data.videos.length > 0) {
+              const mapped = apiData.data.videos.map((v: any) => ({
+                id: v.id,
+                name: v.title || v.video_description || "TikTok Video",
+                sku: `TT-VIDEO-${v.id.slice(-4)}`,
+                price: 0,
+                stock: 1,
+                images: [v.cover_image_url || ""],
+                description: v.video_description || "",
+                url: v.embed_link || `https://www.tiktok.com/@${username}/video/${v.id}`
+              }));
+              allFetchedVideos.push(...mapped);
+              hasMore = apiData.data.has_more || false;
+              cursor = apiData.data.cursor;
+            } else {
+              hasMore = false;
+            }
+          } else {
+            console.warn(`TikTok Video List API page ${page} returned status ${apiResponse.status}.`);
+            hasMore = false;
+          }
+        }
+
+        if (allFetchedVideos.length > 0) {
+          const uniqueMap = new Map();
+          for (const item of allFetchedVideos) {
+            if (item && item.id && !uniqueMap.has(item.id)) {
+              uniqueMap.set(item.id, item);
+            }
+          }
+          return Array.from(uniqueMap.values());
         }
       } catch (apiErr) {
         console.warn("TikTok Video List API request unavailable. Using profile fallback.");
@@ -177,7 +207,9 @@ export class TikTokService {
       clearTimeout(timeoutId);
       if (response.ok) {
         const text = await response.text();
-        const matches = [...text.matchAll(/\/video\/(\d+)/g)];
+        const escapedUsername = username.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+        const videoRegex = new RegExp(`/@${escapedUsername}/video/(\\d+)`, "g");
+        const matches = [...text.matchAll(videoRegex)];
         const parsedIds = Array.from(new Set(matches.map(m => m[1])));
         videoIds.push(...parsedIds);
       }

@@ -167,7 +167,7 @@ export interface AutomationRule {
   id: string;
   workspaceId: string;
   name: string;
-  type: "COMMENT" | "STORY" | "MODERATION";
+  type: "COMMENT" | "STORY" | "MODERATION" | "LIVESTREAM";
   triggerKeyword: string[]; // List of keywords
   actionType: "AUTO_REPLY" | "AUTO_DM" | "AI_REPLY";
   replyTemplate: string;
@@ -176,6 +176,7 @@ export interface AutomationRule {
   isEnabled: boolean;
   usageCount: number;
   createdAt: string;
+  isLiveStream?: boolean;
 }
 
 export interface KnowledgeBase {
@@ -192,13 +193,14 @@ export interface Comment {
   workspaceId: string;
   customerId: string;
   customerName: string;
-  postType: "POST" | "STORY" | "TIKTOK";
+  postType: "POST" | "STORY" | "TIKTOK" | "LIVESTREAM";
   postId: string;
   text: string;
   replyText?: string;
   dmSent?: boolean;
   status: "PENDING" | "REPLIED" | "FLAGGED";
   createdAt: string;
+  isLiveStream?: boolean;
 }
 
 export interface Notification {
@@ -221,4 +223,28 @@ export interface Analytics {
   messagesCount: number;
   aiResponsesCount: number;
   automationCount: number;
+}
+
+export interface LiveStreamStructureItem {
+  time: string;
+  title: string;
+  details: string;
+}
+
+export interface LiveStreamQnAPrompt {
+  question: string;
+  answer: string;
+}
+
+export interface LiveStreamPlan {
+  id: string;
+  workspaceId: string;
+  topic: string;
+  productId?: string;
+  productName?: string;
+  titles: string[];
+  description: string;
+  structure: LiveStreamStructureItem[];
+  qnaPrompts: LiveStreamQnAPrompt[];
+  createdAt: string;
 }

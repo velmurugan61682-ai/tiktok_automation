@@ -17,7 +17,8 @@ import {
   KnowledgeBase,
   Comment,
   Notification,
-  Analytics
+  Analytics,
+  LiveStreamPlan
 } from "../types.js";
 
 const DB_DIR = path.join(process.cwd(), "data");
@@ -40,6 +41,7 @@ export interface DatabaseSchema {
   comments: Comment[];
   notifications: Notification[];
   analytics: Analytics[];
+  livestream_plans: LiveStreamPlan[];
 }
 
 // Global in-memory cache
@@ -86,7 +88,8 @@ function getInitialDb(): DatabaseSchema {
     knowledgeBases: [],
     comments: [],
     notifications: [],
-    analytics: []
+    analytics: [],
+    livestream_plans: []
   };
 }
 
@@ -122,7 +125,7 @@ export async function initDb(): Promise<void> {
           "users", "workspaces", "connectedAccounts", "categories", "products",
           "warehouses", "inventoryLogs", "customers", "conversations", "messages",
           "orders", "automationRules", "knowledgeBases", "comments", "notifications",
-          "analytics"
+          "analytics", "livestream_plans"
         ];
 
         const loadedData: any = {};

@@ -22,7 +22,8 @@ import {
   Shield,
   Trash,
   CheckCircle,
-  ToggleLeft
+  ToggleLeft,
+  Package
 } from "lucide-react";
 
 interface Comment {
@@ -112,6 +113,9 @@ export const AutomationControl: React.FC = () => {
   // Moderation filter
   const [moderationFilter, setModerationFilter] = useState<"All" | "DELETED" | "HIDDEN">("All");
 
+  // Modal Pagination
+  const [modalPage, setModalPage] = useState(1);
+
   const loadData = async () => {
     try {
       const h = { Authorization: `Bearer ${token}` };
@@ -125,19 +129,20 @@ export const AutomationControl: React.FC = () => {
       if (resRules.ok) setRules(await resRules.json());
       if (resComm.ok) setComments(await resComm.json());
       
-      let mergedItems: Product[] = [];
+      let videoItems: any[] = [];
       if (resVideos.ok) {
         const videosList = await resVideos.json();
-        mergedItems = [...videosList];
-      }
-      if (resProd.ok) {
-        const prodList = await resProd.json();
-        mergedItems = [...mergedItems, ...prodList];
+        const seenIds = new Set();
+        videoItems = (Array.isArray(videosList) ? videosList : []).filter((v: any) => {
+          if (!v || !v.id || seenIds.has(v.id)) return false;
+          seenIds.add(v.id);
+          return true;
+        });
       }
       
-      setProducts(mergedItems);
-      if (mergedItems.length > 0 && !selectedPostId) {
-        setSelectedPostId(mergedItems[0].id);
+      setProducts(videoItems);
+      if (videoItems.length > 0 && !selectedPostId) {
+        setSelectedPostId(videoItems[0].id);
       }
     } catch (e) {
       console.error(e);
@@ -336,7 +341,7 @@ export const AutomationControl: React.FC = () => {
             setSearchQuery("");
           }}
           className={`px-6 py-3.5 font-bold text-xs transition-all border-b-2 flex items-center gap-1.5 ${
-            activeTab === "comment_automation" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-850"
+            activeTab === "comment_automation" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           <MessageSquare className="w-4 h-4" />
@@ -348,7 +353,7 @@ export const AutomationControl: React.FC = () => {
             setSearchQuery("");
           }}
           className={`px-6 py-3.5 font-bold text-xs transition-all border-b-2 flex items-center gap-1.5 ${
-            activeTab === "story_automation" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-850"
+            activeTab === "story_automation" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           <Layers className="w-4 h-4" />
@@ -360,7 +365,7 @@ export const AutomationControl: React.FC = () => {
             setSearchQuery("");
           }}
           className={`px-6 py-3.5 font-bold text-xs transition-all border-b-2 flex items-center gap-1.5 ${
-            activeTab === "comment_chat" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-850"
+            activeTab === "comment_chat" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           <MessageCircle className="w-4 h-4" />
@@ -372,7 +377,7 @@ export const AutomationControl: React.FC = () => {
             setSearchQuery("");
           }}
           className={`px-6 py-3.5 font-bold text-xs transition-all border-b-2 flex items-center gap-1.5 ${
-            activeTab === "moderation" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-850"
+            activeTab === "moderation" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           <Shield className="w-4 h-4" />
@@ -824,23 +829,23 @@ export const AutomationControl: React.FC = () => {
           <div className="border-r border-slate-150 flex flex-col h-full bg-slate-50/50">
             
             {/* Post Comments / Story Replies header switchers */}
-            <div className="p-4 border-b border-slate-105 bg-white grid grid-cols-2 gap-2">
+            <div className="p-4 border-b border-slate-150 bg-white grid grid-cols-2 gap-2">
               <button
                 onClick={() => setCommentChatTab("Post Comments")}
-                className={`py-1.5 text-[10px] font-bold rounded-lg border transition-all ${
+                className={`py-2 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                   commentChatTab === "Post Comments"
-                    ? "bg-slate-850 text-white border-slate-850 shadow-sm"
-                    : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                    ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >
                 Post Comments
               </button>
               <button
                 onClick={() => setCommentChatTab("Story Replies")}
-                className={`py-1.5 text-[10px] font-bold rounded-lg border transition-all ${
+                className={`py-2 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                   commentChatTab === "Story Replies"
-                    ? "bg-slate-850 text-white border-slate-855 shadow-sm"
-                    : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                    ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >
                 Story Replies
@@ -1164,56 +1169,89 @@ export const AutomationControl: React.FC = () => {
               </button>
             </div>
             
-            {/* Grid selector */}
-            <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 overflow-y-auto max-h-[350px]">
-              {products.length === 0 ? (
-                <div className="col-span-4 p-8 text-center text-slate-400 text-xs font-semibold">
-                  No products found in the catalog. Please add products in the Product Catalog tab first.
-                </div>
-              ) : (
-                products.map(prod => {
-                  const isSelected = prod.id === selectedPostId;
-                  return (
-                    <div
-                      key={prod.id}
-                      onClick={() => {
-                        setSelectedPostId(prod.id);
-                        setShowPostSelectorModal(false);
-                      }}
-                      className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all hover:scale-[1.02] shadow-sm relative ${
-                        isSelected ? "border-indigo-600 scale-[1.02]" : "border-slate-150"
-                      }`}
-                    >
-                      <div className="h-28 bg-slate-100 relative flex items-center justify-center overflow-hidden">
-                        {prod.images?.[0] ? (
-                          <img src={prod.images[0]} alt="product select option" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="text-slate-400 font-bold text-xs">P</div>
-                        )}
-                        {isSelected && (
-                          <div className="absolute inset-0 bg-indigo-650/15 flex items-center justify-center">
-                            <span className="bg-indigo-600 text-white rounded-full p-1 shadow-sm font-extrabold text-[8px]">✓ Selected</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-2.5 bg-white">
-                        <p className="text-[9px] font-bold text-slate-700 leading-snug line-clamp-1">{prod.name}</p>
-                        <p className="text-[8px] text-slate-400 font-semibold mt-0.5">
-                          {prod.sku.startsWith("TT-VIDEO") ? "TikTok Video" : `Rs. ${prod.price}`}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+            {/* Grid selector with dynamic pagination */}
+            {(() => {
+              const itemsPerPage = 8;
+              const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
+              const currentPageClamped = Math.min(modalPage, totalPages);
+              const currentItems = products.slice((currentPageClamped - 1) * itemsPerPage, currentPageClamped * itemsPerPage);
 
-            {/* Bottom pagination */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-              <button disabled className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-400 opacity-50">Prev</button>
-              <span className="text-[10px] font-bold text-slate-400">Page 1 of 1</span>
-              <button disabled className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-400 opacity-50">Next</button>
-            </div>
+              return (
+                <>
+                  <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 overflow-y-auto max-h-[350px]">
+                    {products.length === 0 ? (
+                      <div className="col-span-4 p-8 text-center text-slate-400 text-xs font-semibold">
+                        No videos found for the connected TikTok account. Please connect your TikTok account in Settings.
+                      </div>
+                    ) : (
+                      currentItems.map(prod => {
+                        const isSelected = prod.id === selectedPostId;
+                        return (
+                          <div
+                            key={prod.id}
+                            onClick={() => {
+                              setSelectedPostId(prod.id);
+                              setShowPostSelectorModal(false);
+                            }}
+                            className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all hover:scale-[1.02] shadow-sm relative ${
+                              isSelected ? "border-indigo-600 scale-[1.02]" : "border-slate-150"
+                            }`}
+                          >
+                            <div className="h-28 bg-slate-100 relative flex items-center justify-center overflow-hidden">
+                              {prod.images?.[0] ? (
+                                <img
+                                  src={prod.images[0]}
+                                  alt={prod.name || "Product"}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).onerror = null;
+                                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <Package className="w-6 h-6 text-slate-400 opacity-60" />
+                              )}
+                              {isSelected && (
+                                <div className="absolute inset-0 bg-indigo-600/15 flex items-center justify-center">
+                                  <span className="bg-indigo-600 text-white rounded-full p-1 shadow-sm font-extrabold text-[8px]">✓ Selected</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-2.5 bg-white">
+                              <p className="text-[9px] font-bold text-slate-700 leading-snug line-clamp-1">{prod.name}</p>
+                              <p className="text-[8px] text-slate-400 font-semibold mt-0.5">
+                                {prod.sku?.startsWith("TT-VIDEO") ? "TikTok Video" : `Rs. ${prod.price}`}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Bottom pagination */}
+                  <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                    <button
+                      onClick={() => setModalPage(p => Math.max(1, p - 1))}
+                      disabled={currentPageClamped <= 1}
+                      className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
+                    >
+                      Prev
+                    </button>
+                    <span className="text-[10px] font-bold text-slate-500">
+                      Page {currentPageClamped} of {totalPages} ({products.length} videos)
+                    </span>
+                    <button
+                      onClick={() => setModalPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPageClamped >= totalPages}
+                      className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}

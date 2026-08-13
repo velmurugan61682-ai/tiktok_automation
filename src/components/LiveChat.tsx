@@ -446,7 +446,7 @@ export const LiveChat: React.FC = () => {
                             ? "bg-slate-100 text-slate-800 border-slate-200/60 rounded-tl-none"
                             : isAI
                             ? "bg-indigo-600 text-white border-indigo-550 rounded-tr-none"
-                            : "bg-slate-850 text-white border-slate-700 rounded-tr-none"
+                            : "bg-slate-900 text-white border-slate-700 rounded-tr-none"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-6 mb-1 text-[8.5px] font-bold uppercase tracking-wider opacity-65">

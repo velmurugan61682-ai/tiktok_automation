@@ -115,4 +115,115 @@ Rules:
 
     return "Welcome! What can I help you?";
   }
+
+  static async generateLiveStreamPlan(
+    workspaceId: string,
+    topic: string,
+    productName?: string
+  ): Promise<{
+    titles: string[];
+    description: string;
+    structure: Array<{ time: string; title: string; details: string }>;
+    qnaPrompts: Array<{ question: string; answer: string }>;
+  }> {
+    const fallbackTitles = [
+      `🔥 LIVE: ${topic} Masterclass & Live Q&A!`,
+      `🚀 How to Master ${topic} (Step-by-Step Live Demo)`,
+      `💥 Top Secrets of ${topic} Revealed Live!`,
+      `🔴 LIVE Demo: ${topic} - Everything You Need to Know`,
+      `⚡ ${topic} 30-Minute Live Guide & Special Q&A`
+    ];
+
+    const fallbackDescription = `🔥 Welcome to today's LIVE stream on "${topic}"! ${productName ? `Featuring: ${productName}.` : ''}
+
+📌 TIMESTAMPS:
+0:00 - Stream Start & Community Welcome
+5:00 - Core Topic Presentation & Live Demo
+15:00 - Viewer Q&A Session (Ask Your Questions Live!)
+25:00 - Special Announcement & Wrap-Up
+
+🔗 USEFUL LINKS & RESOURCES:
+👉 Official Store: https://yourdomain.com
+👉 Product Showcase: https://yourdomain.com/products
+
+💡 KEYWORDS:
+#LiveStream #${topic.replace(/\s+/g, '')} #LiveDemo #QnA #ECommerce
+
+🔔 SUBSCRIBE & TURN ON NOTIFICATIONS!`;
+
+    const fallbackStructure = [
+      { time: "Minute 0-5", title: "Intro & Welcoming Viewers", details: "Check audio/video quality, welcome early joiners, introduce the topic." },
+      { time: "Minute 5-15", title: "Core Topic Demo", details: `Live demonstration of ${topic}${productName ? ` highlighting ${productName}` : ''}.` },
+      { time: "Minute 15-25", title: "Viewer Q&A Session", details: "Answer top audience questions, address doubts, provide live offer codes." },
+      { time: "Minute 25-30", title: "Wrap Up & Subscribe CTA", details: "Summarize key points, announce next live, ask viewers to subscribe." }
+    ];
+
+    const fallbackQnA = [
+      { question: "Is this suitable for beginners?", answer: "Yes! Step-by-step guidance is provided for all levels." },
+      { question: "Where can I find the link to order?", answer: "Check the description link or pinned live chat message." },
+      { question: "Will the recording be saved?", answer: "Yes, the full replay will be available right after the live stream ends." },
+      { question: "What is the price or special discount today?", answer: "We have an exclusive live discount code pinned in the chat." },
+      { question: "How long does shipping or access take?", answer: "Orders are processed within 24 hours with instant tracking." }
+    ];
+
+    try {
+      if (!process.env.GEMINI_API_KEY) {
+        return {
+          titles: fallbackTitles,
+          description: fallbackDescription,
+          structure: fallbackStructure,
+          qnaPrompts: fallbackQnA
+        };
+      }
+
+      const prompt = `Act as an expert YouTube & TikTok Live Streaming Strategist.
+Generate a complete, structured Live Stream Plan for the topic: "${topic}" ${productName ? `and product: "${productName}"` : ''}.
+
+Return strictly JSON with no code blocks or markdown:
+{
+  "titles": ["5 high-CTR titles"],
+  "description": "Engaging description with timestamps and CTAs",
+  "structure": [
+    { "time": "Minute 0-5", "title": "Intro", "details": "..." },
+    { "time": "Minute 5-15", "title": "Demo", "details": "..." },
+    { "time": "Minute 15-25", "title": "Q&A", "details": "..." },
+    { "time": "Minute 25-30", "title": "Wrap Up", "details": "..." }
+  ],
+  "qnaPrompts": [
+    { "question": "Question 1", "answer": "Answer 1" },
+    { "question": "Question 2", "answer": "Answer 2" },
+    { "question": "Question 3", "answer": "Answer 3" },
+    { "question": "Question 4", "answer": "Answer 4" },
+    { "question": "Question 5", "answer": "Answer 5" }
+  ]
+}`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+        config: {
+          temperature: 0.7,
+        },
+      });
+
+      const text = (response.text || "").trim();
+      const cleanedJson = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+      const parsed = JSON.parse(cleanedJson);
+
+      return {
+        titles: parsed.titles || fallbackTitles,
+        description: parsed.description || fallbackDescription,
+        structure: parsed.structure || fallbackStructure,
+        qnaPrompts: parsed.qnaPrompts || fallbackQnA
+      };
+    } catch (e) {
+      console.warn("AI generation failed or key missing, returning fallback plan", e);
+      return {
+        titles: fallbackTitles,
+        description: fallbackDescription,
+        structure: fallbackStructure,
+        qnaPrompts: fallbackQnA
+      };
+    }
+  }
 }
