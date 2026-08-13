@@ -12,7 +12,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem("creatorconnect_theme");
+    const saved = localStorage.getItem("taqbot_theme");
     if (saved === "light" || saved === "dark") {
       return saved;
     }
@@ -26,7 +26,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       root.classList.remove("dark");
     }
-    localStorage.setItem("creatorconnect_theme", theme);
+    localStorage.setItem("taqbot_theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {

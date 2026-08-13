@@ -3,7 +3,7 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
-const PWA_INSTALL_EVENT = "creatorconnect:pwa-install-ready";
+const PWA_INSTALL_EVENT = "taqbot:pwa-install-ready";
 
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
@@ -28,7 +28,7 @@ export function registerPwa() {
 
           installingWorker.addEventListener("statechange", () => {
             if (installingWorker.state === "installed" && navigator.serviceWorker.controller) {
-              window.dispatchEvent(new CustomEvent("creatorconnect:pwa-update-ready"));
+              window.dispatchEvent(new CustomEvent("taqbot:pwa-update-ready"));
             }
           });
         });

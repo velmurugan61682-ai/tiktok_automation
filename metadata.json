@@ -1,5 +1,5 @@
 {
-  "name": "CreatorConnect Pro",
+  "name": "Taqbot",
   "description": "An enterprise multi-tenant SaaS platform featuring a live chat social inbox, comment automation, AI recommendations, and products, inventory, and order management with workspace impersonation.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

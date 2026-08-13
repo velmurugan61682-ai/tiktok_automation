@@ -233,12 +233,12 @@ const AuthPortal: React.FC = () => {
         <div className="tt-auth-hero text-white p-12 flex flex-col justify-between md:w-[42%] shrink-0 relative overflow-hidden">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="CreatorConnect Pro Logo" className="tt-brand-mark w-10 h-10 rounded-xl object-cover border border-white/10 shadow-md" />
-              <span className="font-extrabold tracking-tight text-xl text-white">CreatorConnect Pro</span>
+              <img src="/logo.png" alt="Taqbot Logo" className="tt-brand-mark w-10 h-10 rounded-xl object-cover border border-white/10 shadow-md" />
+              <span className="font-extrabold tracking-tight text-xl text-white">Taqbot</span>
             </div>
             
             <h2 className="text-2xl font-extrabold tracking-tight leading-tight pt-6">
-              CreatorConnect Pro CRM & Unified Social Inbox.
+              Taqbot CRM & Unified Social Inbox.
             </h2>
             <p className="text-slate-400 text-xs leading-relaxed">
               Connect your TikTok Shop accounts, moderate post commenting with keyword automation rules, and converse using our dual-pane Social Inbox driven by Google Gemini.
@@ -292,7 +292,7 @@ const AuthPortal: React.FC = () => {
           <div className="max-w-md w-full mx-auto space-y-6">
             <div>
               <h3 className="text-xl font-bold text-slate-800">
-                {isRegister ? "Get Started with CreatorConnect Pro" : "Sign In to Your Workspace"}
+                {isRegister ? "Get Started with Taqbot" : "Sign In to Your Workspace"}
               </h3>
               <p className="text-xs text-slate-400 mt-1">
                 {isRegister 

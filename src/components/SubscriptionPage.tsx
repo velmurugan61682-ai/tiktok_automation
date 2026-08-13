@@ -132,7 +132,7 @@ export const SubscriptionPage: React.FC = () => {
       const options = {
         key: subscriptionData.keyId,
         subscription_id: subscriptionData.subscriptionId,
-        name: "CreatorConnect Pro",
+        name: "Taqbot",
         description: subscriptionData.planName || "Monthly PRO Plan Subscription",
         handler: async function (response: any) {
           try {

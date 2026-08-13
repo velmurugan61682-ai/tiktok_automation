@@ -803,12 +803,12 @@ app.get("/api/tiktok/video/:id", authenticateJWT, requireAdmin, async (req: any,
       const oembedData = await oembedResponse.json();
       return res.json({
         id: videoId,
-        name: oembedData.title || "billzzy ai",
+        name: oembedData.title || "Taqbot AI",
         sku: "TT-VIDEO-01",
         price: 0,
         stock: 1,
         images: [oembedData.thumbnail_url || ""],
-        description: `TikTok Video: ${oembedData.title || "billzzy ai"}`,
+        description: `TikTok Video: ${oembedData.title || "Taqbot AI"}`,
         url: videoUrl
       });
     }
@@ -817,7 +817,7 @@ app.get("/api/tiktok/video/:id", authenticateJWT, requireAdmin, async (req: any,
   }
   res.json({
     id: videoId,
-    name: "billzzy ai",
+    name: "Taqbot AI",
     sku: "TT-VIDEO-01",
     price: 0,
     images: [],
@@ -1036,13 +1036,13 @@ const resolveRazorpayPlanId = async () => {
     period: "monthly",
     interval: 1,
     item: {
-      name: "CreatorConnect Pro Monthly",
+      name: "Taqbot Monthly",
       amount: RAZORPAY_PRO_PRICE * 100,
       currency: "INR",
       description: "Monthly PRO plan subscription"
     },
     notes: {
-      source: "creatorconnect_auto_plan"
+      source: "taqbot_auto_plan"
     }
   });
 
@@ -1071,7 +1071,7 @@ const createRazorpaySubscription = async (req: any, res: any) => {
         keyId: RAZORPAY_KEY_ID || "rzp_dummy_local",
         currency: "INR",
         amount: RAZORPAY_PRO_PRICE * 100,
-        planName: "CreatorConnect Pro Monthly",
+        planName: "Taqbot Monthly",
         dummy: true
       });
     }
@@ -1101,7 +1101,7 @@ const createRazorpaySubscription = async (req: any, res: any) => {
       keyId: RAZORPAY_KEY_ID,
       currency: "INR",
       amount: RAZORPAY_PRO_PRICE * 100,
-      planName: "CreatorConnect Pro Monthly"
+      planName: "Taqbot Monthly"
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to create Razorpay subscription." });

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "creatorconnect-pwa-v2";
+const CACHE_VERSION = "taqbot-pwa-v2";
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const APP_SHELL = ["/", "/index.html", "/manifest.json", "/logo.png", "/favicon.png"];
