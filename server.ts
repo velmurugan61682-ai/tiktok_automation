@@ -52,6 +52,10 @@ const SUPER_ADMIN_EMAIL = (process.env.SUPER_ADMIN_EMAIL || "admin@company.com")
 const SUPER_ADMIN_PASSWORD = (process.env.SUPER_ADMIN_PASSWORD || "adminpassword").replace(/^["']|["']$/g, "").trim(); // Plain text default or env
 const SUPER_ADMIN_NAME = (process.env.SUPER_ADMIN_NAME || "System Administrator").replace(/^["']|["']$/g, "").trim();
 
+// --- TENANT ADMIN ENV CREDENTIALS ---
+const TENANT_ADMIN_EMAIL = (process.env.TENANT_ADMIN_EMAIL || "owner@smartmart.com").replace(/^["']|["']$/g, "").trim().toLowerCase();
+const TENANT_ADMIN_PASSWORD = (process.env.TENANT_ADMIN_PASSWORD || "password123").replace(/^["']|["']$/g, "").trim();
+
 // --- TIKTOK ENV CREDENTIALS ---
 const TIKTOK_CLIENT_KEY = (process.env.TIKTOK_CLIENT_KEY || "sbawa2w03kqoovgg7z").replace(/^["']|["']$/g, "").trim();
 const TIKTOK_CLIENT_SECRET = (process.env.TIKTOK_CLIENT_SECRET || "7tUA7YDvYRNFIo5Voe7MXdxUraWMwfuC").replace(/^["']|["']$/g, "").trim();
@@ -177,12 +181,17 @@ app.post("/api/auth/login", authRateLimiter, (req, res) => {
 
   // Step 2: Check MongoDB / Local DB for Tenant Admin
   let user = UserRepository.findByEmail(incomingEmail);
-  if (!user && (incomingEmail === "owner@smartmart.com" || incomingEmail === "premdev@example.com")) {
-    user = UserRepository.findByEmail("owner@smartmart.com") || UserRepository.findByEmail("premdev@example.com");
+  if (!user && (incomingEmail === TENANT_ADMIN_EMAIL || incomingEmail === "premdev@example.com")) {
+    user = UserRepository.findByEmail(TENANT_ADMIN_EMAIL) || UserRepository.findByEmail("premdev@example.com");
   }
 
   // Step 3: Auto-create Tenant Admin user and workspace if account doesn't exist yet
   if (!user) {
+    if (incomingEmail === TENANT_ADMIN_EMAIL && incomingPassword !== TENANT_ADMIN_PASSWORD) {
+      res.status(401).json({ error: "Invalid email or password credentials." });
+      return;
+    }
+
     let ws = WorkspaceRepository.find()[0];
     if (!ws) {
       const emailPrefix = incomingEmail.split("@")[0] || "Store";
@@ -415,7 +424,7 @@ app.post("/api/auth/google", authRateLimiter, (req, res) => {
 
   // Check existing tenant user
   let existingUser = UserRepository.findByEmail(googleEmail);
-  if (!existingUser && googleEmail.toLowerCase() === "owner@smartmart.com") {
+  if (!existingUser && googleEmail.toLowerCase() === TENANT_ADMIN_EMAIL) {
     existingUser = UserRepository.findByEmail("premdev@example.com");
   }
 
@@ -776,7 +785,8 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
         avatar_url,
         open_id,
         union_id,
-        videoCount
+        videoCount,
+        scopes: tokenData.scope ? tokenData.scope.split(",").map((s: string) => s.trim()) : (process.env.TIKTOK_SCOPE || "").split(",").map(s => s.trim())
       }
     );
 
@@ -818,13 +828,33 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
     redirectUri = `${protocol}://${req.headers.host}/api/tiktok/oauth/callback`;
   }
 
+  const clientKey = (process.env.TIKTOK_CLIENT_KEY || "").replace(/^["']|["']$/g, "").trim();
+  let appStatus = "UNDER_REVIEW";
+  if (clientKey.startsWith("sb")) {
+    appStatus = "SANDBOX";
+  } else if (process.env.TIKTOK_APP_STATUS) {
+    appStatus = process.env.TIKTOK_APP_STATUS;
+  }
+
+  const scopes = (process.env.TIKTOK_SCOPE || "").split(",").map(s => s.trim());
+  const capabilities = {
+    canReadProfile: scopes.includes("user.info.basic") || scopes.includes("user.info.profile"),
+    canReadVideos: scopes.includes("video.list"),
+    canReadComments: false,
+    canReplyComments: false,
+    canDeleteComments: false,
+    canModerateComments: false
+  };
+
   res.json({
-    clientKey: (process.env.TIKTOK_CLIENT_KEY || "").replace(/^["']|["']$/g, "").trim(),
+    clientKey,
     scope: (process.env.TIKTOK_SCOPE || "").replace(/^["']|["']$/g, "").trim(),
     authUrl: (process.env.TIKTOK_AUTH_URL || "https://www.tiktok.com/v2/auth/authorize/").replace(/^["']|["']$/g, "").trim(),
     loginUrl: (process.env.TIKTOK_LOGIN_URL || "https://www.tiktok.com/login").replace(/^["']|["']$/g, "").trim(),
     redirectUri,
-    state
+    state,
+    appStatus,
+    capabilities
   });
 });
 
@@ -840,6 +870,15 @@ app.get("/api/tiktok/videos", authenticateJWT, requireAdmin, async (req: any, re
 
   if (!activeTiktok || !activeTiktok.username) {
     return res.json([]);
+  }
+
+  // Check if video.list scope is in granted scopes
+  const grantedScopes = activeTiktok.scopes || [];
+  if (!grantedScopes.includes("video.list")) {
+    return res.status(403).json({
+      error: "permission_missing",
+      message: "TikTok video.list permission is required. Reconnect after permission approval."
+    });
   }
 
   try {
@@ -1671,6 +1710,46 @@ function startBackgroundSyncWorker() {
 async function startServer() {
   // Initialize MongoDB / Local JSON Database
   await initDb();
+
+  // Seed / Sync Tenant Admin user credentials from env variables
+  let tenantUser = UserRepository.findByEmail(TENANT_ADMIN_EMAIL);
+  const salt = bcrypt.genSaltSync(10);
+  const passHash = bcrypt.hashSync(TENANT_ADMIN_PASSWORD, salt);
+
+  if (!tenantUser) {
+    let ws = WorkspaceRepository.find()[0];
+    if (!ws) {
+      ws = WorkspaceRepository.create({
+        name: "SmartMart Store",
+        shopName: "SmartMart",
+        phone: "+91 9876543210",
+        status: "ACTIVE",
+        plan: "PRO",
+        endDate: "2028-12-31",
+        smsCount: 5000
+      });
+    }
+    tenantUser = UserRepository.create({
+      name: "SmartMart Owner",
+      email: TENANT_ADMIN_EMAIL,
+      passwordHash: passHash,
+      role: "ADMIN",
+      workspaceId: ws.id
+    });
+    console.log(`Default Tenant Admin seeded: ${TENANT_ADMIN_EMAIL}`);
+  } else {
+    // Sync password hash if updated
+    let isMatched = false;
+    try {
+      isMatched = bcrypt.compareSync(TENANT_ADMIN_PASSWORD, tenantUser.passwordHash);
+    } catch (e) {
+      isMatched = false;
+    }
+    if (!isMatched) {
+      console.log(`Syncing rotated password hash for Tenant Admin: ${TENANT_ADMIN_EMAIL}`);
+      UserRepository.update(tenantUser.id, { passwordHash: passHash });
+    }
+  }
 
   // Start background sync scheduler/worker
   startBackgroundSyncWorker();

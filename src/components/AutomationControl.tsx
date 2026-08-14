@@ -89,6 +89,7 @@ export const AutomationControl: React.FC = () => {
   // Modal selector for posts/products
   const [showPostSelectorModal, setShowPostSelectorModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [videosPermissionError, setVideosPermissionError] = useState("");
 
   // Comment Automation rule creation states
   const [triggerKeyword, setTriggerKeyword] = useState("");
@@ -130,6 +131,7 @@ export const AutomationControl: React.FC = () => {
       if (resComm.ok) setComments(await resComm.json());
       
       let videoItems: any[] = [];
+      setVideosPermissionError("");
       if (resVideos.ok) {
         const videosList = await resVideos.json();
         const seenIds = new Set();
@@ -138,6 +140,15 @@ export const AutomationControl: React.FC = () => {
           seenIds.add(v.id);
           return true;
         });
+      } else if (resVideos.status === 403) {
+        try {
+          const errData = await resVideos.json();
+          if (errData.error === "permission_missing") {
+            setVideosPermissionError(errData.message || "TikTok video.list permission is required.");
+          }
+        } catch (e) {
+          setVideosPermissionError("TikTok video.list permission is required. Reconnect after permission approval.");
+        }
       }
       
       setProducts(videoItems);
@@ -1179,9 +1190,13 @@ export const AutomationControl: React.FC = () => {
               return (
                 <>
                   <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 overflow-y-auto max-h-[350px]">
-                    {products.length === 0 ? (
+                    {videosPermissionError ? (
+                      <div className="col-span-4 p-8 text-center text-rose-600 text-xs font-semibold">
+                        {videosPermissionError}
+                      </div>
+                    ) : products.length === 0 ? (
                       <div className="col-span-4 p-8 text-center text-slate-400 text-xs font-semibold">
-                        No videos found for the connected TikTok account. Please connect your TikTok account in Settings.
+                        No TikTok videos were returned for this account.
                       </div>
                     ) : (
                       currentItems.map(prod => {

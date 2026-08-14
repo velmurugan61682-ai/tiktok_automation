@@ -146,6 +146,15 @@ export const TenantDashboard: React.FC = () => {
   const [tiktokRedirectUri, setTiktokRedirectUri] = useState(`${window.location.origin}/api/tiktok/oauth/callback`);
   const [tiktokClientKey, setTiktokClientKey] = useState("sbawa2w03kqoovgg7z");
   const [tiktokOAuthState, setTiktokOAuthState] = useState("");
+  const [tiktokAppStatus, setTiktokAppStatus] = useState("UNDER_REVIEW");
+  const [tiktokCapabilities, setTiktokCapabilities] = useState({
+    canReadProfile: false,
+    canReadVideos: false,
+    canReadComments: false,
+    canReplyComments: false,
+    canDeleteComments: false,
+    canModerateComments: false
+  });
   const [settingsSubTab, setSettingsSubTab] = useState("connected_accounts");
   const [profileName, setProfileName] = useState(user?.name || "");
   const [profileImagePreview, setProfileImagePreview] = useState("");
@@ -243,6 +252,10 @@ export const TenantDashboard: React.FC = () => {
         setTiktokRedirectUri(configData.redirectUri);
         setTiktokClientKey(configData.clientKey);
         setTiktokOAuthState(configData.state || "");
+        setTiktokAppStatus(configData.appStatus || "UNDER_REVIEW");
+        if (configData.capabilities) {
+          setTiktokCapabilities(configData.capabilities);
+        }
         if (configData.scope) {
           setTiktokScope(configData.scope);
         }
@@ -886,6 +899,33 @@ export const TenantDashboard: React.FC = () => {
                                 <span className="text-slate-400 font-semibold">Likes:</span>
                                 <span className="text-slate-800 font-bold">{tiktokLikes}</span>
                               </div>
+                              <div className="border-t border-slate-100 pt-3.5 space-y-2">
+                                <div className="flex justify-between text-[11px] items-center">
+                                  <span className="text-slate-400 font-bold uppercase tracking-wider">App Status:</span>
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase ${
+                                    tiktokAppStatus === "APPROVED" ? "bg-emerald-150 text-emerald-800" :
+                                    tiktokAppStatus === "SANDBOX" ? "bg-indigo-100 text-indigo-750" :
+                                    tiktokAppStatus === "REJECTED" ? "bg-rose-100 text-rose-800" :
+                                    "bg-amber-100 text-amber-800"
+                                  }`}>
+                                    {tiktokAppStatus === "UNDER_REVIEW" ? "Approval Required" : tiktokAppStatus}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 pt-1 text-[10px]">
+                                  <span className={tiktokCapabilities.canReadProfile ? "text-emerald-700 font-bold" : "text-slate-400 font-semibold"}>
+                                    {tiktokCapabilities.canReadProfile ? "✓ Profile Read" : "✗ Profile Read"}
+                                  </span>
+                                  <span className={tiktokCapabilities.canReadVideos ? "text-emerald-700 font-bold" : "text-slate-400 font-semibold"}>
+                                    {tiktokCapabilities.canReadVideos ? "✓ Video.list" : "✗ Video.list"}
+                                  </span>
+                                  <span className={tiktokCapabilities.canReadComments ? "text-emerald-700 font-bold" : "text-slate-400 font-semibold"}>
+                                    {tiktokCapabilities.canReadComments ? "✓ Comments Read" : "✗ Comments (Locked)"}
+                                  </span>
+                                  <span className={tiktokCapabilities.canReplyComments ? "text-emerald-700 font-bold" : "text-slate-400 font-semibold"}>
+                                    {tiktokCapabilities.canReplyComments ? "✓ Comments Reply" : "✗ Replies (Locked)"}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
 
                           </div>
@@ -893,8 +933,13 @@ export const TenantDashboard: React.FC = () => {
                           <div className="flex gap-3">
                             <button
                               onClick={() => {
-                                const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${tiktokOAuthState || user?.workspaceId || "ws-1"}`;
-                                window.location.href = redirectTarget;
+                                const url = new URL(tiktokAuthUrl);
+                                url.searchParams.set("client_key", tiktokClientKey);
+                                url.searchParams.set("redirect_uri", tiktokRedirectUri);
+                                url.searchParams.set("response_type", "code");
+                                url.searchParams.set("scope", tiktokScope);
+                                url.searchParams.set("state", tiktokOAuthState || user?.workspaceId || "ws-1");
+                                window.location.href = url.toString();
                               }}
                               className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center"
                             >
@@ -913,21 +958,39 @@ export const TenantDashboard: React.FC = () => {
                         <div className="w-full space-y-3">
                           <button
                             onClick={() => {
-                              const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${tiktokOAuthState || user?.workspaceId || "ws-1"}`;
-                              window.location.href = redirectTarget;
+                              const url = new URL(tiktokAuthUrl);
+                              url.searchParams.set("client_key", tiktokClientKey);
+                              url.searchParams.set("redirect_uri", tiktokRedirectUri);
+                              url.searchParams.set("response_type", "code");
+                              url.searchParams.set("scope", tiktokScope);
+                              url.searchParams.set("state", tiktokOAuthState || user?.workspaceId || "ws-1");
+                              window.location.href = url.toString();
                             }}
                             className="w-full py-3 bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                           >
                             Connect TikTok
                           </button>
 
-                          <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-left space-y-1 text-amber-900 shadow-2xs">
-                            <p className="text-[11px] font-bold flex items-center gap-1.5 text-amber-800">
-                              <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                              <span>TikTok Sandbox Mode Notice:</span>
-                            </p>
-                            <p className="text-[10px] text-amber-700 leading-relaxed">
-                              If TikTok shows <code className="bg-amber-100/90 text-amber-900 px-1 py-0.5 rounded font-mono text-[9px] font-semibold">non_sandbox_target</code>, add the TikTok username you are logging into in your browser under <strong>TikTok Developer Portal &gt; Sandbox &gt; Target Users</strong>.
+                          <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-left space-y-1.5 text-amber-900 shadow-2xs">
+                            <div className="flex justify-between items-center pb-1 border-b border-amber-100/50">
+                              <span className="text-[10px] font-bold text-amber-850 uppercase tracking-wider">TikTok App Review:</span>
+                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase ${
+                                tiktokAppStatus === "APPROVED" ? "bg-emerald-150 text-emerald-800" :
+                                tiktokAppStatus === "SANDBOX" ? "bg-indigo-100 text-indigo-750" :
+                                tiktokAppStatus === "REJECTED" ? "bg-rose-100 text-rose-800" :
+                                "bg-amber-150 text-amber-900"
+                              }`}>
+                                {tiktokAppStatus === "UNDER_REVIEW" ? "Approval Required" : tiktokAppStatus}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-amber-750 leading-relaxed font-medium">
+                              {tiktokAppStatus === "UNDER_REVIEW" ? (
+                                <strong>TikTok Developer approval is required to request advanced permissions. Reconnect your account after review approval.</strong>
+                              ) : tiktokAppStatus === "SANDBOX" ? (
+                                <span>Sandbox Mode active. Standard sandbox test users must be configured under <strong>Sandbox &gt; Target Users</strong> in Developer Portal.</span>
+                              ) : (
+                                <span>Production app configuration is active. Ensure all products are approved.</span>
+                              )}
                             </p>
                           </div>
                         </div>

@@ -49,6 +49,7 @@ export interface ConnectedAccount {
   open_id?: string;
   union_id?: string;
   videoCount?: number;
+  scopes?: string[];
 }
 
 export interface Category {

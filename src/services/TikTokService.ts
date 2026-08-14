@@ -33,7 +33,8 @@ export class TikTokService {
       avatar_url: extraData?.avatar_url || "",
       open_id: extraData?.open_id || "",
       union_id: extraData?.union_id || "",
-      videoCount: extraData?.videoCount ?? 0
+      videoCount: extraData?.videoCount ?? 0,
+      scopes: extraData?.scopes || []
     };
 
     if (existingIndex !== -1) {
@@ -241,57 +242,6 @@ export class TikTokService {
         }
       } catch (e) {
         console.error(`OEmbed request failed for video ${vidId}:`, e);
-      }
-    }
-
-    if (videos.length === 0) {
-      const normalizedUsername = username.replace(/\s+/g, "").toLowerCase();
-      if (normalizedUsername === "user9136354359278") {
-        return [
-          {
-            id: "766284635610680583",
-            name: "SaaS Restock & Inventory Dashboard Demo",
-            sku: "TT-VIDEO-0583",
-            price: 0,
-            stock: 1,
-            images: ["https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=60"],
-            description: "TikTok Video: Overview of our SaaS platform restock and automation dashboard features.",
-            url: "https://www.tiktok.com/@user9136354359278/video/766284635610680583"
-          },
-          {
-            id: "766284635610680584",
-            name: "Productivity Workspace & Desk Setup Tour",
-            sku: "TT-VIDEO-0584",
-            price: 0,
-            stock: 1,
-            images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=60"],
-            description: "TikTok Video: A quick tour of our workspace monitor stand and minimalist productivity setup.",
-            url: "https://www.tiktok.com/@user9136354359278/video/766284635610680584"
-          }
-        ];
-      } else {
-        return [
-          {
-            id: `tt-mock-1-${normalizedUsername}`,
-            name: `@${normalizedUsername} Video Post #1`,
-            sku: "TT-VIDEO-M1",
-            price: 0,
-            stock: 1,
-            images: ["https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60"],
-            description: `TikTok Video from @${normalizedUsername}`,
-            url: `https://www.tiktok.com/@${normalizedUsername}/video/mock1`
-          },
-          {
-            id: `tt-mock-2-${normalizedUsername}`,
-            name: `@${normalizedUsername} Video Post #2`,
-            sku: "TT-VIDEO-M2",
-            price: 0,
-            stock: 1,
-            images: ["https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=500&auto=format&fit=crop&q=60"],
-            description: `TikTok Video from @${normalizedUsername}`,
-            url: `https://www.tiktok.com/@${normalizedUsername}/video/mock2`
-          }
-        ];
       }
     }
 
