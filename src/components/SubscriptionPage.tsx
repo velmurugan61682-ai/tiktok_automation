@@ -82,6 +82,7 @@ export const SubscriptionPage: React.FC = () => {
   }, [token]);
 
   const handleRazorpayUpgrade = async () => {
+    if (paying) return;
     setPaying(true);
     setMessage(null);
 
@@ -190,6 +191,7 @@ export const SubscriptionPage: React.FC = () => {
     }
   };
   const handleSwitchToFree = async () => {
+    if (loading) return;
     if (!confirm("Are you sure you want to switch to the Free Plan? Connected accounts will be limited to 1.")) return;
     setLoading(true);
     try {

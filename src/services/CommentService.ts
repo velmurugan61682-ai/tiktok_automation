@@ -5,6 +5,23 @@ import { Comment } from "../types.js";
 import { AIService } from "./AIService.js";
 import { TikTokService } from "./TikTokService.js";
 
+const TOXIC_WORDS = ["scam", "fraud", "fake", "bad", "useless", "abuse", "insult", "hate", "harass", "spam"];
+
+const isOwnerContent = (customerId: string, customerName: string) => {
+  const nameLower = (customerName || "").toLowerCase();
+  const idLower = (customerId || "").toLowerCase();
+  return (
+    idLower === "ai" ||
+    idLower === "agent" ||
+    idLower === "system" ||
+    idLower === "owner" ||
+    nameLower.includes("store agent") ||
+    nameLower.includes("automation bot") ||
+    nameLower.includes("ai assistant") ||
+    nameLower.includes("taqbot")
+  );
+};
+
 export class CommentService {
   static getComments(workspaceId: string): Comment[] {
     return CommentRepository.find(workspaceId);
@@ -18,7 +35,7 @@ export class CommentService {
     postId: string,
     text: string
   ): Promise<Comment> {
-    // 1. Save comment
+    // 1. Save comment in database first
     const comment = CommentRepository.create({
       workspaceId,
       customerId,
@@ -29,21 +46,56 @@ export class CommentService {
       status: "PENDING"
     });
 
-    // 2. Scan active automation rules for matching keywords
-    const rules = AutomationRepository.findRules(workspaceId).filter(r => r.isEnabled && r.type === "COMMENT");
+    // 2. Process automations and moderation rules
+    return this.processCommentAutomation(comment);
+  }
+
+  static async processCommentAutomation(comment: Comment): Promise<Comment> {
+    const { workspaceId, customerId, customerName, postId, text } = comment;
+
+    // 1. Owner & loop protection checks
+    if (isOwnerContent(customerId, customerName)) {
+      console.log(`Skipping automation evaluation for bot/owner comment text: "${text}"`);
+      return comment;
+    }
+
+    if (comment.status !== "PENDING") {
+      return comment;
+    }
+
     const textLower = text.toLowerCase();
 
-    let matchedRule = rules.find(rule => 
+    // 2. Toxicity & Custom Bad Words Moderation Rules
+    const moderationRules = AutomationRepository.findRules(workspaceId).filter(
+      r => r.isEnabled && r.type === "MODERATION"
+    );
+    const matchedModRule = moderationRules.find(rule =>
+      rule.triggerKeyword.some(kw => textLower.includes(kw.toLowerCase()))
+    );
+
+    const hasToxicWords = TOXIC_WORDS.some(word => textLower.includes(word));
+    if (hasToxicWords || matchedModRule) {
+      console.log(`Flagging toxic or moderation-banned comment: "${text}"`);
+      const updated = CommentRepository.update(workspaceId, comment.id, {
+        status: "FLAGGED"
+      });
+      return updated || comment;
+    }
+
+    // 3. Keyword comment automation reply/DM rules
+    const rules = AutomationRepository.findRules(workspaceId).filter(
+      r => r.isEnabled && r.type === "COMMENT"
+    );
+
+    const matchedRule = rules.find(rule =>
       rule.triggerKeyword.some(kw => textLower.includes(kw.toLowerCase()))
     );
 
     if (matchedRule) {
-      // Execute trigger
       let replyText = (matchedRule as any).replyCommentText || matchedRule.replyTemplate;
       let dmSent = false;
 
       if (matchedRule.actionType === "AI_REPLY") {
-        // Find or create conversation for this commenter to pass to AIService
         const conversations = ConversationRepository.find(workspaceId);
         let conv = conversations.find(c => c.customerId === customerId);
         if (!conv) {
@@ -56,12 +108,11 @@ export class CommentService {
             unreadCount: 0
           });
         }
-        
+
         try {
-          // Generate AI response dynamically using the AI service and template details to avoid hardcoded text
           replyText = await AIService.generateReply(
-            workspaceId, 
-            conv.id, 
+            workspaceId,
+            conv.id,
             `Comment text: "${text}". Template message: "${matchedRule.replyTemplate}". Please write a response that addresses the comment and includes the details from the template message.`
           );
         } catch (aiErr) {
@@ -75,7 +126,6 @@ export class CommentService {
 
       // If DM was triggered, create a conversation and message in local Chat Inbox
       if (dmSent) {
-        // Find or create conversation for this commenter
         const conversations = ConversationRepository.find(workspaceId);
         let conv = conversations.find(c => c.customerId === customerId);
         if (!conv) {
@@ -126,8 +176,9 @@ export class CommentService {
         });
 
         // Trigger sending DM to customer via TikTok Messaging API
-        TikTokService.sendDirectMessage(workspaceId, customerId, dmContent)
-          .catch(err => console.error("Failed to send direct message via TikTok API:", err));
+        TikTokService.sendDirectMessage(workspaceId, customerId, dmContent).catch(err =>
+          console.error("Failed to send direct message via TikTok API:", err)
+        );
       }
 
       // Update rule usage count

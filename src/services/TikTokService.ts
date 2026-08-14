@@ -469,24 +469,41 @@ export class TikTokService {
               const msgId = tMsg.id || tMsg.message_id;
               if (!msgId) continue;
 
-              const msgExists = messages.some(m => m.workspaceId === workspaceId && m.id === msgId);
-              if (!msgExists) {
-                let text = "";
-                if (tMsg.type === "TEXT") {
-                  try {
-                    const contentObj = typeof tMsg.content === "string" ? JSON.parse(tMsg.content) : tMsg.content;
-                    text = contentObj.content || contentObj.text || tMsg.text || "";
-                  } catch (e) {
-                    text = tMsg.text || tMsg.content || "";
-                  }
-                } else {
-                  text = `[${tMsg.type || "Unsupported"} Message]`;
+              let text = "";
+              if (tMsg.type === "TEXT") {
+                try {
+                  const contentObj = typeof tMsg.content === "string" ? JSON.parse(tMsg.content) : tMsg.content;
+                  text = contentObj.content || contentObj.text || tMsg.text || "";
+                } catch (e) {
+                  text = tMsg.text || tMsg.content || "";
                 }
+              } else {
+                text = `[${tMsg.type || "Unsupported"} Message]`;
+              }
 
-                const senderRole = tMsg.sender?.role || tMsg.sender_role || "BUYER";
-                const senderId = senderRole === "BUYER" ? buyerId : (senderRole === "SELF" ? "AI" : "AGENT");
-                const senderName = tMsg.sender?.nickname || tMsg.sender_name || (senderRole === "BUYER" ? buyerName : "Store Agent");
+              const senderRole = tMsg.sender?.role || tMsg.sender_role || "BUYER";
+              const senderId = senderRole === "BUYER" ? buyerId : (senderRole === "SELF" ? "AI" : "AGENT");
+              const senderName = tMsg.sender?.nickname || tMsg.sender_name || (senderRole === "BUYER" ? buyerName : "Store Agent");
 
+              let msgExists = messages.find(m => m.workspaceId === workspaceId && m.id === msgId);
+              if (!msgExists) {
+                const tMsgTime = new Date(tMsg.create_time || new Date()).getTime();
+                const duplicate = messages.find(m =>
+                  m.workspaceId === workspaceId &&
+                  m.conversationId === convId &&
+                  (m.senderId === senderId || (m.senderId === "CUSTOMER" && senderId === buyerId)) &&
+                  m.text === text &&
+                  Math.abs(new Date(m.createdAt).getTime() - tMsgTime) < 60000
+                );
+
+                if (duplicate) {
+                  duplicate.id = msgId;
+                  dbUpdated = true;
+                  msgExists = duplicate;
+                }
+              }
+
+              if (!msgExists) {
                 messages.push({
                   id: msgId,
                   workspaceId,

@@ -82,13 +82,29 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
-  const handleMarkOneRead = (id: string) => {
+  const handleMarkOneRead = async (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    try {
+      await fetch(`/api/notifications/${id}/read`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (e) {
+      console.error("Failed to mark notification as read on server:", e);
+    }
   };
 
-  const handleDeleteNotif = (id: string, e: React.MouseEvent) => {
+  const handleDeleteNotif = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setNotifications(prev => prev.filter(n => n.id !== id));
+    try {
+      await fetch(`/api/notifications/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (e) {
+      console.error("Failed to delete notification on server:", e);
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;

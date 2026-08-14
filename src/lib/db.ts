@@ -21,6 +21,12 @@ import {
   LiveStreamPlan
 } from "../types.js";
 
+export interface OAuthState {
+  state: string;
+  workspaceId: string;
+  createdAt: string;
+}
+
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_FILE = path.join(DB_DIR, "db.json");
 
@@ -42,6 +48,7 @@ export interface DatabaseSchema {
   notifications: Notification[];
   analytics: Analytics[];
   livestream_plans: LiveStreamPlan[];
+  oauth_states: OAuthState[];
 }
 
 // Global in-memory cache
@@ -89,7 +96,8 @@ function getInitialDb(): DatabaseSchema {
     comments: [],
     notifications: [],
     analytics: [],
-    livestream_plans: []
+    livestream_plans: [],
+    oauth_states: []
   };
 }
 
@@ -125,7 +133,7 @@ export async function initDb(): Promise<void> {
           "users", "workspaces", "connectedAccounts", "categories", "products",
           "warehouses", "inventoryLogs", "customers", "conversations", "messages",
           "orders", "automationRules", "knowledgeBases", "comments", "notifications",
-          "analytics", "livestream_plans"
+          "analytics", "livestream_plans", "oauth_states"
         ];
 
         const loadedData: any = {};

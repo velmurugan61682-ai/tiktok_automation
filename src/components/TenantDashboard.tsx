@@ -136,6 +136,7 @@ export const TenantDashboard: React.FC = () => {
   const [tiktokFollowers, setTiktokFollowers] = useState(0);
   const [tiktokFollowing, setTiktokFollowing] = useState(0);
   const [tiktokLikes, setTiktokLikes] = useState(0);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [whatsappConnected, setWhatsappConnected] = useState(false);
   const [showTikTokLoginModal, setShowTikTokLoginModal] = useState(false);
   const [oauthStep, setOauthStep] = useState<"authorize" | "login" | "consent" | "callback">("authorize");
@@ -144,6 +145,7 @@ export const TenantDashboard: React.FC = () => {
   const [tiktokLoginUrl, setTiktokLoginUrl] = useState("https://www.tiktok.com/login");
   const [tiktokRedirectUri, setTiktokRedirectUri] = useState(`${window.location.origin}/api/tiktok/oauth/callback`);
   const [tiktokClientKey, setTiktokClientKey] = useState("sbawa2w03kqoovgg7z");
+  const [tiktokOAuthState, setTiktokOAuthState] = useState("");
   const [settingsSubTab, setSettingsSubTab] = useState("connected_accounts");
   const [profileName, setProfileName] = useState(user?.name || "");
   const [profileImagePreview, setProfileImagePreview] = useState("");
@@ -240,6 +242,7 @@ export const TenantDashboard: React.FC = () => {
         setTiktokLoginUrl(configData.loginUrl);
         setTiktokRedirectUri(configData.redirectUri);
         setTiktokClientKey(configData.clientKey);
+        setTiktokOAuthState(configData.state || "");
         if (configData.scope) {
           setTiktokScope(configData.scope);
         }
@@ -341,7 +344,9 @@ export const TenantDashboard: React.FC = () => {
   // Removed simulated mock OAuth callback useEffect to allow natural redirect flow
 
   const handleDisconnectTikTok = async () => {
+    if (disconnecting) return;
     try {
+      setDisconnecting(true);
       // Find connected account id first
       const resAcc = await fetch("/api/tiktok/accounts", {
         headers: { Authorization: `Bearer ${token}` }
@@ -350,7 +355,7 @@ export const TenantDashboard: React.FC = () => {
         const accounts = await resAcc.json();
         const activeTiktok = accounts.find((ca: any) => ca.platform === "TIKTOK" && ca.status === "CONNECTED");
         if (activeTiktok) {
-          await fetch("/api/tiktok/disconnect", {
+          const resDisconnect = await fetch("/api/tiktok/disconnect", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -358,14 +363,43 @@ export const TenantDashboard: React.FC = () => {
             },
             body: JSON.stringify({ id: activeTiktok.id })
           });
+          if (resDisconnect.ok) {
+            // Clear local TikTok state
+            setTiktokConnected(false);
+            setTiktokUsername("");
+            setTiktokDisplayName("");
+            setTiktokAvatar("");
+            setTiktokConnectedAt("");
+            setTiktokFollowers(0);
+            setTiktokFollowing(0);
+            setTiktokLikes(0);
+
+            // Refresh existing integration/user state
+            await loadSettings();
+
+            alert("TikTok Account Disconnected!");
+          } else {
+            const errData = await resDisconnect.json().catch(() => ({}));
+            alert(errData.error || "Failed to disconnect TikTok account.");
+          }
+        } else {
+          // Fallback if activeTiktok is not found in database, clear state locally
+          setTiktokConnected(false);
+          setTiktokUsername("");
+          setTiktokDisplayName("");
+          setTiktokAvatar("");
+          setTiktokConnectedAt("");
+          setTiktokFollowers(0);
+          setTiktokFollowing(0);
+          setTiktokLikes(0);
         }
       }
     } catch (e) {
-      console.error(e);
+      console.error("TikTok disconnect failed:", e);
+      alert("Failed to disconnect TikTok account due to a network or server error.");
+    } finally {
+      setDisconnecting(false);
     }
-    setTiktokConnected(false);
-    setTiktokUsername("");
-    alert("TikTok Account Disconnected!");
   };
 
   return (
@@ -859,7 +893,7 @@ export const TenantDashboard: React.FC = () => {
                           <div className="flex gap-3">
                             <button
                               onClick={() => {
-                                const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${user?.workspaceId || "ws-1"}`;
+                                const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${tiktokOAuthState || user?.workspaceId || "ws-1"}`;
                                 window.location.href = redirectTarget;
                               }}
                               className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center"
@@ -867,10 +901,11 @@ export const TenantDashboard: React.FC = () => {
                               Reconnect
                             </button>
                             <button
+                              disabled={disconnecting}
                               onClick={handleDisconnectTikTok}
-                              className="flex-1 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl text-xs transition-colors text-center"
+                              className="flex-1 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl text-xs transition-colors text-center disabled:opacity-50"
                             >
-                              Disconnect
+                              {disconnecting ? "Disconnecting..." : "Disconnect"}
                             </button>
                           </div>
                         </div>
@@ -878,7 +913,7 @@ export const TenantDashboard: React.FC = () => {
                         <div className="w-full space-y-3">
                           <button
                             onClick={() => {
-                              const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${user?.workspaceId || "ws-1"}`;
+                              const redirectTarget = `${tiktokAuthUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}&response_type=code&scope=${encodeURIComponent(tiktokScope)}&state=${tiktokOAuthState || user?.workspaceId || "ws-1"}`;
                               window.location.href = redirectTarget;
                             }}
                             className="w-full py-3 bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"

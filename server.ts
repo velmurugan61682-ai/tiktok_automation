@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
-import { initDb, getCollection } from "./src/lib/db.js";
+import { initDb, getCollection, saveCollection } from "./src/lib/db.js";
 import { LiveStreamPlan } from "./src/types.js";
 
 // Load environment variables
@@ -106,8 +106,34 @@ const requireAdmin = (req: any, res: any, next: any) => {
 // API ROUTES
 // ==========================================
 
+// Rate limiter for authentication endpoints
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const authRateLimiter = (req: any, res: any, next: any) => {
+  const ip = req.ip || req.headers["x-forwarded-for"] || "unknown";
+  const now = Date.now();
+  const limitWindowMs = 60000; // 1 minute
+  const maxRequests = 15; // Max 15 requests per minute
+
+  const record = rateLimitMap.get(ip);
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + limitWindowMs });
+    return next();
+  }
+
+  record.count += 1;
+  if (record.count > maxRequests) {
+    return res.status(429).json({ error: "Too many requests. Please try again later." });
+  }
+  next();
+};
+
 // 1. Authentication Endpoints
-app.post("/api/auth/login", (req, res) => {
+const isValidEmail = (email: string) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+app.post("/api/auth/login", authRateLimiter, (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(400).json({ error: "Email and password are required." });
@@ -116,6 +142,11 @@ app.post("/api/auth/login", (req, res) => {
 
   const incomingEmail = (email || "").toLowerCase().trim();
   const incomingPassword = (password || "").trim();
+
+  if (!isValidEmail(incomingEmail)) {
+    res.status(400).json({ error: "Invalid email format." });
+    return;
+  }
 
   // Step 1: Check Super Admin Credentials (from env or defaults)
   const isSuperEmail = incomingEmail === (SUPER_ADMIN_EMAIL || "").toLowerCase().trim() || incomingEmail === "admin@company.com";
@@ -248,15 +279,21 @@ app.post("/api/auth/login", (req, res) => {
   res.status(401).json({ error: "Invalid email or password credentials." });
 });
 
-app.post("/api/auth/register", (req, res) => {
+app.post("/api/auth/register", authRateLimiter, (req, res) => {
   const { name, email, password, shopName, phone } = req.body;
   if (!name || !email || !password || !shopName) {
     res.status(400).json({ error: "Please fill in all required fields." });
     return;
   }
 
+  const incomingEmail = (email || "").toLowerCase().trim();
+  if (!isValidEmail(incomingEmail)) {
+    res.status(400).json({ error: "Invalid email format." });
+    return;
+  }
+
   // Check if user already exists
-  if (UserRepository.findByEmail(email)) {
+  if (UserRepository.findByEmail(incomingEmail)) {
     res.status(400).json({ error: "An account with this email already exists." });
     return;
   }
@@ -318,7 +355,7 @@ app.post("/api/auth/register", (req, res) => {
   });
 });
 
-app.post("/api/auth/google", (req, res) => {
+app.post("/api/auth/google", authRateLimiter, (req, res) => {
   const { email, name, credential } = req.body;
   
   // If email is provided directly or extracted from token/payload
@@ -347,6 +384,10 @@ app.post("/api/auth/google", (req, res) => {
   }
 
   const incomingEmail = googleEmail.toLowerCase().trim();
+  if (!isValidEmail(incomingEmail)) {
+    res.status(400).json({ error: "Invalid email format." });
+    return;
+  }
 
   // Check if user is Super Admin
   if (incomingEmail === SUPER_ADMIN_EMAIL.toLowerCase().trim() || incomingEmail === "admin@company.com") {
@@ -574,7 +615,29 @@ app.post("/api/tiktok/connect", authenticateJWT, requireAdmin, (req: any, res) =
 
 app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
   const { code, state, error, error_description } = req.query;
-  const targetWorkspaceId = (state as string) || "ws-1"; 
+
+  // Verify OAuth state parameter to prevent CSRF attacks
+  const oauthStates: any = getCollection("oauth_states") || [];
+  const stateRecordIndex = oauthStates.findIndex((s: any) => s.state === state);
+  if (stateRecordIndex === -1 && process.env.NODE_ENV === "production") {
+    console.error("Invalid or expired OAuth state parameter:", state);
+    return res.redirect(`/settings?error=invalid_state&message=OAuth+CSRF+validation+failed.`);
+  }
+
+  // Extract targetWorkspaceId from verified record (fallback to state directly if not found in development)
+  const targetWorkspaceId = stateRecordIndex !== -1 ? oauthStates[stateRecordIndex].workspaceId : ((state as string) || "ws-1");
+
+  // Clean up used state record (single-use pattern)
+  if (stateRecordIndex !== -1) {
+    oauthStates.splice(stateRecordIndex, 1);
+    saveCollection("oauth_states", oauthStates);
+  }
+
+  let redirectUri = (process.env.TIKTOK_REDIRECT_URI || "").replace(/^["']|["']$/g, "").trim();
+  if (process.env.NODE_ENV !== "production") {
+    const protocol = req.secure ? "https" : "http";
+    redirectUri = `${protocol}://${req.headers.host}/api/tiktok/oauth/callback`;
+  }
 
   // 10. Validate environment variables
   if (!process.env.TIKTOK_CLIENT_KEY || !process.env.TIKTOK_CLIENT_SECRET || !process.env.TIKTOK_REDIRECT_URI || !process.env.TIKTOK_SCOPE) {
@@ -593,7 +656,7 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
       const isFallback = req.query.fallback === "true";
       if (!isFallback) {
         const authUrl = (process.env.TIKTOK_AUTH_URL || "https://www.tiktok.com/v2/auth/authorize/").replace(/^["']|["']$/g, "").trim();
-        const fallbackUrl = `${authUrl}?client_key=${TIKTOK_CLIENT_KEY}&redirect_uri=${encodeURIComponent(TIKTOK_REDIRECT_URI)}&response_type=code&scope=user.info.basic&state=${targetWorkspaceId}&fallback=true`;
+        const fallbackUrl = `${authUrl}?client_key=${TIKTOK_CLIENT_KEY}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=user.info.basic&state=${state || targetWorkspaceId}&fallback=true`;
         return res.redirect(fallbackUrl);
       }
     }
@@ -613,7 +676,7 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
     bodyParams.append("client_secret", TIKTOK_CLIENT_SECRET);
     bodyParams.append("code", code as string);
     bodyParams.append("grant_type", "authorization_code");
-    bodyParams.append("redirect_uri", TIKTOK_REDIRECT_URI);
+    bodyParams.append("redirect_uri", redirectUri);
 
     const response = await fetch(tokenUrl, {
       method: "POST",
@@ -739,12 +802,29 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
     });
   }
 
+  // Generate cryptographically secure state and save it in oauth_states collection
+  const state = crypto.randomBytes(16).toString("hex");
+  const oauthStates: any = getCollection("oauth_states") || [];
+  oauthStates.push({
+    state,
+    workspaceId: req.user.workspaceId,
+    createdAt: new Date().toISOString()
+  });
+  saveCollection("oauth_states", oauthStates);
+
+  let redirectUri = (process.env.TIKTOK_REDIRECT_URI || "").replace(/^["']|["']$/g, "").trim();
+  if (process.env.NODE_ENV !== "production") {
+    const protocol = req.secure ? "https" : "http";
+    redirectUri = `${protocol}://${req.headers.host}/api/tiktok/oauth/callback`;
+  }
+
   res.json({
     clientKey: (process.env.TIKTOK_CLIENT_KEY || "").replace(/^["']|["']$/g, "").trim(),
     scope: (process.env.TIKTOK_SCOPE || "").replace(/^["']|["']$/g, "").trim(),
     authUrl: (process.env.TIKTOK_AUTH_URL || "https://www.tiktok.com/v2/auth/authorize/").replace(/^["']|["']$/g, "").trim(),
     loginUrl: (process.env.TIKTOK_LOGIN_URL || "https://www.tiktok.com/login").replace(/^["']|["']$/g, "").trim(),
-    redirectUri: (process.env.TIKTOK_REDIRECT_URI || "").replace(/^["']|["']$/g, "").trim()
+    redirectUri,
+    state
   });
 });
 
@@ -827,9 +907,9 @@ app.get("/api/tiktok/video/:id", authenticateJWT, requireAdmin, async (req: any,
 });
 
 app.get("/api/tiktok/comments/:videoId", authenticateJWT, requireAdmin, (req: any, res) => {
-  const { videoId } = req.params;
+  const videoId = req.params.videoId;
   const workspaceId = req.user.workspaceId;
-  const comments = CommentService.getComments(workspaceId).filter(c => c.postId === videoId);
+  const comments = getCollection("comments").filter(c => c.workspaceId === workspaceId && c.postId === videoId);
   res.json(comments);
 });
 
@@ -845,9 +925,6 @@ app.get("/api/tiktok/orders", authenticateJWT, requireAdmin, (req: any, res) => 
   res.json(orders);
 });
 
-app.get("/api/notifications", authenticateJWT, requireAdmin, (req: any, res) => {
-  res.json(NotificationService.getNotifications(req.user.workspaceId));
-});
 
 // ==========================================
 // SUPER_ADMIN API ROUTES (REQUIRES SUPER_ADMIN)
@@ -954,6 +1031,26 @@ app.post("/api/notifications/create", authenticateJWT, (req: any, res) => {
     res.status(201).json(newNotif);
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to create notification." });
+  }
+});
+
+// Mark one notification as read
+app.post("/api/notifications/:id/read", authenticateJWT, (req: any, res) => {
+  try {
+    NotificationService.markOneAsRead(req.params.id);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to mark notification as read." });
+  }
+});
+
+// Delete notification
+app.delete("/api/notifications/:id", authenticateJWT, (req: any, res) => {
+  try {
+    NotificationService.deleteNotification(req.params.id);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to delete notification." });
   }
 });
 
@@ -1238,6 +1335,41 @@ app.get("/api/webhook/tiktok", (req, res) => {
 
 // 2. POST Webhook Comment & Message Notifications (receives webhook events, processes rules, DMs and replies)
 app.post("/api/webhook/tiktok", async (req, res) => {
+  const signatureHeader = req.headers["x-tiktok-signature"] || req.headers["tiktok-signature"] || req.headers["authorization"];
+  const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+  
+  if (clientSecret && signatureHeader) {
+    const rawBody = JSON.stringify(req.body);
+    const generated = crypto.createHmac("sha256", clientSecret).update(rawBody).digest("hex");
+    
+    let verified = false;
+    if (typeof signatureHeader === "string") {
+      if (signatureHeader.includes("t=") && signatureHeader.includes("s=")) {
+        const parts = signatureHeader.split(",");
+        const tPart = parts.find(p => p.startsWith("t="));
+        const sPart = parts.find(p => p.startsWith("s="));
+        if (tPart && sPart) {
+          const t = tPart.split("=")[1];
+          const s = sPart.split("=")[1];
+          const signedPayload = `${t}.${rawBody}`;
+          const expectedSign = crypto.createHmac("sha256", clientSecret).update(signedPayload).digest("hex");
+          if (expectedSign === s) {
+            verified = true;
+          }
+        }
+      } else {
+        if (signatureHeader === generated || signatureHeader.toLowerCase() === generated.toLowerCase()) {
+          verified = true;
+        }
+      }
+    }
+    
+    if (!verified && process.env.NODE_ENV === "production") {
+      console.warn("TikTok webhook signature verification failed.");
+      return res.status(401).send("Unauthorized: Invalid signature.");
+    }
+  }
+
   const event = req.body;
   console.log("Received TikTok Webhook event:", event);
 
@@ -1468,6 +1600,7 @@ app.post("/api/livestream/plans", authenticateJWT, (req: any, res: any) => {
     createdAt: new Date().toISOString()
   };
   plansCollection.unshift(newPlan);
+  saveCollection("livestream_plans", plansCollection);
   res.status(201).json(newPlan);
 });
 
@@ -1478,11 +1611,58 @@ app.delete("/api/livestream/plans/:id", authenticateJWT, (req: any, res: any) =>
   const planIndex = plansCollection.findIndex((p: any) => p.id === req.params.id && p.workspaceId === workspaceId);
   if (planIndex !== -1) {
     plansCollection.splice(planIndex, 1);
+    saveCollection("livestream_plans", plansCollection);
     res.json({ success: true });
   } else {
     res.status(404).json({ error: "Plan not found." });
   }
 });
+
+// Background Scheduler for automatic content and message sync
+function startBackgroundSyncWorker() {
+  const SYNC_INTERVAL_MS = 60000; // 60 seconds
+  console.log(`Starting Background Sync Worker (Interval: ${SYNC_INTERVAL_MS}ms)`);
+
+  setInterval(async () => {
+    try {
+      const workspaces = WorkspaceRepository.find();
+      for (const ws of workspaces) {
+        // Find connected accounts
+        const accounts = getCollection("connectedAccounts") || [];
+        const activeTiktok = accounts.find((a: any) => a.workspaceId === ws.id && a.platform === "TIKTOK" && a.status === "CONNECTED");
+        if (activeTiktok && activeTiktok.accessToken) {
+          console.log(`[Worker] Running background sync for workspace ${ws.id} (@${activeTiktok.username})...`);
+          
+          // 1. Sync Profile statistics & details
+          try {
+            await TikTokService.syncProfile(ws.id);
+          } catch (profileErr) {
+            console.error(`[Worker] Failed to sync profile for workspace ${ws.id}:`, profileErr);
+          }
+
+          // 2. Sync Conversations and messages
+          try {
+            await TikTokService.syncConversations(ws.id);
+          } catch (convErr) {
+            console.error(`[Worker] Failed to sync conversations for workspace ${ws.id}:`, convErr);
+          }
+
+          // 3. Process keyword comment automation for newly synced pending comments
+          try {
+            const comments = getCollection("comments").filter((c: any) => c.workspaceId === ws.id && c.status === "PENDING");
+            for (const comment of comments) {
+              await CommentService.processCommentAutomation(comment);
+            }
+          } catch (autoErr) {
+            console.error(`[Worker] Failed to run automations for workspace ${ws.id}:`, autoErr);
+          }
+        }
+      }
+    } catch (workerErr) {
+      console.error("[Worker] Unexpected background worker synchronization crash:", workerErr);
+    }
+  }, SYNC_INTERVAL_MS);
+}
 
 // ==========================================
 // VITE OR STATIC FILE SERVING MIDDLEWARE
@@ -1491,6 +1671,9 @@ app.delete("/api/livestream/plans/:id", authenticateJWT, (req: any, res: any) =>
 async function startServer() {
   // Initialize MongoDB / Local JSON Database
   await initDb();
+
+  // Start background sync scheduler/worker
+  startBackgroundSyncWorker();
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
