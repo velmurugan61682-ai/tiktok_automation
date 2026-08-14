@@ -137,6 +137,18 @@ const isValidEmail = (email: string) => {
   return emailRegex.test(email);
 };
 
+app.get("/api/auth/autofill-config", (req, res) => {
+  if (process.env.NODE_ENV === "production") {
+    return res.status(403).json({ error: "Autofill not available in production." });
+  }
+  res.json({
+    superAdminEmail: SUPER_ADMIN_EMAIL,
+    superAdminPassword: SUPER_ADMIN_PASSWORD,
+    tenantAdminEmail: TENANT_ADMIN_EMAIL,
+    tenantAdminPassword: TENANT_ADMIN_PASSWORD
+  });
+});
+
 app.post("/api/auth/login", authRateLimiter, (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -635,6 +647,7 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
 
   // Extract targetWorkspaceId from verified record (fallback to state directly if not found in development)
   const targetWorkspaceId = stateRecordIndex !== -1 ? oauthStates[stateRecordIndex].workspaceId : ((state as string) || "ws-1");
+  const codeVerifier = stateRecordIndex !== -1 ? oauthStates[stateRecordIndex].codeVerifier : "";
 
   // Clean up used state record (single-use pattern)
   if (stateRecordIndex !== -1) {
@@ -686,6 +699,9 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
     bodyParams.append("code", code as string);
     bodyParams.append("grant_type", "authorization_code");
     bodyParams.append("redirect_uri", redirectUri);
+    if (codeVerifier) {
+      bodyParams.append("code_verifier", codeVerifier);
+    }
 
     const response = await fetch(tokenUrl, {
       method: "POST",
@@ -812,12 +828,16 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
     });
   }
 
-  // Generate cryptographically secure state and save it in oauth_states collection
+  // Generate cryptographically secure state, code_verifier and code_challenge (PKCE)
   const state = crypto.randomBytes(16).toString("hex");
+  const codeVerifier = crypto.randomBytes(32).toString("hex");
+  const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("hex");
+
   const oauthStates: any = getCollection("oauth_states") || [];
   oauthStates.push({
     state,
     workspaceId: req.user.workspaceId,
+    codeVerifier,
     createdAt: new Date().toISOString()
   });
   saveCollection("oauth_states", oauthStates);
@@ -853,6 +873,8 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
     loginUrl: (process.env.TIKTOK_LOGIN_URL || "https://www.tiktok.com/login").replace(/^["']|["']$/g, "").trim(),
     redirectUri,
     state,
+    codeChallenge,
+    codeChallengeMethod: "S256",
     appStatus,
     capabilities
   });

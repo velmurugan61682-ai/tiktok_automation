@@ -1826,5 +1826,24 @@
       "aiResponsesCount": 30,
       "automationCount": 16
     }
+  ],
+  "oauth_states": [
+    {
+      "state": "698ebd283698ffb0138a48a1af4fdbb9",
+      "workspaceId": "ws-13",
+      "createdAt": "2026-08-14T12:32:46.546Z"
+    },
+    {
+      "state": "fc85e571ab37bb963c8a30603ed255bd",
+      "workspaceId": "ws-13",
+      "codeVerifier": "d008a1e90ebc41d0bc63acee98db5dc4d422aa485e013e4db947c211a67028bc",
+      "createdAt": "2026-08-14T12:35:38.490Z"
+    },
+    {
+      "state": "daf32a09923a05bfa49751e6bea95575",
+      "workspaceId": "ws-13",
+      "codeVerifier": "4ae26bf1a4c7ff9721cd0519ebc42eeb06c7c59df9c31f90de046b223cbcbfcf",
+      "createdAt": "2026-08-14T12:35:38.502Z"
+    }
   ]
 }

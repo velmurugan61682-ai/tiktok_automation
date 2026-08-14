@@ -38,6 +38,19 @@ const AuthPortal: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [autofillConfig, setAutofillConfig] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/autofill-config")
+      .then(r => r.json())
+      .then(data => {
+        if (!data.error) {
+          setAutofillConfig(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (user) {
       if (user.role === "SUPER_ADMIN") {
@@ -203,14 +216,14 @@ const AuthPortal: React.FC = () => {
   };
 
   const autofillSuperAdmin = () => {
-    setEmail("admin@company.com");
-    setPassword("adminpassword");
+    setEmail(autofillConfig?.superAdminEmail || "admin@company.com");
+    setPassword(autofillConfig?.superAdminPassword || "adminpassword");
     setIsRegister(false);
   };
 
   const autofillTenantAdmin = () => {
-    setEmail("owner@smartmart.com");
-    setPassword("password123");
+    setEmail(autofillConfig?.tenantAdminEmail || "owner@smartmart.com");
+    setPassword(autofillConfig?.tenantAdminPassword || "password123");
     setIsRegister(false);
   };
 

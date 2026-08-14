@@ -146,6 +146,7 @@ export const TenantDashboard: React.FC = () => {
   const [tiktokRedirectUri, setTiktokRedirectUri] = useState(`${window.location.origin}/api/tiktok/oauth/callback`);
   const [tiktokClientKey, setTiktokClientKey] = useState("sbawa2w03kqoovgg7z");
   const [tiktokOAuthState, setTiktokOAuthState] = useState("");
+  const [tiktokCodeChallenge, setTiktokCodeChallenge] = useState("");
   const [tiktokAppStatus, setTiktokAppStatus] = useState("UNDER_REVIEW");
   const [tiktokCapabilities, setTiktokCapabilities] = useState({
     canReadProfile: false,
@@ -252,6 +253,7 @@ export const TenantDashboard: React.FC = () => {
         setTiktokRedirectUri(configData.redirectUri);
         setTiktokClientKey(configData.clientKey);
         setTiktokOAuthState(configData.state || "");
+        setTiktokCodeChallenge(configData.codeChallenge || "");
         setTiktokAppStatus(configData.appStatus || "UNDER_REVIEW");
         if (configData.capabilities) {
           setTiktokCapabilities(configData.capabilities);
@@ -939,6 +941,10 @@ export const TenantDashboard: React.FC = () => {
                                 url.searchParams.set("response_type", "code");
                                 url.searchParams.set("scope", tiktokScope);
                                 url.searchParams.set("state", tiktokOAuthState || user?.workspaceId || "ws-1");
+                                if (tiktokCodeChallenge) {
+                                  url.searchParams.set("code_challenge", tiktokCodeChallenge);
+                                  url.searchParams.set("code_challenge_method", "S256");
+                                }
                                 window.location.href = url.toString();
                               }}
                               className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center"
@@ -964,6 +970,10 @@ export const TenantDashboard: React.FC = () => {
                               url.searchParams.set("response_type", "code");
                               url.searchParams.set("scope", tiktokScope);
                               url.searchParams.set("state", tiktokOAuthState || user?.workspaceId || "ws-1");
+                              if (tiktokCodeChallenge) {
+                                url.searchParams.set("code_challenge", tiktokCodeChallenge);
+                                url.searchParams.set("code_challenge_method", "S256");
+                              }
                               window.location.href = url.toString();
                             }}
                             className="w-full py-3 bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
