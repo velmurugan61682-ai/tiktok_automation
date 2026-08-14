@@ -143,7 +143,7 @@ export const TenantDashboard: React.FC = () => {
   const [tiktokAuthUrl, setTiktokAuthUrl] = useState("https://www.tiktok.com/v2/auth/authorize/");
   const [tiktokLoginUrl, setTiktokLoginUrl] = useState("https://www.tiktok.com/login");
   const [tiktokRedirectUri, setTiktokRedirectUri] = useState(`${window.location.origin}/api/tiktok/oauth/callback`);
-  const [tiktokClientKey, setTiktokClientKey] = useState("sbawfeqyhmuf4nrhdk");
+  const [tiktokClientKey, setTiktokClientKey] = useState("sbawa2w03kqoovgg7z");
   const [settingsSubTab, setSettingsSubTab] = useState("connected_accounts");
   const [profileName, setProfileName] = useState(user?.name || "");
   const [profileImagePreview, setProfileImagePreview] = useState("");

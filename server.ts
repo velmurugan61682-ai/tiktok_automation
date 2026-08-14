@@ -53,8 +53,8 @@ const SUPER_ADMIN_PASSWORD = (process.env.SUPER_ADMIN_PASSWORD || "adminpassword
 const SUPER_ADMIN_NAME = (process.env.SUPER_ADMIN_NAME || "System Administrator").replace(/^["']|["']$/g, "").trim();
 
 // --- TIKTOK ENV CREDENTIALS ---
-const TIKTOK_CLIENT_KEY = (process.env.TIKTOK_CLIENT_KEY || "6kbe0cpgmrg86").replace(/^["']|["']$/g, "").trim();
-const TIKTOK_CLIENT_SECRET = (process.env.TIKTOK_CLIENT_SECRET || "Lh1mxI9rzlLh7xfdUFmOjJS98i8on1U6").replace(/^["']|["']$/g, "").trim();
+const TIKTOK_CLIENT_KEY = (process.env.TIKTOK_CLIENT_KEY || "sbawa2w03kqoovgg7z").replace(/^["']|["']$/g, "").trim();
+const TIKTOK_CLIENT_SECRET = (process.env.TIKTOK_CLIENT_SECRET || "7tUA7YDvYRNFIo5Voe7MXdxUraWMwfuC").replace(/^["']|["']$/g, "").trim();
 const TIKTOK_REDIRECT_URI = (process.env.TIKTOK_REDIRECT_URI || "http://localhost:3000/api/tiktok/oauth/callback").replace(/^["']|["']$/g, "").trim();
 
 // --- RAZORPAY SUBSCRIPTION CREDENTIALS ---
