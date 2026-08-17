@@ -440,7 +440,7 @@
       "platform": "TIKTOK",
       "username": "tech.vaseegrah",
       "status": "CONNECTED",
-      "expiresAt": "2026-09-16T05:28:23.169Z",
+      "expiresAt": "2026-09-16T05:44:24.076Z",
       "accessToken": "act.ggAkx9Aowh5nVPX46l8KD6n5LRUf2hnBtKogkDAEY4GgIPdpRBCeeXiYq3K8!5216.s1",
       "refreshToken": "rft.NDGuJDJS1eX6jlTiu02orVplcazB1DYIYny5alBe3YXLm3OevyvfMTq3ZJEb!5235.s1",
       "connectedAt": "August 17, 2026",
@@ -2108,6 +2108,42 @@
       "workspaceId": "ws-13",
       "codeVerifier": "e0355a5e99ddcf9dbef0f285777fbf90cb35fdbfa7dfce29db04cbb857c0809c",
       "createdAt": "2026-08-17T05:40:10.239Z"
+    },
+    {
+      "state": "702bfb8f4d46cb2542c625898aa78a37",
+      "workspaceId": "ws-13",
+      "codeVerifier": "6381c7939445f2506b642df263196b94403e1a5a833ebd3e22563bfc7f802a8d",
+      "createdAt": "2026-08-17T05:43:17.970Z"
+    },
+    {
+      "state": "236fec95506561b0ed98b50b579b4328",
+      "workspaceId": "ws-13",
+      "codeVerifier": "7a650fce8d51428c3cb4f59ea53128311555299e5d811291b0d2e083a026b2cf",
+      "createdAt": "2026-08-17T05:43:21.886Z"
+    },
+    {
+      "state": "8f50770c9a39a01a23022bdb3bd18339",
+      "workspaceId": "ws-13",
+      "codeVerifier": "8cbf4fecded24cb3c2d32041150b0d78ee9cd39d3395ea507c4de38f170bb933",
+      "createdAt": "2026-08-17T05:43:49.798Z"
+    },
+    {
+      "state": "3e741b3d264b569b8700d716a629977a",
+      "workspaceId": "ws-13",
+      "codeVerifier": "084ef5aeb6b62d39a2c06aa87a387a37faec1df114b76743b82ee01ce3d458d9",
+      "createdAt": "2026-08-17T05:43:59.731Z"
+    },
+    {
+      "state": "1b5a6671fc5436145e93a84ef8185466",
+      "workspaceId": "ws-13",
+      "codeVerifier": "0dab391e6c49713cfc41d16c17f56dcd3ecdff742fedd8f3c68a264f1a2399cc",
+      "createdAt": "2026-08-17T05:44:30.190Z"
+    },
+    {
+      "state": "eaf0c292c1f36882b2250d02b5f533f6",
+      "workspaceId": "ws-13",
+      "codeVerifier": "a5847d58ea6d0c1a1fe89583ffff0051d334f9e4351b9964a29e2ee025d0a9bc",
+      "createdAt": "2026-08-17T05:44:30.996Z"
     }
   ]
 }
