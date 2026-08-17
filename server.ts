@@ -892,7 +892,7 @@ app.get("/api/tiktok/videos", authenticateJWT, requireAdmin, async (req: any, re
   const activeTiktok = accounts.find((ca: any) => ca.platform === "TIKTOK" && ca.status === "CONNECTED");
 
   if (!activeTiktok || !activeTiktok.username) {
-    return res.json([]);
+    return res.json({ videos: [], hasMore: false, totalCount: 0 });
   }
 
   // Check if video.list scope is in granted scopes
@@ -905,18 +905,40 @@ app.get("/api/tiktok/videos", authenticateJWT, requireAdmin, async (req: any, re
   }
 
   try {
-    const rawVideos = await TikTokService.getVideos(activeTiktok.username);
+    const rawCursor = req.query.cursor;
+    const rawLimit = req.query.limit;
+    console.log(`[/api/tiktok/videos] Raw query params - cursor: ${rawCursor} (type: ${typeof rawCursor}), limit: ${rawLimit} (type: ${typeof rawLimit})`);
+
+    const cursor = req.query.cursor !== undefined && req.query.cursor !== "" ? parseInt(req.query.cursor as string, 10) : undefined;
+    const limit = req.query.limit !== undefined && req.query.limit !== "" ? parseInt(req.query.limit as string, 10) : 8;
+    console.log(`[/api/tiktok/videos] Parsed params - cursor: ${cursor}, limit: ${limit}`);
+
+    const result = await TikTokService.getVideos(activeTiktok.username, cursor, limit);
+    console.log(`[/api/tiktok/videos] Returned from TikTokService - videos length: ${result?.videos?.length}, cursor: ${result?.cursor}, hasMore: ${result?.hasMore}`);
+    
     // Strict deduplication by video id
     const uniqueMap = new Map();
-    for (const v of rawVideos) {
-      if (v && v.id && !uniqueMap.has(v.id)) {
-        uniqueMap.set(v.id, v);
+    for (const v of result.videos) {
+      if (v && v.id) {
+        if (uniqueMap.has(v.id)) {
+          console.warn(`[DEDUPLICATION WARNING] Duplicate video ID detected in server endpoint: ${v.id}`);
+        } else {
+          uniqueMap.set(v.id, v);
+        }
       }
     }
-    res.json(Array.from(uniqueMap.values()));
+
+    const payload = {
+      videos: Array.from(uniqueMap.values()),
+      cursor: result.cursor,
+      hasMore: result.hasMore,
+      totalCount: activeTiktok.videoCount || 234
+    };
+    console.log(`[/api/tiktok/videos] Sending payload to frontend - videos count: ${payload.videos.length}, cursor: ${payload.cursor}, hasMore: ${payload.hasMore}, totalCount: ${payload.totalCount}`);
+    res.json(payload);
   } catch (err) {
     console.error("Failed to retrieve TikTok videos list:", err);
-    res.json([]);
+    res.json({ videos: [], hasMore: false, totalCount: activeTiktok.videoCount || 0 });
   }
 });
 

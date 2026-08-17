@@ -122,8 +122,13 @@ export class TikTokService {
     return account;
   }
 
-  static async getVideos(username: string): Promise<any[]> {
+  static async getVideos(
+    username: string,
+    cursor?: number,
+    limit = 8
+  ): Promise<{ videos: any[]; cursor?: number; hasMore: boolean }> {
     const videos: any[] = [];
+    console.log(`[TikTokService.getVideos] ENTER. username: ${username}, cursor: ${cursor} (type: ${typeof cursor}), limit: ${limit} (type: ${typeof limit})`);
 
     // 1. Try fetching using the official TikTok Video List API
     const accounts = getCollection("connectedAccounts").filter(ca => ca.username === username && ca.platform === "TIKTOK" && ca.status === "CONNECTED");
@@ -132,70 +137,71 @@ export class TikTokService {
 
     if (accessToken) {
       try {
-        console.log(`Calling TikTok Video List API for user @${username}...`);
-        let hasMore = true;
-        let cursor: number | undefined = undefined;
-        let page = 0;
-        const allFetchedVideos: any[] = [];
-
-        while (hasMore && page < 15) {
-          page++;
-          const reqBody: any = { max_count: 100 };
-          if (cursor !== undefined) {
-            reqBody.cursor = cursor;
-          }
-
-          const apiResponse = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,embed_link,view_count,like_count,comment_count,share_count,create_time", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${accessToken}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(reqBody)
-          });
-
-          if (apiResponse.ok) {
-            const apiData = await apiResponse.json();
-            console.log(`TikTok Video List API page ${page} response payload:`, JSON.stringify(apiData));
-            if (apiData.data && apiData.data.videos && apiData.data.videos.length > 0) {
-              const mapped = apiData.data.videos.map((v: any) => ({
-                id: v.id,
-                name: v.title || v.video_description || "TikTok Video",
-                sku: `TT-VIDEO-${v.id.slice(-4)}`,
-                price: 0,
-                stock: 1,
-                images: [v.cover_image_url || ""],
-                description: v.video_description || "",
-                url: v.embed_link || `https://www.tiktok.com/@${username}/video/${v.id}`
-              }));
-              allFetchedVideos.push(...mapped);
-              hasMore = apiData.data.has_more || false;
-              cursor = apiData.data.cursor;
-            } else {
-              hasMore = false;
-            }
-          } else {
-            console.warn(`TikTok Video List API page ${page} returned status ${apiResponse.status}.`);
-            hasMore = false;
-          }
+        console.log(`[TikTokService.getVideos] Access token found. Calling TikTok Video List API for user @${username} (cursor: ${cursor}, limit: ${limit})...`);
+        const reqBody: any = { max_count: limit };
+        if (cursor !== undefined) {
+          reqBody.cursor = cursor;
         }
 
-        if (allFetchedVideos.length > 0) {
-          const uniqueMap = new Map();
-          for (const item of allFetchedVideos) {
-            if (item && item.id && !uniqueMap.has(item.id)) {
-              uniqueMap.set(item.id, item);
+        const apiResponse = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,embed_link,view_count,like_count,comment_count,share_count,create_time", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(reqBody)
+        });
+
+        if (apiResponse.ok) {
+          const apiData = await apiResponse.json();
+          console.log(`[TikTokService.getVideos] Live API call succeeded. Response:`, JSON.stringify(apiData));
+          if (apiData.data && apiData.data.videos && apiData.data.videos.length > 0) {
+            const mapped = apiData.data.videos.map((v: any) => ({
+              id: v.id,
+              name: v.title || v.video_description || "TikTok Video",
+              sku: `TT-VIDEO-${v.id.slice(-4)}`,
+              price: 0,
+              stock: 1,
+              images: [v.cover_image_url || ""],
+              description: v.video_description || "",
+              url: v.embed_link || `https://www.tiktok.com/@${username}/video/${v.id}`
+            }));
+
+            // Deduplicate with warnings
+            const uniqueMap = new Map();
+            for (const item of mapped) {
+              if (item && item.id) {
+                if (uniqueMap.has(item.id)) {
+                  console.warn(`[DEDUPLICATION WARNING] Duplicate video ID detected in TikTok API page results: ${item.id}`);
+                } else {
+                  uniqueMap.set(item.id, item);
+                }
+              }
             }
+
+            console.log(`[TikTokService.getVideos] Returning ${uniqueMap.size} unique videos from TikTok API.`);
+            return {
+              videos: Array.from(uniqueMap.values()),
+              cursor: apiData.data.cursor,
+              hasMore: apiData.data.has_more || false
+            };
+          } else {
+            console.log(`[TikTokService.getVideos] Live API returned ok but empty videos list.`);
+            return { videos: [], hasMore: false };
           }
-          return Array.from(uniqueMap.values());
+        } else {
+          console.warn(`[TikTokService.getVideos] TikTok Video List API returned status ${apiResponse.status}. Trying fallbacks.`);
         }
       } catch (apiErr) {
-        console.warn("TikTok Video List API request unavailable. Using profile fallback.");
+        console.warn("[TikTokService.getVideos] TikTok Video List API request failed. Using profile fallback:", apiErr);
       }
+    } else {
+      console.log(`[TikTokService.getVideos] No access token found. Skipping live API call.`);
     }
 
     // 2. Fallback: Parse the public profile page if the official API is restricted in the sandbox
     const videoIds: string[] = [];
+    console.log(`[TikTokService.getVideos] Attempting public profile scrape fallback...`);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -211,86 +217,122 @@ export class TikTokService {
         const escapedUsername = username.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
         const videoRegex = new RegExp(`/@${escapedUsername}/video/(\\d+)`, "g");
         const matches = [...text.matchAll(videoRegex)];
-        const parsedIds = Array.from(new Set(matches.map(m => m[1])));
-        videoIds.push(...parsedIds);
+        
+        const seenIds = new Set();
+        for (const m of matches) {
+          const id = m[1];
+          if (seenIds.has(id)) {
+            console.warn(`[DEDUPLICATION WARNING] Duplicate video ID detected in scraper profile regex matches: ${id}`);
+          } else {
+            seenIds.add(id);
+            videoIds.push(id);
+          }
+        }
+        console.log(`[TikTokService.getVideos] Scrape fallback found ${videoIds.length} video IDs.`);
       }
     } catch (err: any) {
       if (err.name === "AbortError") {
-        console.warn(`Public profile fetch for @${username} timed out. Using fallback mock videos.`);
+        console.warn(`[TikTokService.getVideos] Public profile fetch for @${username} timed out. Using fallback mock videos.`);
       } else {
-        console.warn(`Public profile fetch for @${username} unavailable: ${err.message || err}`);
+        console.warn(`[TikTokService.getVideos] Public profile fetch for @${username} unavailable: ${err.message || err}`);
       }
     }
 
-    // 3. Resolve metadata via OEmbed for discovered video IDs
-    for (const vidId of videoIds) {
-      const videoUrl = `https://www.tiktok.com/@${username}/video/${vidId}`;
-      try {
-        const oembedRes = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`);
-        if (oembedRes.ok) {
-          const oembedData = await oembedRes.json();
-          videos.push({
-            id: vidId,
-            name: oembedData.title || "TikTok Video",
-            sku: `TT-VIDEO-${vidId.slice(-4)}`,
-            price: 0,
-            stock: 1,
-            images: [oembedData.thumbnail_url || ""],
-            description: `TikTok Video: ${oembedData.title || ""}`,
-            url: videoUrl
-          });
+    // 3. Resolve metadata via OEmbed for discovered video IDs in the current page slice
+    if (videoIds.length > 0) {
+      const startOffset = cursor !== undefined ? cursor : 0;
+      const endOffset = startOffset + limit;
+      const slicedVideoIds = videoIds.slice(startOffset, endOffset);
+      console.log(`[TikTokService.getVideos] Resolving OEmbed for slice ${startOffset} to ${endOffset}. IDs:`, slicedVideoIds);
+
+      for (const vidId of slicedVideoIds) {
+        const videoUrl = `https://www.tiktok.com/@${username}/video/${vidId}`;
+        try {
+          const oembedRes = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`);
+          if (oembedRes.ok) {
+            const oembedData = await oembedRes.json();
+            videos.push({
+              id: vidId,
+              name: oembedData.title || "TikTok Video",
+              sku: `TT-VIDEO-${vidId.slice(-4)}`,
+              price: 0,
+              stock: 1,
+              images: [oembedData.thumbnail_url || ""],
+              description: `TikTok Video: ${oembedData.title || ""}`,
+              url: videoUrl
+            });
+          }
+        } catch (e) {
+          console.error(`OEmbed request failed for video ${vidId}:`, e);
         }
-      } catch (e) {
-        console.error(`OEmbed request failed for video ${vidId}:`, e);
       }
+
+      const hasMore = endOffset < videoIds.length;
+      const nextCursor = hasMore ? endOffset : undefined;
+      console.log(`[TikTokService.getVideos] Returning ${videos.length} scraped videos. nextCursor: ${nextCursor}, hasMore: ${hasMore}`);
+
+      return {
+        videos,
+        cursor: nextCursor,
+        hasMore
+      };
     }
 
-    if (videos.length === 0) {
-      const cleanUsername = username.replace(/^@/, "");
-      const accounts = getCollection("connectedAccounts");
-      const connected = accounts.find(ca => ca.username.toLowerCase() === cleanUsername.toLowerCase() && ca.platform === "TIKTOK");
-      const targetCount = connected?.videoCount && connected.videoCount > 0 ? connected.videoCount : 234;
+    // 4. Mock Generator Fallback
+    const cleanUsername = username.replace(/^@/, "");
+    const accountsList = getCollection("connectedAccounts");
+    const connected = accountsList.find(ca => ca.username.toLowerCase() === cleanUsername.toLowerCase() && ca.platform === "TIKTOK");
+    const targetCount = connected?.videoCount && connected.videoCount > 0 ? connected.videoCount : 234;
+    console.log(`[TikTokService.getVideos] Scrape fallback empty. Using Mock Generator. targetCount: ${targetCount}`);
 
-      const sampleImages = [
-        "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=600&q=80", // TikTok interface / viral tech video
-        "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=600&q=80", // Mobile app video feed
-        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80", // AI tech workflow
-        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80", // Modern tech studio
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80", // Tech hardware demo
-        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80"  // Laptop & mobile creator workspace
-      ];
+    const sampleImages = [
+      "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=600&q=80", // TikTok interface / viral tech video
+      "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=600&q=80", // Mobile app video feed
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80", // AI tech workflow
+      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80", // Modern tech studio
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80", // Tech hardware demo
+      "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80"  // Laptop & mobile creator workspace
+    ];
 
-      const postTitles = [
-        "Tech & Automation Secrets Every Creator Needs",
-        "How We Automated Our Entire Customer DM Workflow",
-        "Top 5 AI Tools for TikTok Growth in 2026",
-        "Store Inventory & Order Syncing Live Demo",
-        "Comment Moderation & Auto-Reply Walkthrough",
-        "Boosting Store Conversion Rates with AI Chatbots"
-      ];
+    const postTitles = [
+      "Tech & Automation Secrets Every Creator Needs",
+      "How We Automated Our Entire Customer DM Workflow",
+      "Top 5 AI Tools for TikTok Growth in 2026",
+      "Store Inventory & Order Syncing Live Demo",
+      "Comment Moderation & Auto-Reply Walkthrough",
+      "Boosting Store Conversion Rates with AI Chatbots"
+    ];
 
-      const generated: any[] = [];
-      for (let i = 0; i < targetCount; i++) {
-        const idNum = `738192048591029${3841 + i}`;
-        const img1 = sampleImages[i % sampleImages.length];
-        const img2 = sampleImages[(i + 1) % sampleImages.length];
-        const titleTitle = postTitles[i % postTitles.length];
-        generated.push({
-          id: idNum,
-          name: `${cleanUsername} - ${titleTitle} (#${i + 1})`,
-          sku: `TT-VIDEO-${3841 + i}`,
-          price: 0,
-          stock: 1,
-          images: [img1, img2],
-          description: `TikTok Video Post: ${titleTitle} from @${cleanUsername}`,
-          url: `https://www.tiktok.com/@${cleanUsername}/video/${idNum}`
-        });
-      }
-      return generated;
-      return generated;
+    const startOffset = cursor !== undefined ? cursor : 0;
+    const endOffset = Math.min(startOffset + limit, targetCount);
+    const generated: any[] = [];
+
+    for (let i = startOffset; i < endOffset; i++) {
+      const idNum = `738192048591029${3841 + i}`;
+      const img1 = sampleImages[i % sampleImages.length];
+      const img2 = sampleImages[(i + 1) % sampleImages.length];
+      const titleTitle = postTitles[i % postTitles.length];
+      generated.push({
+        id: idNum,
+        name: `${cleanUsername} - ${titleTitle} (#${i + 1})`,
+        sku: `TT-VIDEO-${3841 + i}`,
+        price: 0,
+        stock: 1,
+        images: [img1, img2],
+        description: `TikTok Video Post: ${titleTitle} from @${cleanUsername}`,
+        url: `https://www.tiktok.com/@${cleanUsername}/video/${idNum}`
+      });
     }
 
-    return videos;
+    const hasMore = endOffset < targetCount;
+    const nextCursor = hasMore ? endOffset : undefined;
+    console.log(`[TikTokService.getVideos] Generated ${generated.length} mock videos. nextCursor: ${nextCursor}, hasMore: ${hasMore}`);
+
+    return {
+      videos: generated,
+      cursor: nextCursor,
+      hasMore
+    };
   }
 
   static async sendDirectMessage(workspaceId: string, recipientOpenId: string, text: string): Promise<boolean> {

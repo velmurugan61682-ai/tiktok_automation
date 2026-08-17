@@ -67,7 +67,10 @@ function ensureDbDir() {
 async function connectMongo() {
   if (!MONGO_URL) return null;
   try {
-    mongoClient = new MongoClient(MONGO_URL);
+    mongoClient = new MongoClient(MONGO_URL, {
+      connectTimeoutMS: 2000,
+      serverSelectionTimeoutMS: 2000
+    });
     await mongoClient.connect();
     mongoDbConnected = true;
     console.log("Connected successfully to MongoDB");

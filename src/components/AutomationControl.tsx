@@ -91,6 +91,12 @@ export const AutomationControl: React.FC = () => {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [videosPermissionError, setVideosPermissionError] = useState("");
 
+  const [modalVideos, setModalVideos] = useState<Product[]>([]);
+  const [nextCursor, setNextCursor] = useState<number | undefined>(undefined);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalVideosCount, setTotalVideosCount] = useState(0);
+  const [cursorStack, setCursorStack] = useState<(number | undefined)[]>([undefined]);
+
   // Comment Automation rule creation states
   const [triggerKeyword, setTriggerKeyword] = useState("");
   const [replyType, setReplyType] = useState<"Text" | "Carousel">("Text");
@@ -117,14 +123,81 @@ export const AutomationControl: React.FC = () => {
   // Modal Pagination
   const [modalPage, setModalPage] = useState(1);
 
-  const loadData = async () => {
+  const fetchVideosPage = async (cursorValue?: number) => {
+    if (!token) return;
     try {
       const h = { Authorization: `Bearer ${token}` };
+      const url = cursorValue !== undefined
+        ? `/api/tiktok/videos?limit=8&cursor=${cursorValue}`
+        : `/api/tiktok/videos?limit=8`;
+      console.log(`[AutomationControl.fetchVideosPage] Fetching URL: ${url}, cursorValue: ${cursorValue}`);
+      const res = await fetch(url, { headers: h });
+      if (res.ok) {
+        const data = await res.json();
+        console.log(`[AutomationControl.fetchVideosPage] Received response:`, data);
+        const videosList = data.videos || [];
+        
+        // Deduplicate and warnings
+        const seenIdsInBatch = new Set();
+        const uniqueVideos = (Array.isArray(videosList) ? videosList : []).filter((v: any) => {
+          if (!v || !v.id) return false;
+          if (seenIdsInBatch.has(v.id)) {
+            console.warn(`[DEDUPLICATION WARNING] Duplicate video ID detected in page batch: ${v.id}`);
+            return false;
+          }
+          seenIdsInBatch.add(v.id);
+          return true;
+        });
+
+        // Merge into products list (which accumulates loaded items)
+        setProducts(prev => {
+          const merged = [...prev];
+          for (const uv of uniqueVideos) {
+            if (!merged.some(p => p.id === uv.id)) {
+              merged.push(uv);
+            }
+          }
+          return merged;
+        });
+
+        setModalVideos(uniqueVideos);
+        setNextCursor(data.cursor);
+        setHasMore(data.hasMore);
+        setTotalVideosCount(data.totalCount || uniqueVideos.length);
+      }
+    } catch (e) {
+      console.error("Error fetching videos page:", e);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (hasMore && nextCursor !== undefined) {
+      setCursorStack(prev => [...prev, nextCursor]);
+      setModalPage(p => p + 1);
+      fetchVideosPage(nextCursor);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (modalPage > 1) {
+      const newStack = cursorStack.slice(0, -1);
+      const prevCursor = newStack[newStack.length - 1];
+      setCursorStack(newStack);
+      setModalPage(p => p - 1);
+      fetchVideosPage(prevCursor);
+    }
+  };
+
+  const loadData = async () => {
+    try {
+      console.log("[AutomationControl.loadData] Start loading dashboard data...");
+      const h = { Authorization: `Bearer ${token}` };
+      console.log("[AutomationControl.loadData] Fetching rules, comments, products, and initial videos page (limit 8)...");
       const [resRules, resComm, resProd, resVideos] = await Promise.all([
         fetch("/api/automation/rules", { headers: h }),
         fetch("/api/comments", { headers: h }),
         fetch("/api/products", { headers: h }),
-        fetch("/api/tiktok/videos", { headers: h })
+        fetch("/api/tiktok/videos?limit=8", { headers: h })
       ]);
 
       if (resRules.ok) setRules(await resRules.json());
@@ -133,13 +206,28 @@ export const AutomationControl: React.FC = () => {
       let videoItems: any[] = [];
       setVideosPermissionError("");
       if (resVideos.ok) {
-        const videosList = await resVideos.json();
+        const data = await resVideos.json();
+        console.log("[AutomationControl.loadData] Initial videos response data:", data);
+        const videosList = data.videos || [];
+        
+        // Strict deduplication by video id
         const seenIds = new Set();
         videoItems = (Array.isArray(videosList) ? videosList : []).filter((v: any) => {
-          if (!v || !v.id || seenIds.has(v.id)) return false;
+          if (!v || !v.id) return false;
+          if (seenIds.has(v.id)) {
+            console.warn(`[DEDUPLICATION WARNING] Duplicate video ID detected in loadData: ${v.id}`);
+            return false;
+          }
           seenIds.add(v.id);
           return true;
         });
+
+        // Set pagination states
+        setModalVideos(videoItems);
+        setNextCursor(data.cursor);
+        setHasMore(data.hasMore);
+        setTotalVideosCount(data.totalCount || videoItems.length);
+        console.log(`[AutomationControl.loadData] Loaded initial ${videoItems.length} videos. totalCount: ${data.totalCount}, hasMore: ${data.hasMore}, cursor: ${data.cursor}`);
       } else if (resVideos.status === 403) {
         try {
           const errData = await resVideos.json();
@@ -163,6 +251,64 @@ export const AutomationControl: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [token]);
+
+  // Load missing video details for rules if they are not in the products state
+  useEffect(() => {
+    const loadMissingRuleVideos = async () => {
+      const missingIds = rules
+        .map(r => r.postId)
+        .filter((id): id is string => !!id && !products.some(p => p.id === id));
+      
+      const uniqueMissingIds = Array.from(new Set(missingIds));
+      
+      for (const id of uniqueMissingIds) {
+        try {
+          const res = await fetch(`/api/tiktok/video/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const video = await res.json();
+            setProducts(prev => {
+              if (prev.some(p => p.id === video.id)) return prev;
+              return [...prev, video];
+            });
+          }
+        } catch (e) {
+          console.error(`Failed to fetch rule video details for ID ${id}:`, e);
+        }
+      }
+    };
+
+    if (rules.length > 0 && token) {
+      loadMissingRuleVideos();
+    }
+  }, [rules, token]);
+
+  // Load selectedPostId details if missing
+  useEffect(() => {
+    const loadSelectedPost = async () => {
+      if (selectedPostId && !products.some(p => p.id === selectedPostId)) {
+        try {
+          const res = await fetch(`/api/tiktok/video/${selectedPostId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const video = await res.json();
+            setProducts(prev => {
+              if (prev.some(p => p.id === video.id)) return prev;
+              return [...prev, video];
+            });
+          }
+        } catch (e) {
+          console.error(`Failed to fetch selected video details for ID ${selectedPostId}:`, e);
+        }
+      }
+    };
+
+    if (selectedPostId && token) {
+      loadSelectedPost();
+    }
+  }, [selectedPostId, token]);
 
   // Set initial default selections on list loads
   const activeCommentChatRules = rules.filter(r => 
@@ -1182,10 +1328,7 @@ export const AutomationControl: React.FC = () => {
             
             {/* Grid selector with dynamic pagination */}
             {(() => {
-              const itemsPerPage = 8;
-              const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
-              const currentPageClamped = Math.min(modalPage, totalPages);
-              const currentItems = products.slice((currentPageClamped - 1) * itemsPerPage, currentPageClamped * itemsPerPage);
+              const totalPages = Math.max(1, Math.ceil(totalVideosCount / 8));
 
               return (
                 <>
@@ -1194,12 +1337,12 @@ export const AutomationControl: React.FC = () => {
                       <div className="col-span-4 p-8 text-center text-rose-600 text-xs font-semibold">
                         {videosPermissionError}
                       </div>
-                    ) : products.length === 0 ? (
+                    ) : modalVideos.length === 0 ? (
                       <div className="col-span-4 p-8 text-center text-slate-400 text-xs font-semibold">
                         No TikTok videos were returned for this account.
                       </div>
                     ) : (
-                      currentItems.map(prod => {
+                      modalVideos.map(prod => {
                         const isSelected = prod.id === selectedPostId;
                         return (
                           <div
@@ -1247,18 +1390,18 @@ export const AutomationControl: React.FC = () => {
                   {/* Bottom pagination */}
                   <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                     <button
-                      onClick={() => setModalPage(p => Math.max(1, p - 1))}
-                      disabled={currentPageClamped <= 1}
+                      onClick={handlePrevPage}
+                      disabled={modalPage <= 1}
                       className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
                     >
                       Prev
                     </button>
                     <span className="text-[10px] font-bold text-slate-500">
-                      Page {currentPageClamped} of {totalPages} ({products.length} videos)
+                      Page {modalPage} of {totalPages} ({totalVideosCount} videos)
                     </span>
                     <button
-                      onClick={() => setModalPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPageClamped >= totalPages}
+                      onClick={handleNextPage}
+                      disabled={!hasMore}
                       className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
                     >
                       Next
