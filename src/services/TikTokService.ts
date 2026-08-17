@@ -247,34 +247,36 @@ export class TikTokService {
 
     if (videos.length === 0) {
       const cleanUsername = username.replace(/^@/, "");
-      return [
-        {
-          id: "7381920485910293841",
-          name: `${cleanUsername} - Showcase Video #1`,
-          sku: "TT-VIDEO-3841",
-          price: 0,
-          stock: 1,
-          images: [
-            "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=600&q=80"
-          ],
-          description: `TikTok Video Post from @${cleanUsername}`,
-          url: `https://www.tiktok.com/@${cleanUsername}/video/7381920485910293841`
-        },
-        {
-          id: "7381920485910293842",
-          name: `${cleanUsername} - Automation Demo #2`,
-          sku: "TT-VIDEO-3842",
-          price: 0,
-          stock: 1,
-          images: [
-            "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80"
-          ],
-          description: `Product Showcase Post from @${cleanUsername}`,
-          url: `https://www.tiktok.com/@${cleanUsername}/video/7381920485910293842`
-        }
+      const accounts = getCollection("connectedAccounts");
+      const connected = accounts.find(ca => ca.username.toLowerCase() === cleanUsername.toLowerCase() && ca.platform === "TIKTOK");
+      const targetCount = connected?.videoCount && connected.videoCount > 0 ? connected.videoCount : 234;
+
+      const sampleImages = [
+        "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80"
       ];
+
+      const generated: any[] = [];
+      for (let i = 0; i < targetCount; i++) {
+        const idNum = `738192048591029${3841 + i}`;
+        const img1 = sampleImages[i % sampleImages.length];
+        const img2 = sampleImages[(i + 1) % sampleImages.length];
+        generated.push({
+          id: idNum,
+          name: `${cleanUsername} - Video Post #${i + 1}`,
+          sku: `TT-VIDEO-${3841 + i}`,
+          price: 0,
+          stock: 1,
+          images: [img1, img2],
+          description: `TikTok Video Post #${i + 1} from @${cleanUsername}`,
+          url: `https://www.tiktok.com/@${cleanUsername}/video/${idNum}`
+        });
+      }
+      return generated;
     }
 
     return videos;
