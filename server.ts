@@ -69,6 +69,87 @@ const RAZORPAY_KEY_SECRET = cleanEnv(process.env.RAZORPAY_KEY_SECRET);
 const RAZORPAY_PLAN_ID = cleanEnv(process.env.RAZORPAY_PLAN_ID);
 const RAZORPAY_PRO_PRICE = Number(cleanEnv(process.env.RAZORPAY_PRO_PRICE) || "499");
 const RAZORPAY_SUBSCRIPTION_CYCLES = Number(cleanEnv(process.env.RAZORPAY_SUBSCRIPTION_CYCLES) || "12");
+const OAUTH_STATE_COOKIE = "tiktok_oauth_state";
+const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+
+const getRequestOrigin = (req: any) => {
+  const configuredUrl = cleanEnv(process.env.APP_URL);
+  if (configuredUrl) return configuredUrl.replace(/\/+$/, "");
+
+  const forwardedProto = (req.headers["x-forwarded-proto"] || "").toString().split(",")[0].trim();
+  const protocol = forwardedProto || (req.secure ? "https" : "http");
+  return `${protocol}://${req.headers.host}`;
+};
+
+const buildAppRedirect = (req: any, pathAndQuery: string) => {
+  return new URL(pathAndQuery, `${getRequestOrigin(req)}/`).toString();
+};
+
+const getQueryValue = (value: any) => {
+  if (Array.isArray(value)) return value[0] || "";
+  return value ? String(value) : "";
+};
+
+const signOAuthState = (payload: Record<string, any>) => {
+  const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const sig = crypto.createHmac("sha256", JWT_SECRET).update(body).digest("base64url");
+  return `${body}.${sig}`;
+};
+
+const verifyOAuthStateCookie = (cookieValue?: string) => {
+  try {
+    if (!cookieValue) return null;
+    const [body, sig] = cookieValue.split(".");
+    if (!body || !sig) return null;
+
+    const expectedSig = crypto.createHmac("sha256", JWT_SECRET).update(body).digest("base64url");
+    const sigBuffer = Buffer.from(sig);
+    const expectedBuffer = Buffer.from(expectedSig);
+    if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) return null;
+
+    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf-8"));
+    if (!payload.createdAt || Date.now() - new Date(payload.createdAt).getTime() > OAUTH_STATE_TTL_MS) {
+      return null;
+    }
+    return payload;
+  } catch (err) {
+    console.warn("Ignoring invalid TikTok OAuth state cookie:", err);
+    return null;
+  }
+};
+
+const getCookieValue = (req: any, name: string) => {
+  const cookieHeader = req.headers.cookie || "";
+  const cookies = cookieHeader.split(";").map((part: string) => part.trim());
+  const prefix = `${name}=`;
+  const match = cookies.find((part: string) => part.startsWith(prefix));
+  return match ? decodeURIComponent(match.slice(prefix.length)) : "";
+};
+
+const setOAuthStateCookie = (res: any, payload: Record<string, any>) => {
+  const secure = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+  const cookie = [
+    `${OAUTH_STATE_COOKIE}=${encodeURIComponent(signOAuthState(payload))}`,
+    "HttpOnly",
+    "SameSite=Lax",
+    "Path=/api/tiktok/oauth/callback",
+    "Max-Age=600",
+    secure ? "Secure" : ""
+  ].filter(Boolean).join("; ");
+  res.setHeader("Set-Cookie", cookie);
+};
+
+const clearOAuthStateCookie = (res: any) => {
+  const secure = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+  res.setHeader("Set-Cookie", [
+    `${OAUTH_STATE_COOKIE}=`,
+    "HttpOnly",
+    "SameSite=Lax",
+    "Path=/api/tiktok/oauth/callback",
+    "Max-Age=0",
+    secure ? "Secure" : ""
+  ].filter(Boolean).join("; "));
+};
 
 // ==========================================
 // MIDDLEWARES
@@ -636,75 +717,97 @@ app.post("/api/tiktok/connect", authenticateJWT, requireAdmin, (req: any, res) =
 });
 
 app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
-  const { code, state, error, error_description } = req.query;
-
-  // Verify OAuth state parameter to prevent CSRF attacks
-  const oauthStates: any = getCollection("oauth_states") || [];
-  const stateRecordIndex = oauthStates.findIndex((s: any) => s.state === state);
-  if (stateRecordIndex === -1 && process.env.NODE_ENV === "production") {
-    console.error("Invalid or expired OAuth state parameter:", state);
-    return res.redirect(`/settings?error=invalid_state&message=OAuth+CSRF+validation+failed.`);
-  }
-
-  // Extract targetWorkspaceId from verified record (fallback to state directly if not found in development)
-  const targetWorkspaceId = stateRecordIndex !== -1 ? oauthStates[stateRecordIndex].workspaceId : ((state as string) || "ws-1");
-  const codeVerifier = stateRecordIndex !== -1 ? oauthStates[stateRecordIndex].codeVerifier : "";
-
-  // Clean up used state record (single-use pattern)
-  if (stateRecordIndex !== -1) {
-    oauthStates.splice(stateRecordIndex, 1);
-    saveCollection("oauth_states", oauthStates);
-  }
-
-  let redirectUri = (process.env.TIKTOK_REDIRECT_URI || "").replace(/^["']|["']$/g, "").trim();
-  if (!redirectUri && process.env.NODE_ENV !== "production") {
-    const protocol = req.secure ? "https" : "http";
-    redirectUri = `${protocol}://${req.headers.host}/api/tiktok/oauth/callback`;
-  }
-
-  // 10. Validate environment variables
-  if (!process.env.TIKTOK_CLIENT_KEY || !process.env.TIKTOK_CLIENT_SECRET || !process.env.TIKTOK_REDIRECT_URI || !process.env.TIKTOK_SCOPE) {
-    const missing = [];
-    if (!process.env.TIKTOK_CLIENT_KEY) missing.push("TIKTOK_CLIENT_KEY");
-    if (!process.env.TIKTOK_CLIENT_SECRET) missing.push("TIKTOK_CLIENT_SECRET");
-    if (!process.env.TIKTOK_REDIRECT_URI) missing.push("TIKTOK_REDIRECT_URI");
-    if (!process.env.TIKTOK_SCOPE) missing.push("TIKTOK_SCOPE");
-    return res.redirect(`/settings?error=missing_env_variables&message=${encodeURIComponent("Missing: " + missing.join(", "))}`);
-  }
-
-  // 8. If requested scope is not available (TikTok returns invalid_scope), retry with user.info.basic
-  if (error) {
-    const errorStr = error as string;
-    if (errorStr === "invalid_scope") {
-      const isFallback = req.query.fallback === "true";
-      if (!isFallback) {
-        const authUrl = (process.env.TIKTOK_AUTH_URL || "https://www.tiktok.com/v2/auth/authorize/").replace(/^["']|["']$/g, "").trim();
-        const fallbackUrl = `${authUrl}?client_key=${TIKTOK_CLIENT_KEY}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=user.info.basic&state=${state || targetWorkspaceId}&fallback=true`;
-        return res.redirect(fallbackUrl);
-      }
-    }
-    return res.redirect(`/settings?error=${encodeURIComponent(errorStr)}&description=${encodeURIComponent((error_description as string) || "Authorization failed.")}`);
-  }
-
-  if (!code) {
-    return res.redirect(`/settings?error=missing_authorization_code`);
-  }
-
   try {
-    const tokenUrl = "https://open.tiktokapis.com/v2/oauth/token/";
-    
-    // 5. Exchange the authorization code via URL-encoded form POST
+    const code = getQueryValue(req.query.code);
+    const state = getQueryValue(req.query.state);
+    const error = getQueryValue(req.query.error);
+    const errorDescription = getQueryValue(req.query.error_description);
+
+    const redirectWithError = (errorName: string, message?: string) => {
+      const params = new URLSearchParams({ error: errorName });
+      if (message) params.set("message", message);
+      return res.redirect(buildAppRedirect(req, `/settings?${params.toString()}`));
+    };
+
+    const clientKey = cleanEnv(process.env.TIKTOK_CLIENT_KEY);
+    const clientSecret = cleanEnv(process.env.TIKTOK_CLIENT_SECRET);
+    const configuredRedirectUri = cleanEnv(process.env.TIKTOK_REDIRECT_URI);
+    const configuredScope = cleanEnv(process.env.TIKTOK_SCOPE);
+
+    if (!clientKey || !clientSecret || !configuredRedirectUri || !configuredScope) {
+      const missing = [];
+      if (!clientKey) missing.push("TIKTOK_CLIENT_KEY");
+      if (!clientSecret) missing.push("TIKTOK_CLIENT_SECRET");
+      if (!configuredRedirectUri) missing.push("TIKTOK_REDIRECT_URI");
+      if (!configuredScope) missing.push("TIKTOK_SCOPE");
+      console.error("TikTok OAuth callback missing environment variables:", missing.join(", "));
+      return redirectWithError("missing_env_variables", `Missing: ${missing.join(", ")}`);
+    }
+
+    const redirectUri = configuredRedirectUri;
+
+    if (error) {
+      if (error === "invalid_scope") {
+        const isFallback = getQueryValue(req.query.fallback) === "true";
+        if (!isFallback) {
+          const authUrl = cleanEnv(process.env.TIKTOK_AUTH_URL) || "https://www.tiktok.com/v2/auth/authorize/";
+          const fallbackUrl = new URL(authUrl);
+          fallbackUrl.searchParams.set("client_key", clientKey);
+          fallbackUrl.searchParams.set("redirect_uri", redirectUri);
+          fallbackUrl.searchParams.set("response_type", "code");
+          fallbackUrl.searchParams.set("scope", "user.info.basic");
+          fallbackUrl.searchParams.set("state", state);
+          fallbackUrl.searchParams.set("fallback", "true");
+          return res.redirect(fallbackUrl.toString());
+        }
+      }
+      return res.redirect(buildAppRedirect(req, `/settings?error=${encodeURIComponent(error)}&description=${encodeURIComponent(errorDescription || "Authorization failed.")}`));
+    }
+
+    if (!code) {
+      return redirectWithError("missing_authorization_code");
+    }
+
+    const oauthStates: any[] = getCollection("oauth_states") || [];
+    const stateRecordIndex = oauthStates.findIndex((s: any) => s.state === state);
+    const cookieState = verifyOAuthStateCookie(getCookieValue(req, OAUTH_STATE_COOKIE));
+    const cookieMatchesState = cookieState && cookieState.state === state;
+
+    if (stateRecordIndex === -1 && !cookieMatchesState) {
+      console.error("Invalid or expired OAuth state parameter:", {
+        state,
+        hasCookieState: Boolean(cookieState),
+        nodeEnv: process.env.NODE_ENV,
+        vercel: Boolean(process.env.VERCEL)
+      });
+      clearOAuthStateCookie(res);
+      return redirectWithError("invalid_state", "OAuth CSRF validation failed. Please retry TikTok connection.");
+    }
+
+    const targetWorkspaceId = stateRecordIndex !== -1
+      ? oauthStates[stateRecordIndex].workspaceId
+      : cookieState.workspaceId;
+    const codeVerifier = stateRecordIndex !== -1
+      ? (oauthStates[stateRecordIndex].codeVerifier || "")
+      : (cookieState.codeVerifier || "");
+
+    if (stateRecordIndex !== -1) {
+      oauthStates.splice(stateRecordIndex, 1);
+      saveCollection("oauth_states", oauthStates);
+    }
+    clearOAuthStateCookie(res);
+
     const bodyParams = new URLSearchParams();
-    bodyParams.append("client_key", TIKTOK_CLIENT_KEY);
-    bodyParams.append("client_secret", TIKTOK_CLIENT_SECRET);
-    bodyParams.append("code", code as string);
+    bodyParams.append("client_key", clientKey);
+    bodyParams.append("client_secret", clientSecret);
+    bodyParams.append("code", code);
     bodyParams.append("grant_type", "authorization_code");
     bodyParams.append("redirect_uri", redirectUri);
     if (codeVerifier) {
       bodyParams.append("code_verifier", codeVerifier);
     }
 
-    const response = await fetch(tokenUrl, {
+    const response = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -715,26 +818,31 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
 
     const responseText = await response.text();
     let tokenData: any;
-    
-    // 9. If TikTok returns HTML instead of JSON, handle it properly
     try {
       tokenData = JSON.parse(responseText);
     } catch (parseErr) {
-      console.error("TikTok token response is not JSON:", responseText);
-      return res.redirect(`/settings?error=invalid_json_response&message=TikTok+returned+HTML+instead+of+JSON&details=${encodeURIComponent(responseText.substring(0, 150))}`);
+      console.error("TikTok token response is not JSON:", {
+        status: response.status,
+        bodyPreview: responseText.substring(0, 500)
+      });
+      return redirectWithError("invalid_json_response", "TikTok returned a non-JSON token response.");
     }
 
     if (!response.ok || tokenData.error || !tokenData.access_token) {
       const errName = tokenData.error || "token_exchange_failed";
       const errDesc = tokenData.error_description || tokenData.message || "Failed to exchange authorization code.";
-      console.error("TikTok OAuth exchange failure response:", tokenData);
-      return res.redirect(`/settings?error=${encodeURIComponent(errName)}&description=${encodeURIComponent(errDesc)}`);
+      console.error("TikTok OAuth exchange failure response:", {
+        status: response.status,
+        error: errName,
+        description: errDesc,
+        redirectUri
+      });
+      return res.redirect(buildAppRedirect(req, `/settings?error=${encodeURIComponent(errName)}&description=${encodeURIComponent(errDesc)}`));
     }
 
     const accessToken = tokenData.access_token;
     const refreshToken = tokenData.refresh_token || "";
-    
-    // Fetch profile username info to associate with connection
+
     let username = "user9136354359278";
     let display_name = "user9136354359278";
     let avatar_url = "";
@@ -744,6 +852,7 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
     let followingCount = 0;
     let likesCount = 0;
     let videoCount = 0;
+
     try {
       let userResponse = await fetch("https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name,username,follower_count,following_count,likes_count,video_count", {
         headers: {
@@ -753,7 +862,6 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
       if (!userResponse.ok) {
         const errorText = await userResponse.text();
         console.warn("Retrying TikTok user info with basic fields due to status:", userResponse.status, errorText);
-        
         userResponse = await fetch("https://open.tiktokapis.com/v2/user/info/?fields=open_id,avatar_url,display_name", {
           headers: {
             Authorization: `Bearer ${accessToken}`
@@ -784,44 +892,52 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
       console.error("Failed to fetch profile details from TikTok:", userErr);
     }
 
-    if (username === "user9136354359278") {
-      if (videoCount === 0) videoCount = 2;
+    if (username === "user9136354359278" && videoCount === 0) {
+      videoCount = 2;
     }
 
-    // Connect real account (Replaced fake mock logic)
     TikTokService.connectAccount(
-      targetWorkspaceId, 
-      username, 
-      accessToken, 
+      targetWorkspaceId,
+      username,
+      accessToken,
       refreshToken,
-      { 
-        followerCount, 
-        followingCount, 
+      {
+        followerCount,
+        followingCount,
         likesCount,
         display_name,
         avatar_url,
         open_id,
         union_id,
         videoCount,
-        scopes: tokenData.scope ? tokenData.scope.split(",").map((s: string) => s.trim()) : (process.env.TIKTOK_SCOPE || "").split(",").map(s => s.trim())
+        scopes: tokenData.scope
+          ? tokenData.scope.split(/[,\s]+/).map((s: string) => s.trim()).filter(Boolean)
+          : configuredScope.split(/[,\s]+/).map(s => s.trim()).filter(Boolean)
       }
     );
 
-    return res.redirect(`/settings?connected=true&username=${encodeURIComponent(username)}`);
-
+    return res.redirect(buildAppRedirect(req, `/settings?connected=true&username=${encodeURIComponent(username)}`));
   } catch (err: any) {
-    console.error("TikTok OAuth unexpected callback error:", err);
-    return res.redirect(`/settings?error=server_error&message=${encodeURIComponent(err.message)}`);
+    console.error("TikTok OAuth unexpected callback error:", {
+      message: err?.message,
+      stack: err?.stack,
+      query: req.query
+    });
+    return res.redirect(buildAppRedirect(req, `/settings?error=server_error&message=${encodeURIComponent(err?.message || "Unexpected TikTok OAuth callback error")}`));
   }
 });
 
 app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => {
   // Validate environment variables before starting OAuth
+  const clientKey = cleanEnv(process.env.TIKTOK_CLIENT_KEY);
+  const clientSecret = cleanEnv(process.env.TIKTOK_CLIENT_SECRET);
+  const redirectUri = cleanEnv(process.env.TIKTOK_REDIRECT_URI);
+  const scope = cleanEnv(process.env.TIKTOK_SCOPE);
   const missing = [];
-  if (!process.env.TIKTOK_CLIENT_KEY) missing.push("TIKTOK_CLIENT_KEY");
-  if (!process.env.TIKTOK_CLIENT_SECRET) missing.push("TIKTOK_CLIENT_SECRET");
-  if (!process.env.TIKTOK_REDIRECT_URI) missing.push("TIKTOK_REDIRECT_URI");
-  if (!process.env.TIKTOK_SCOPE) missing.push("TIKTOK_SCOPE");
+  if (!clientKey) missing.push("TIKTOK_CLIENT_KEY");
+  if (!clientSecret) missing.push("TIKTOK_CLIENT_SECRET");
+  if (!redirectUri) missing.push("TIKTOK_REDIRECT_URI");
+  if (!scope) missing.push("TIKTOK_SCOPE");
 
   if (missing.length > 0) {
     return res.status(500).json({
@@ -834,22 +950,17 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
   const codeVerifier = crypto.randomBytes(32).toString("hex");
   const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
 
-  const oauthStates: any = getCollection("oauth_states") || [];
-  oauthStates.push({
+  const statePayload = {
     state,
     workspaceId: req.user.workspaceId,
     codeVerifier,
     createdAt: new Date().toISOString()
-  });
+  };
+
+  const oauthStates: any = getCollection("oauth_states") || [];
+  oauthStates.push(statePayload);
   saveCollection("oauth_states", oauthStates);
-
-  let redirectUri = (process.env.TIKTOK_REDIRECT_URI || "").replace(/^["']|["']$/g, "").trim();
-  if (!redirectUri && process.env.NODE_ENV !== "production") {
-    const protocol = req.secure ? "https" : "http";
-    redirectUri = `${protocol}://${req.headers.host}/api/tiktok/oauth/callback`;
-  }
-
-  const clientKey = (process.env.TIKTOK_CLIENT_KEY || "").replace(/^["']|["']$/g, "").trim();
+  setOAuthStateCookie(res, statePayload);
   let appStatus = "UNDER_REVIEW";
   if (clientKey.startsWith("sb")) {
     appStatus = "SANDBOX";
@@ -857,7 +968,7 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
     appStatus = process.env.TIKTOK_APP_STATUS;
   }
 
-  const scopes = (process.env.TIKTOK_SCOPE || "").split(",").map(s => s.trim());
+  const scopes = scope.split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
   const capabilities = {
     canReadProfile: scopes.includes("user.info.basic") || scopes.includes("user.info.profile"),
     canReadVideos: scopes.includes("video.list"),
@@ -869,7 +980,7 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
 
   res.json({
     clientKey,
-    scope: (process.env.TIKTOK_SCOPE || "").replace(/^["']|["']$/g, "").trim(),
+    scope,
     authUrl: (process.env.TIKTOK_AUTH_URL || "https://www.tiktok.com/v2/auth/authorize/").replace(/^["']|["']$/g, "").trim(),
     loginUrl: (process.env.TIKTOK_LOGIN_URL || "https://www.tiktok.com/login").replace(/^["']|["']$/g, "").trim(),
     redirectUri,
