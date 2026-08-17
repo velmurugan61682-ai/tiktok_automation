@@ -1730,11 +1730,9 @@ function startBackgroundSyncWorker() {
 // VITE OR STATIC FILE SERVING MIDDLEWARE
 // ==========================================
 
-async function startServer() {
-  // Initialize MongoDB / Local JSON Database
+export async function ensureDbAndSeed() {
   await initDb();
 
-  // Seed / Sync Tenant Admin user credentials from env variables
   let tenantUser = UserRepository.findByEmail(TENANT_ADMIN_EMAIL);
   const salt = bcrypt.genSaltSync(10);
   const passHash = bcrypt.hashSync(TENANT_ADMIN_PASSWORD, salt);
@@ -1761,7 +1759,6 @@ async function startServer() {
     });
     console.log(`Default Tenant Admin seeded: ${TENANT_ADMIN_EMAIL}`);
   } else {
-    // Sync password hash if updated
     let isMatched = false;
     try {
       isMatched = bcrypt.compareSync(TENANT_ADMIN_PASSWORD, tenantUser.passwordHash);
@@ -1773,6 +1770,24 @@ async function startServer() {
       UserRepository.update(tenantUser.id, { passwordHash: passHash });
     }
   }
+}
+
+let isDbInitialized = false;
+
+app.use(async (req: any, res: any, next: any) => {
+  if (!isDbInitialized) {
+    try {
+      await ensureDbAndSeed();
+      isDbInitialized = true;
+    } catch (err) {
+      console.error("Failed to initialize DB in middleware:", err);
+    }
+  }
+  next();
+});
+
+async function startServer() {
+  await ensureDbAndSeed();
 
   // Start background sync scheduler/worker
   startBackgroundSyncWorker();
