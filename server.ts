@@ -656,7 +656,7 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
   }
 
   let redirectUri = (process.env.TIKTOK_REDIRECT_URI || "").replace(/^["']|["']$/g, "").trim();
-  if (process.env.NODE_ENV !== "production") {
+  if (!redirectUri && process.env.NODE_ENV !== "production") {
     const protocol = req.secure ? "https" : "http";
     redirectUri = `${protocol}://${req.headers.host}/api/tiktok/oauth/callback`;
   }
@@ -831,7 +831,7 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
   // Generate cryptographically secure state, code_verifier and code_challenge (PKCE)
   const state = crypto.randomBytes(16).toString("hex");
   const codeVerifier = crypto.randomBytes(32).toString("hex");
-  const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("hex");
+  const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
 
   const oauthStates: any = getCollection("oauth_states") || [];
   oauthStates.push({
@@ -843,7 +843,7 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
   saveCollection("oauth_states", oauthStates);
 
   let redirectUri = (process.env.TIKTOK_REDIRECT_URI || "").replace(/^["']|["']$/g, "").trim();
-  if (process.env.NODE_ENV !== "production") {
+  if (!redirectUri && process.env.NODE_ENV !== "production") {
     const protocol = req.secure ? "https" : "http";
     redirectUri = `${protocol}://${req.headers.host}/api/tiktok/oauth/callback`;
   }
