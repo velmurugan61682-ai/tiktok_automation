@@ -9,6 +9,27 @@ export class AutomationRepository {
 
   static createRule(rule: Omit<AutomationRule, "id" | "createdAt" | "usageCount">): AutomationRule {
     const rules = getCollection("automationRules");
+    
+    // Deduplication check: check if an identical rule already exists for this workspace
+    const existingIndex = rules.findIndex(r =>
+      r.workspaceId === rule.workspaceId &&
+      r.type === rule.type &&
+      (rule.postId ? r.postId === rule.postId : true) &&
+      rule.triggerKeyword.some(kw => r.triggerKeyword.map(k => k.toLowerCase()).includes(kw.toLowerCase()))
+    );
+
+    if (existingIndex !== -1) {
+      console.warn(`[DEDUPLICATION WARNING] Duplicate automation rule detected for keyword(s) "${rule.triggerKeyword.join(", ")}" in workspace ${rule.workspaceId}. Updating existing rule (${rules[existingIndex].id}).`);
+      const updated = {
+        ...rules[existingIndex],
+        ...rule,
+        isEnabled: true
+      };
+      rules[existingIndex] = updated;
+      saveCollection("automationRules", rules);
+      return updated;
+    }
+
     const newId = `rule-${rules.length + 1}`;
     const newRule: AutomationRule = {
       ...rule,

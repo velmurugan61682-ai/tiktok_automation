@@ -448,7 +448,7 @@
       "followingCount": 1,
       "likesCount": 11781,
       "display_name": "Tech Vaseegrah",
-      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=ce189570&x-expires=1787133600&x-signature=BPu91Mss%2FawlzCu1PyYUht%2FOWM8%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=768267d3&x-expires=1787137200&x-signature=SWcgiRcZffLckZ%2FerzLqQwamqZ8%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
       "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
       "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
       "videoCount": 234,
@@ -1495,6 +1495,22 @@
       "id": "rule-14",
       "usageCount": 0,
       "createdAt": "2026-07-21"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "PRICE"
+      ],
+      "replyTemplate": "Here is your link: http://example.com/price",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "",
+      "replyCommentText": "Just sent you a DM! Promo code is on its way.",
+      "followersOnly": false,
+      "workspaceId": "ws-1",
+      "id": "rule-15",
+      "usageCount": 0,
+      "createdAt": "2026-08-17"
     }
   ],
   "knowledgeBases": [
@@ -2230,22 +2246,106 @@
       "createdAt": "2026-08-17T09:41:53.725Z"
     },
     {
-      "state": "f74e21829097de7c25ab2ed6462e73c3",
-      "workspaceId": "ws-13",
-      "codeVerifier": "ed1d12723dd81c893ebc3290fb0542974987716300f8ac083426867c61eca66e",
-      "createdAt": "2026-08-17T09:57:49.013Z"
+      "state": "c4d4dd2674dcb11f3044c5516774740a",
+      "workspaceId": "ws-1",
+      "codeVerifier": "1bde7e502ae317e4f5cdf9f28e1fbed4bceae1587474a69480a616b3fe1d0073",
+      "createdAt": "2026-08-17T10:32:06.299Z"
     },
     {
-      "state": "c3e3c23ff538ad27dd1c0b4371334fa5",
+      "state": "4d0eb441d76e3987ef8fd58f0f6ae75f",
       "workspaceId": "ws-13",
-      "codeVerifier": "f10fa1071e4c689ca978138ae8a7a39a4d1f5146a97398818b90d4a1b427d0cb",
-      "createdAt": "2026-08-17T09:57:50.625Z"
+      "codeVerifier": "0ec558407453ad8cfbd6b23472f3fae38ca1c99453037a3f982933b75bb319bd",
+      "createdAt": "2026-08-17T10:45:09.881Z"
     },
     {
-      "state": "9cbc550239e652b4ea0fdb1b94d54276",
+      "state": "e68e55f18b9eb2083b1db1c469df28d6",
       "workspaceId": "ws-13",
-      "codeVerifier": "e19ed54c9016a5d46c9aee21988ce88f03303fdd956f077cc74add2b67dde093",
-      "createdAt": "2026-08-17T10:00:49.003Z"
+      "codeVerifier": "09effb4c2d61bb2c366727d24a855f8dac842b723e5c1760b82a7de39aa7fe35",
+      "createdAt": "2026-08-17T10:48:11.505Z"
+    },
+    {
+      "state": "4a485da742245235ea40cb3abedea445",
+      "workspaceId": "ws-13",
+      "codeVerifier": "e64bfd44e408b532f8e18ae40d18965deabd83a6450b7a434cc7835cedacd1ba",
+      "createdAt": "2026-08-17T10:54:17.447Z"
+    },
+    {
+      "state": "42abc454dd8a7bd0265b8c7d4358a973",
+      "workspaceId": "ws-1",
+      "codeVerifier": "d051e2b2481d78cc0e16bf3ff4809879ca196fdb071f36d79b67264062c3998f",
+      "createdAt": "2026-08-17T10:58:59.876Z"
+    },
+    {
+      "state": "333d60d72c498e3b12290d26809053b4",
+      "workspaceId": "ws-1",
+      "codeVerifier": "cde4eba0ac92bf97e8869f89290f06eccf1436ea063377584b3c305b535542f0",
+      "createdAt": "2026-08-17T11:03:13.291Z"
+    },
+    {
+      "state": "09fd9a7500fd51fa0b7065b0cebf3af4",
+      "workspaceId": "ws-1",
+      "codeVerifier": "f01fc25bb92724210a0da3710f1f9f52628cd41f0f095e94b0f56cb5aaa9214d",
+      "createdAt": "2026-08-17T11:06:56.833Z"
+    },
+    {
+      "state": "44389e30d7928b3070bd2e5ec7a64b77",
+      "workspaceId": "ws-1",
+      "codeVerifier": "b3f6f4fcb0089736b97bef4de5841092232754e3242fd5df57eb5629c0c556e4",
+      "createdAt": "2026-08-17T11:06:56.855Z"
+    },
+    {
+      "state": "20a582af428e82116bea893d4634abc7",
+      "workspaceId": "ws-1",
+      "codeVerifier": "f5eb9f96f75249298479f8ce817ac80449af4e58357846f600826616bf989034",
+      "createdAt": "2026-08-17T11:11:03.683Z"
+    },
+    {
+      "state": "9ed3268cdc37592e1fd129788a958c27",
+      "workspaceId": "ws-1",
+      "codeVerifier": "4f9395ec02ecb0ae348a36936cfde754beb6ccff4a45e9e304fc79557bd3d017",
+      "createdAt": "2026-08-17T11:11:03.698Z"
+    },
+    {
+      "state": "25fd6729fc22c4f6f9ba8d47e11ae766",
+      "workspaceId": "ws-1",
+      "codeVerifier": "0b09abdca30706ddd783a34ad07411c160c03bcb44879a6b275e696d53e14362",
+      "createdAt": "2026-08-17T11:12:38.608Z"
+    },
+    {
+      "state": "bad89e41f88cbd88a717a35e644b5d8b",
+      "workspaceId": "ws-1",
+      "codeVerifier": "7735f207e775e95110c8c7d17064e979e632593056e46ba150fef7c93e899f5a",
+      "createdAt": "2026-08-17T11:12:38.656Z"
+    },
+    {
+      "state": "51e22a8ee0c6b2ce1a1d31eb2a430e3b",
+      "workspaceId": "ws-1",
+      "codeVerifier": "c321805bd5bc281c56bc2e8c2eef3b66bf81d55266a8a977b77c0e4c1bece3a4",
+      "createdAt": "2026-08-17T11:20:33.429Z"
+    },
+    {
+      "state": "886f61c146cbdd68c7a4e96b7ef5843c",
+      "workspaceId": "ws-13",
+      "codeVerifier": "d6fb05835c7dc2ff4df0c7be8e6789b0708b29a02c49ac8fe4c40ebb058ac6ba",
+      "createdAt": "2026-08-17T11:27:23.383Z"
+    },
+    {
+      "state": "f03a495b06599b59e518b43ee3d21d48",
+      "workspaceId": "ws-13",
+      "codeVerifier": "6d7a98cedb4a3866bd777ec79a2e2a255b786d82184fd00c3bf135c2a864ad95",
+      "createdAt": "2026-08-17T11:27:23.879Z"
+    },
+    {
+      "state": "4acff95b2ec47f7c08c2f1d272a009a7",
+      "workspaceId": "ws-13",
+      "codeVerifier": "170a2c942024391bf0b5f957c0d4020ead4f1dd173bb394f43674e25fdf36d6e",
+      "createdAt": "2026-08-17T11:40:35.022Z"
+    },
+    {
+      "state": "f2bbdaa5515c3890b062661814000f02",
+      "workspaceId": "ws-13",
+      "codeVerifier": "0def70b21691b4aed3233e4c7461806615da68aff9e47cb6f156e90c6531b942",
+      "createdAt": "2026-08-17T11:40:35.441Z"
     }
   ]
 }

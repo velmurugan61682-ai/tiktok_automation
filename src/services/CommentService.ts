@@ -75,9 +75,25 @@ export class CommentService {
 
     const hasToxicWords = TOXIC_WORDS.some(word => textLower.includes(word));
     if (hasToxicWords || matchedModRule) {
-      console.log(`Flagging toxic or moderation-banned comment: "${text}"`);
+      const isSevere = textLower.includes("scam") || textLower.includes("fraud") || textLower.includes("abuse") || textLower.includes("insult");
+      const moderationAction: "DELETED" | "HIDDEN" = isSevere ? "DELETED" : "HIDDEN";
+      const toxicityScore = isSevere ? 92 : 78;
+      const moderationExplanation = isSevere 
+        ? "Comment contains severe allegations or toxic language flagged by AI moderation pipeline."
+        : "Comment contains potential negative sentiment or spam content flagged by AI moderation.";
+
+      console.log(`Flagging and moderating comment (${moderationAction}): "${text}"`);
+      
+      // Execute moderation action via TikTok API
+      TikTokService.deleteOrHideComment(workspaceId, postId, comment.id, moderationAction).catch(err =>
+        console.error(`Failed to execute TikTok comment moderation (${moderationAction}):`, err)
+      );
+
       const updated = CommentRepository.update(workspaceId, comment.id, {
-        status: "FLAGGED"
+        status: "FLAGGED",
+        moderationAction,
+        toxicityScore,
+        moderationExplanation
       });
       return updated || comment;
     }

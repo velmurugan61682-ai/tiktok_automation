@@ -200,6 +200,9 @@ export interface Comment {
   replyText?: string;
   dmSent?: boolean;
   status: "PENDING" | "REPLIED" | "FLAGGED";
+  moderationAction?: "DELETED" | "HIDDEN";
+  toxicityScore?: number;
+  moderationExplanation?: string;
   createdAt: string;
   isLiveStream?: boolean;
 }

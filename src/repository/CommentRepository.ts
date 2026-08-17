@@ -8,6 +8,20 @@ export class CommentRepository {
 
   static create(comment: Omit<Comment, "id" | "createdAt">): Comment {
     const comments = getCollection("comments");
+
+    // Deduplication check: verify if identical comment text on same post was already recorded
+    const existing = comments.find(c =>
+      c.workspaceId === comment.workspaceId &&
+      c.postId === comment.postId &&
+      c.customerId === comment.customerId &&
+      c.text.trim().toLowerCase() === comment.text.trim().toLowerCase()
+    );
+
+    if (existing) {
+      console.warn(`[DEDUPLICATION WARNING] Duplicate comment detected for customer ${comment.customerName} on post ${comment.postId}. Returning existing comment (${existing.id}).`);
+      return existing;
+    }
+
     const newId = `c-${comments.length + 1}`;
     const newComment: Comment = {
       ...comment,

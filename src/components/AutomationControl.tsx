@@ -433,27 +433,35 @@ export const AutomationControl: React.FC = () => {
   const activeProduct = products.find(p => p.id === selectedPostId);
 
   // Dynamically calculate moderated comments based on the real comments in database
+  const seenModCommentIds = new Set<string>();
   const moderatedComments = comments.filter(c => {
+    if (!c || !c.id) return false;
+    if (seenModCommentIds.has(c.id)) {
+      console.warn(`[DEDUPLICATION WARNING] Duplicate comment detected in moderation list: ${c.id}`);
+      return false;
+    }
+    seenModCommentIds.add(c.id);
+
     // If toxicity or bad words exist, or status is flagged
     const textLower = c.text.toLowerCase();
     const hasFlaggedWords = textLower.includes("scam") || textLower.includes("fraud") || textLower.includes("fake") || textLower.includes("bad") || textLower.includes("useless") || c.status === "FLAGGED";
     return hasFlaggedWords;
-  }).map((c, idx) => {
+  }).map(c => {
     const textLower = c.text.toLowerCase();
-    let explanation = "The comment contains potential negative sentiment or product complaints flagged by AI.";
-    let toxicity = 75;
-    let badges = ["Tamilish"];
+    let explanation = c.moderationExplanation || "The comment contains potential negative sentiment or product complaints flagged by AI.";
+    let toxicity = c.toxicityScore || (textLower.includes("fraud") || textLower.includes("scam") ? 95 : 78);
+    let badges = ["AI Moderated"];
     
     if (textLower.includes("fraud") || textLower.includes("scam")) {
-      explanation = "Comment contains allegations of scam or fraudulent store activity.";
-      toxicity = 95;
+      if (!c.moderationExplanation) explanation = "Comment contains allegations of scam or fraudulent store activity.";
       badges = ["abuse", "high toxicity"];
     } else if (textLower.includes("useless") || textLower.includes("fake")) {
-      explanation = "Targeted insult criticizing product quality without order reference.";
-      toxicity = 82;
+      if (!c.moderationExplanation) explanation = "Targeted insult criticizing product quality without order reference.";
       badges = ["insult"];
     }
     
+    const action = c.moderationAction || (textLower.includes("fraud") || textLower.includes("scam") ? "DELETED" : "HIDDEN");
+
     return {
       id: c.id,
       username: c.customerName,
@@ -461,7 +469,7 @@ export const AutomationControl: React.FC = () => {
       text: c.text,
       explanation,
       badges,
-      action: idx % 2 === 0 ? "DELETED" : "HIDDEN",
+      action,
       toxicity
     };
   });
@@ -1074,8 +1082,19 @@ export const AutomationControl: React.FC = () => {
             {selectedRuleId && activeCommentChatRules.find(r => r.id === selectedRuleId) ? (
               (() => {
                 const currentRule = activeCommentChatRules.find(r => r.id === selectedRuleId)!;
-                const ruleProduct = products.find(p => p.id === currentRule.postId);
-                const relatedComments = comments.filter(c => c.text.toLowerCase().includes(currentRule.triggerKeyword[0]?.toLowerCase() || ""));
+                const selectedRuleProduct = products.find(p => p.id === currentRule.postId);
+                const seenChatCommentIds = new Set<string>();
+                const relatedComments = comments.filter(c => {
+                  if (!c || !c.id) return false;
+                  if (seenChatCommentIds.has(c.id)) {
+                    console.warn(`[DEDUPLICATION WARNING] Duplicate comment detected in chat logs: ${c.id}`);
+                    return false;
+                  }
+                  seenChatCommentIds.add(c.id);
+
+                  if (currentRule.postId && c.postId === currentRule.postId) return true;
+                  return currentRule.triggerKeyword.some(kw => c.text.toLowerCase().includes(kw.toLowerCase()));
+                });
 
                 return (
                   <div className="space-y-6 flex-1 flex flex-col justify-between">
@@ -1083,18 +1102,18 @@ export const AutomationControl: React.FC = () => {
                     {/* Selected Post header card */}
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-155 flex items-start gap-4">
                       <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-slate-200">
-                        {ruleProduct?.images?.[0] ? (
-                          <img src={ruleProduct.images[0]} alt="product thumbnail" className="w-full h-full object-cover" />
+                        {selectedRuleProduct?.images?.[0] ? (
+                          <img src={selectedRuleProduct.images[0]} alt="product thumbnail" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-slate-200 flex items-center justify-center font-bold text-slate-400">P</div>
                         )}
                       </div>
                       <div className="space-y-1">
                         <h4 className="text-xs font-extrabold text-slate-850 leading-snug">
-                          {ruleProduct 
-                            ? ruleProduct.sku.startsWith("TT-VIDEO")
-                              ? `Automation Trigger for TikTok Video: ${ruleProduct.name}`
-                              : `Automation Trigger for Product: ${ruleProduct.name} - SKU: ${ruleProduct.sku}`
+                          {selectedRuleProduct 
+                            ? selectedRuleProduct.sku.startsWith("TT-VIDEO")
+                              ? `Automation Trigger for TikTok Video: ${selectedRuleProduct.name}`
+                              : `Automation Trigger for Product: ${selectedRuleProduct.name} - SKU: ${selectedRuleProduct.sku}`
                             : "Automation Trigger active on TikTok comment stream"}
                         </h4>
                         <p className="text-[9px] text-slate-400 font-semibold">{relatedComments.length} active comment logs found</p>
@@ -1177,7 +1196,11 @@ export const AutomationControl: React.FC = () => {
             <div className="bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex items-center justify-between">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Avg Toxicity</span>
-                <p className="text-2xl font-extrabold text-emerald-600">{filteredModerated.length > 0 ? "82%" : "0%"}</p>
+                <p className="text-2xl font-extrabold text-emerald-600">
+                  {filteredModerated.length > 0
+                    ? `${Math.round(filteredModerated.reduce((sum, f) => sum + f.toxicity, 0) / filteredModerated.length)}%`
+                    : "0%"}
+                </p>
                 <span className="text-[9px] text-emerald-500 font-extrabold">Toxicity index logs</span>
               </div>
             </div>

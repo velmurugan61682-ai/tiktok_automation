@@ -573,4 +573,49 @@ export class TikTokService {
       console.error("Failed to run syncConversations:", err);
     }
   }
+
+  static async deleteOrHideComment(
+    workspaceId: string,
+    postId: string,
+    commentId: string,
+    action: "DELETED" | "HIDDEN"
+  ): Promise<boolean> {
+    const accounts = this.getConnectedAccounts(workspaceId);
+    const activeTiktok = accounts.find(ca => ca.platform === "TIKTOK" && ca.status === "CONNECTED");
+    if (!activeTiktok || !activeTiktok.accessToken || activeTiktok.accessToken === "mock_access_token_xyz123") {
+      console.log(`[TikTok Moderation Simulation] ${action} comment ${commentId} on post ${postId} for @${activeTiktok?.username || "connected_user"}.`);
+      return true;
+    }
+
+    try {
+      console.log(`Executing real TikTok API comment moderation (${action}) for comment ${commentId}...`);
+      const endpoint = action === "DELETED"
+        ? "https://open.tiktokapis.com/v2/post/comment/delete/"
+        : "https://open.tiktokapis.com/v2/post/comment/hide/";
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${activeTiktok.accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          comment_id: commentId,
+          post_id: postId
+        })
+      });
+
+      if (res.ok) {
+        console.log(`Successfully performed ${action} on TikTok comment ${commentId}`);
+        return true;
+      } else {
+        const errText = await res.text();
+        console.error(`TikTok API comment moderation returned status ${res.status}: ${errText}`);
+        return false;
+      }
+    } catch (err) {
+      console.error("Failed to invoke TikTok API comment moderation:", err);
+      return false;
+    }
+  }
 }
