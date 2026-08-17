@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { MongoClient } from "mongodb";
 import {
   User,
@@ -27,7 +28,8 @@ export interface OAuthState {
   createdAt: string;
 }
 
-const DB_DIR = path.join(process.cwd(), "data");
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DB_DIR = isServerless ? path.join(os.tmpdir(), "data") : path.join(process.cwd(), "data");
 const DB_FILE = path.join(DB_DIR, "db.json");
 
 export interface DatabaseSchema {
@@ -59,8 +61,12 @@ let mongoClient: MongoClient | null = null;
 let mongoDbConnected = false;
 
 function ensureDbDir() {
-  if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DB_DIR)) {
+      fs.mkdirSync(DB_DIR, { recursive: true });
+    }
+  } catch (e) {
+    console.warn("Could not create DB directory (expected in read-only environment):", (e as any)?.message || e);
   }
 }
 
@@ -76,7 +82,7 @@ async function connectMongo() {
     console.log("Connected successfully to MongoDB");
     return mongoClient.db("creatorflow_ai");
   } catch (err) {
-    console.error("Failed to connect to MongoDB, falling back to local JSON database", err);
+    console.error("Failed to connect to MongoDB, falling back to local database", err);
     return null;
   }
 }
@@ -126,7 +132,11 @@ async function saveDbToMongo(data: DatabaseSchema): Promise<void> {
 }
 
 export async function initDb(): Promise<void> {
-  ensureDbDir();
+  try {
+    ensureDbDir();
+  } catch (e) {
+    // non-fatal
+  }
 
   if (MONGO_URL) {
     try {
@@ -154,50 +164,63 @@ export async function initDb(): Promise<void> {
           console.log("Database initialized from MongoDB successfully");
           return;
         } else {
-          console.log("MongoDB is empty. Seeding initial data from local JSON into MongoDB...");
+          console.log("MongoDB is empty. Seeding initial data into MongoDB...");
         }
       }
     } catch (err) {
-      console.error("Failed to initialize database from MongoDB, falling back to local JSON", err);
+      console.error("Failed to initialize database from MongoDB, falling back to local database", err);
     }
   }
 
   // Fallback to local db.json
-  if (fs.existsSync(DB_FILE)) {
-    try {
-      const data = fs.readFileSync(DB_FILE, "utf-8");
-      dbCache = JSON.parse(data);
-      console.log("Database initialized from local JSON file");
-      if (mongoDbConnected && dbCache) {
-        saveDbToMongo(dbCache).catch(err => {
-          console.error("Failed to seed MongoDB with initial data", err);
-        });
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      try {
+        const data = fs.readFileSync(DB_FILE, "utf-8");
+        dbCache = JSON.parse(data);
+        console.log("Database initialized from local JSON file");
+        if (mongoDbConnected && dbCache) {
+          saveDbToMongo(dbCache).catch(err => {
+            console.error("Failed to seed MongoDB with initial data", err);
+          });
+        }
+        return;
+      } catch (e) {
+        console.error("Failed to parse db.json, generating initial database", e);
       }
-      return;
-    } catch (e) {
-      console.error("Failed to parse db.json, generating initial database", e);
     }
+  } catch (err) {
+    console.warn("Local DB file read unavailable:", (err as any)?.message || err);
   }
 
   dbCache = getInitialDb();
   saveDb(dbCache);
-  console.log("Database initialized with empty/default data");
+  console.log("Database initialized with default data");
 }
 
 export function getDb(): DatabaseSchema {
-  ensureDbDir();
+  try {
+    ensureDbDir();
+  } catch (e) {
+    // ignore
+  }
+
   if (dbCache) {
     return dbCache;
   }
 
-  if (fs.existsSync(DB_FILE)) {
-    try {
-      const data = fs.readFileSync(DB_FILE, "utf-8");
-      dbCache = JSON.parse(data);
-      return dbCache!;
-    } catch (e) {
-      console.error("Failed to parse db.json, generating initial database", e);
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      try {
+        const data = fs.readFileSync(DB_FILE, "utf-8");
+        dbCache = JSON.parse(data);
+        return dbCache!;
+      } catch (e) {
+        console.error("Failed to parse db.json, generating initial database", e);
+      }
     }
+  } catch (e) {
+    // ignore
   }
 
   dbCache = getInitialDb();
@@ -205,16 +228,16 @@ export function getDb(): DatabaseSchema {
 }
 
 export function saveDb(data: DatabaseSchema): void {
-  ensureDbDir();
   dbCache = data;
 
   // Save synchronously to local JSON file as backup/fallback
-  const tempFile = `${DB_FILE}.tmp`;
   try {
+    ensureDbDir();
+    const tempFile = `${DB_FILE}.tmp`;
     fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), "utf-8");
     fs.renameSync(tempFile, DB_FILE);
   } catch (e) {
-    console.error("Failed to write db.json", e);
+    console.warn("Could not write local db.json fallback file (expected in read-only serverless environment):", (e as any)?.message || e);
   }
 
   // Save asynchronously to MongoDB

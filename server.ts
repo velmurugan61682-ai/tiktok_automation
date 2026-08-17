@@ -1753,44 +1753,48 @@ function startBackgroundSyncWorker() {
 // ==========================================
 
 export async function ensureDbAndSeed() {
-  await initDb();
+  try {
+    await initDb();
 
-  let tenantUser = UserRepository.findByEmail(TENANT_ADMIN_EMAIL);
-  const salt = bcrypt.genSaltSync(10);
-  const passHash = bcrypt.hashSync(TENANT_ADMIN_PASSWORD, salt);
+    let tenantUser = UserRepository.findByEmail(TENANT_ADMIN_EMAIL);
+    const salt = bcrypt.genSaltSync(10);
+    const passHash = bcrypt.hashSync(TENANT_ADMIN_PASSWORD, salt);
 
-  if (!tenantUser) {
-    let ws = WorkspaceRepository.find()[0];
-    if (!ws) {
-      ws = WorkspaceRepository.create({
-        name: "SmartMart Store",
-        shopName: "SmartMart",
-        phone: "+91 9876543210",
-        status: "ACTIVE",
-        plan: "PRO",
-        endDate: "2028-12-31",
-        smsCount: 5000
+    if (!tenantUser) {
+      let ws = WorkspaceRepository.find()[0];
+      if (!ws) {
+        ws = WorkspaceRepository.create({
+          name: "SmartMart Store",
+          shopName: "SmartMart",
+          phone: "+91 9876543210",
+          status: "ACTIVE",
+          plan: "PRO",
+          endDate: "2028-12-31",
+          smsCount: 5000
+        });
+      }
+      tenantUser = UserRepository.create({
+        name: "SmartMart Owner",
+        email: TENANT_ADMIN_EMAIL,
+        passwordHash: passHash,
+        role: "ADMIN",
+        workspaceId: ws.id
       });
+      console.log(`Default Tenant Admin seeded: ${TENANT_ADMIN_EMAIL}`);
+    } else {
+      let isMatched = false;
+      try {
+        isMatched = bcrypt.compareSync(TENANT_ADMIN_PASSWORD, tenantUser.passwordHash);
+      } catch (e) {
+        isMatched = false;
+      }
+      if (!isMatched) {
+        console.log(`Syncing rotated password hash for Tenant Admin: ${TENANT_ADMIN_EMAIL}`);
+        UserRepository.update(tenantUser.id, { passwordHash: passHash });
+      }
     }
-    tenantUser = UserRepository.create({
-      name: "SmartMart Owner",
-      email: TENANT_ADMIN_EMAIL,
-      passwordHash: passHash,
-      role: "ADMIN",
-      workspaceId: ws.id
-    });
-    console.log(`Default Tenant Admin seeded: ${TENANT_ADMIN_EMAIL}`);
-  } else {
-    let isMatched = false;
-    try {
-      isMatched = bcrypt.compareSync(TENANT_ADMIN_PASSWORD, tenantUser.passwordHash);
-    } catch (e) {
-      isMatched = false;
-    }
-    if (!isMatched) {
-      console.log(`Syncing rotated password hash for Tenant Admin: ${TENANT_ADMIN_EMAIL}`);
-      UserRepository.update(tenantUser.id, { passwordHash: passHash });
-    }
+  } catch (err) {
+    console.error("Non-fatal error inside ensureDbAndSeed:", err);
   }
 }
 
