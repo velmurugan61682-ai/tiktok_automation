@@ -252,12 +252,21 @@ export class TikTokService {
       const targetCount = connected?.videoCount && connected.videoCount > 0 ? connected.videoCount : 234;
 
       const sampleImages = [
-        "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80"
+        "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=600&q=80", // TikTok interface / viral tech video
+        "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=600&q=80", // Mobile app video feed
+        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80", // AI tech workflow
+        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80", // Modern tech studio
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80", // Tech hardware demo
+        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80"  // Laptop & mobile creator workspace
+      ];
+
+      const postTitles = [
+        "Tech & Automation Secrets Every Creator Needs",
+        "How We Automated Our Entire Customer DM Workflow",
+        "Top 5 AI Tools for TikTok Growth in 2026",
+        "Store Inventory & Order Syncing Live Demo",
+        "Comment Moderation & Auto-Reply Walkthrough",
+        "Boosting Store Conversion Rates with AI Chatbots"
       ];
 
       const generated: any[] = [];
@@ -265,17 +274,19 @@ export class TikTokService {
         const idNum = `738192048591029${3841 + i}`;
         const img1 = sampleImages[i % sampleImages.length];
         const img2 = sampleImages[(i + 1) % sampleImages.length];
+        const titleTitle = postTitles[i % postTitles.length];
         generated.push({
           id: idNum,
-          name: `${cleanUsername} - Video Post #${i + 1}`,
+          name: `${cleanUsername} - ${titleTitle} (#${i + 1})`,
           sku: `TT-VIDEO-${3841 + i}`,
           price: 0,
           stock: 1,
           images: [img1, img2],
-          description: `TikTok Video Post #${i + 1} from @${cleanUsername}`,
+          description: `TikTok Video Post: ${titleTitle} from @${cleanUsername}`,
           url: `https://www.tiktok.com/@${cleanUsername}/video/${idNum}`
         });
       }
+      return generated;
       return generated;
     }
 
