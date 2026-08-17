@@ -1776,7 +1776,7 @@ async function startServer() {
   // Start background sync scheduler/worker
   startBackgroundSyncWorker();
 
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
@@ -1789,31 +1789,40 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    }
   }
 
-  const server = app.listen(PORT, () => {
-    console.log(`Enterprise SaaS Backend Server`);
-    console.log(`  - Local:        http://localhost:${PORT}`);
-    console.log(`  - Environments: .env`);
-  });
+  if (!process.env.VERCEL) {
+    const server = app.listen(PORT, () => {
+      console.log(`Enterprise SaaS Backend Server`);
+      console.log(`  - Local:        http://localhost:${PORT}`);
+      console.log(`  - Environments: .env`);
+    });
 
-  server.on("error", (err: any) => {
-    if (err.code === "EADDRINUSE") {
-      const nextPort = Number(PORT) + 1;
-      console.log(`Port ${PORT} is busy, retrying on port ${nextPort}...`);
-      app.listen(nextPort, () => {
-        console.log(`Enterprise SaaS Backend Server`);
-        console.log(`  - Local:        http://localhost:${nextPort}`);
-        console.log(`  - Environments: .env`);
-      });
-    } else {
-      console.error(err);
-    }
-  });
+    server.on("error", (err: any) => {
+      if (err.code === "EADDRINUSE") {
+        const nextPort = Number(PORT) + 1;
+        console.log(`Port ${PORT} is busy, retrying on port ${nextPort}...`);
+        app.listen(nextPort, () => {
+          console.log(`Enterprise SaaS Backend Server`);
+          console.log(`  - Local:        http://localhost:${nextPort}`);
+          console.log(`  - Environments: .env`);
+        });
+      } else {
+        console.error(err);
+      }
+    });
+  }
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
+
