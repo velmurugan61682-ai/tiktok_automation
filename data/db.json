@@ -383,7 +383,7 @@
       "platform": "TIKTOK",
       "username": "velmuruganr45",
       "status": "CONNECTED",
-      "expiresAt": "2026-09-17T04:22:14.370Z",
+      "expiresAt": "2026-09-17T04:52:03.173Z",
       "accessToken": "act.mE7cecF4DgOTbod0YE1ibT8Vfu2OWvgwveHJONuuYyRjecfRHLpTqt71Xo2W!6438.u1",
       "refreshToken": "rft.r4EuoX3m1F4Rz85efIllhc77L3IqcOginAxDQoaK6VlTNeUef5xv5rrgENkK!6397.u1",
       "connectedAt": "August 18, 2026",
@@ -391,7 +391,7 @@
       "followingCount": 0,
       "likesCount": 4,
       "display_name": "wwqui8lm",
-      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=6a144592&x-expires=1787198400&x-signature=i69VPllMs%2FQww8uPh2pEbCXFyG0%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
+      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=df095705&x-expires=1787202000&x-signature=lSXCzdwsf0mQFXu5OYX81KV8tQk%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
       "open_id": "-000NEF0ocsmR0PAumKE3gTE253VXCN2UR2M",
       "union_id": "976d35e6-29b4-50bc-bfe7-fef2d9ff91bd",
       "videoCount": 1,
@@ -454,7 +454,7 @@
       "followingCount": 1,
       "likesCount": 11781,
       "display_name": "Tech Vaseegrah",
-      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=6c122720&x-expires=1787198400&x-signature=jkUIoJuRehKWEWKAE%2F20T6P9upo%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=c796fa68&x-expires=1787202000&x-signature=PRkXnSC7o%2BTghozbrQYumPB6vfM%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
       "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
       "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
       "videoCount": 234,
@@ -2448,6 +2448,18 @@
       "workspaceId": "ws-10",
       "codeVerifier": "b3e5e49aea52ab1038ab88c505ddaa102db0eb10d79e22178e8023c474924382",
       "createdAt": "2026-08-18T04:21:52.983Z"
+    },
+    {
+      "state": "5a629e3b3871533d487f60de7937d4f6",
+      "workspaceId": "ws-10",
+      "codeVerifier": "d41ac50a85054ffd840ec1f1ff12b8324449f2780a12475c71143ab7be00f9d4",
+      "createdAt": "2026-08-18T04:51:43.993Z"
+    },
+    {
+      "state": "2ecabf3af70806fac9f7795eb3587b35",
+      "workspaceId": "ws-10",
+      "codeVerifier": "d29bf8e9b92d2dd7435c7782f7f3f179595b94eccb791f298437d71225a4e64a",
+      "createdAt": "2026-08-18T04:51:44.886Z"
     }
   ]
 }

@@ -1965,6 +1965,62 @@ app.use(async (req: any, res: any, next: any) => {
   next();
 });
 
+let clientRoutesConfigured = false;
+
+function registerProductionClientRoutes() {
+  if (clientRoutesConfigured) return;
+  clientRoutesConfigured = true;
+
+  const distPath = path.join(process.cwd(), "dist");
+  const indexPath = path.join(distPath, "index.html");
+
+  // Serve static assets from dist/ when present (local production builds).
+  // On Vercel, static assets are served by the CDN directly; this is a no-op.
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+  }
+
+  // Catch-all: serve index.html for any non-API, non-static-asset GET request
+  // so that React Router handles client-side routes like /settings.
+  // This must come AFTER all /api routes and after express.static().
+  // NOTE: On Vercel, vercel.json rewrites route non-API requests here too;
+  // the CDN handles actual static file delivery, so this fallback is the
+  // safety net for SPA deep-links (e.g. /settings, /dashboard).
+  app.get("*", (req: any, res: any, next: any) => {
+    // Let Express handle /api/* routes that weren't matched above
+    if (req.path === "/api" || req.path.startsWith("/api/")) {
+      return next();
+    }
+    // Let express.static handle requests for actual files (JS/CSS/images)
+    if (path.extname(req.path)) {
+      return next();
+    }
+    // Serve the SPA shell for all other routes
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    // index.html not found (e.g. build hasn't run yet in dev)
+    return res.status(404).send("Not found: run \`npm run build\` to generate the client bundle.");
+  });
+}
+
+async function registerDevelopmentClientRoutes() {
+  if (clientRoutesConfigured) return;
+
+  clientRoutesConfigured = true;
+  const { createServer: createViteServer } = await import("vite");
+  const vite = await createViteServer({
+    server: {
+      middlewareMode: true,
+      watch: {
+        ignored: ["**/data/**", "**/data/db.json"],
+      },
+    },
+    appType: "spa"
+  });
+  app.use(vite.middlewares);
+}
+
 async function startServer() {
   await ensureDbAndSeed();
 
@@ -1972,25 +2028,9 @@ async function startServer() {
   startBackgroundSyncWorker();
 
   if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: {
-        middlewareMode: true,
-        watch: {
-          ignored: ["**/data/**", "**/data/db.json"],
-        },
-      },
-      appType: "spa"
-    });
-    app.use(vite.middlewares);
+    await registerDevelopmentClientRoutes();
   } else {
-    const distPath = path.join(process.cwd(), "dist");
-    if (fs.existsSync(distPath)) {
-      app.use(express.static(distPath));
-      app.get("*", (req, res) => {
-        res.sendFile(path.join(distPath, "index.html"));
-      });
-    }
+    registerProductionClientRoutes();
   }
 
   if (!process.env.VERCEL) {
@@ -2016,7 +2056,9 @@ async function startServer() {
   }
 }
 
-if (!process.env.VERCEL) {
+if (process.env.VERCEL) {
+  registerProductionClientRoutes();
+} else {
   startServer();
 }
 
