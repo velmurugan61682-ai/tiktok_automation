@@ -492,7 +492,7 @@ export const AutomationControl: React.FC = () => {
         <div className="space-y-1">
           <h2 className="text-xl font-bold text-slate-855 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-indigo-505 animate-pulse" />
-            Taqbot Pro Automation Suite
+            Taqbot Automation Suite
           </h2>
           <p className="text-xs text-slate-400">Configure triggers, deploy auto-comment bots, story mention replies, and manage toxic comments.</p>
         </div>
@@ -567,7 +567,10 @@ export const AutomationControl: React.FC = () => {
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">1. Select the Post</label>
                   <button
                     type="button"
-                    onClick={() => setShowPostSelectorModal(true)}
+                    onClick={() => {
+                      fetchVideosPage(undefined);
+                      setShowPostSelectorModal(true);
+                    }}
                     className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left text-xs text-slate-700 font-bold transition-all"
                   >
                     <span className="truncate">{activeProduct ? activeProduct.name : "Choose TikTok content / product"}</span>

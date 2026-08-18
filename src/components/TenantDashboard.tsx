@@ -438,7 +438,7 @@ export const TenantDashboard: React.FC = () => {
           <div className="flex h-16 items-center justify-between px-6 border-b border-slate-150 dark:border-[#2f3142]">
             <div className="flex items-center gap-2.5">
               <div className="p-1 rounded-xl bg-gradient-to-tr from-[#FE2C55] to-[#25F4EE] shadow-xs">
-                <img src="/logo.png" alt="Taqbot Pro Logo" className="tt-brand-mark h-7 w-7 rounded-lg object-cover bg-slate-900" />
+                <img src="/logo.png" alt="Taqbot Logo" className="tt-brand-mark h-7 w-7 rounded-lg object-cover bg-slate-900" />
               </div>
               <span className="text-base font-extrabold tracking-tight text-slate-800 dark:text-slate-100">Taqbot</span>
             </div>
@@ -860,7 +860,7 @@ export const TenantDashboard: React.FC = () => {
                         <p className="text-xs text-slate-400 leading-relaxed">
                           {tiktokConnected 
                             ? `Your workspace is currently linked with TikTok profile @${tiktokUsername}. Orders, products, comments, and DMs sync automatically.` 
-                            : "Automate your TikTok interactions, DMs, and comment moderator features with Taqbot Pro!"}
+                            : "Automate your TikTok interactions, DMs, and comment moderator features with Taqbot!"}
                         </p>
                       </div>
 

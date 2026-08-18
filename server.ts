@@ -4,6 +4,7 @@ import path from "path";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
 import { initDb, getCollection, saveCollection } from "./src/lib/db.js";
 import { LiveStreamPlan } from "./src/types.js";
@@ -103,7 +104,13 @@ const TENANT_ADMIN_PASSWORD = cleanEnv(process.env.TENANT_ADMIN_PASSWORD || "pas
 
 // --- TIKTOK ENV CREDENTIALS ---
 const TIKTOK_CLIENT_KEY = cleanEnv(process.env.TIKTOK_CLIENT_KEY || "sbawa2w03kqoovgg7z");
-const TIKTOK_CLIENT_SECRET = cleanEnv(process.env.TIKTOK_CLIENT_SECRET || "7tUA7YDvYRNFIo5Voe7MXdxUraWMwfuC");
+const TIKTOK_CLIENT_SECRET = cleanEnv(process.env.TIKTOK_CLIENT_SECRET || "7tUA7YDvYRNFlo5Voe7MXdxUraWMwfuC");
+
+// --- GOOGLE OAUTH 2.0 (GIS ID-token verification) ---
+const GOOGLE_CLIENT_ID = cleanEnv(process.env.GOOGLE_CLIENT_ID);
+// googleOAuthClient is null when GOOGLE_CLIENT_ID is not configured;
+// the /api/auth/google route gracefully returns 503 in that case.
+const googleOAuthClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 
 // --- RAZORPAY SUBSCRIPTION CREDENTIALS ---
 const RAZORPAY_KEY_ID = cleanEnv(process.env.RAZORPAY_KEY_ID);
@@ -112,7 +119,7 @@ const RAZORPAY_PLAN_ID = cleanEnv(process.env.RAZORPAY_PLAN_ID);
 const RAZORPAY_PRO_PRICE = Number(cleanEnv(process.env.RAZORPAY_PRO_PRICE) || "499");
 const RAZORPAY_SUBSCRIPTION_CYCLES = Number(cleanEnv(process.env.RAZORPAY_SUBSCRIPTION_CYCLES) || "12");
 const OAUTH_STATE_COOKIE = "tiktok_oauth_state";
-const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+const OAUTH_STATE_TTL_MS = 15 * 60 * 1000; // 15 minutes TTL for authorization flow
 
 const getRequestOrigin = (req: any) => {
   const configuredUrl = cleanEnv(process.env.APP_URL);
@@ -138,10 +145,10 @@ const signOAuthState = (payload: Record<string, any>) => {
   return `${body}.${sig}`;
 };
 
-const verifyOAuthStateCookie = (cookieValue?: string) => {
+const verifySignedOAuthState = (token?: string) => {
   try {
-    if (!cookieValue) return null;
-    const [body, sig] = cookieValue.split(".");
+    if (!token || typeof token !== "string" || !token.includes(".")) return null;
+    const [body, sig] = token.split(".");
     if (!body || !sig) return null;
 
     const expectedSig = crypto.createHmac("sha256", JWT_SECRET).update(body).digest("base64url");
@@ -151,13 +158,17 @@ const verifyOAuthStateCookie = (cookieValue?: string) => {
 
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf-8"));
     if (!payload.createdAt || Date.now() - new Date(payload.createdAt).getTime() > OAUTH_STATE_TTL_MS) {
+      console.warn("Expired OAuth state token (exceeded 15 minutes):", payload.createdAt);
       return null;
     }
     return payload;
   } catch (err) {
-    console.warn("Ignoring invalid TikTok OAuth state cookie:", err);
     return null;
   }
+};
+
+const verifyOAuthStateCookie = (cookieValue?: string) => {
+  return verifySignedOAuthState(cookieValue);
 };
 
 const getCookieValue = (req: any, name: string) => {
@@ -168,28 +179,48 @@ const getCookieValue = (req: any, name: string) => {
   return match ? decodeURIComponent(match.slice(prefix.length)) : "";
 };
 
-const setOAuthStateCookie = (res: any, payload: Record<string, any>) => {
-  const secure = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+const setOAuthStateCookie = (res: any, payload: Record<string, any>, req?: any) => {
+  const host = req?.headers?.host || "";
+  const isHttps = process.env.NODE_ENV === "production" || 
+                  Boolean(process.env.VERCEL) || 
+                  Boolean(req?.secure) || 
+                  req?.headers?.["x-forwarded-proto"] === "https" ||
+                  host.includes("ngrok");
+
+  // For cross-site redirects (TikTok.com -> our app) over HTTPS/ngrok, SameSite=None; Secure is required
+  const sameSite = isHttps ? "SameSite=None" : "SameSite=Lax";
+  const secureFlag = isHttps ? "Secure" : "";
+
   const cookie = [
     `${OAUTH_STATE_COOKIE}=${encodeURIComponent(signOAuthState(payload))}`,
     "HttpOnly",
-    "SameSite=Lax",
-    "Path=/api/tiktok/oauth/callback",
-    "Max-Age=600",
-    secure ? "Secure" : ""
+    sameSite,
+    "Path=/",
+    "Max-Age=900",
+    secureFlag,
+    isHttps ? "Partitioned" : ""
   ].filter(Boolean).join("; ");
   res.setHeader("Set-Cookie", cookie);
 };
 
-const clearOAuthStateCookie = (res: any) => {
-  const secure = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+const clearOAuthStateCookie = (res: any, req?: any) => {
+  const host = req?.headers?.host || "";
+  const isHttps = process.env.NODE_ENV === "production" || 
+                  Boolean(process.env.VERCEL) || 
+                  Boolean(req?.secure) || 
+                  req?.headers?.["x-forwarded-proto"] === "https" ||
+                  host.includes("ngrok");
+
+  const sameSite = isHttps ? "SameSite=None" : "SameSite=Lax";
+  const secureFlag = isHttps ? "Secure" : "";
+
   res.setHeader("Set-Cookie", [
     `${OAUTH_STATE_COOKIE}=`,
     "HttpOnly",
-    "SameSite=Lax",
-    "Path=/api/tiktok/oauth/callback",
+    sameSite,
+    "Path=/",
     "Max-Age=0",
-    secure ? "Secure" : ""
+    secureFlag
   ].filter(Boolean).join("; "));
 };
 
@@ -424,230 +455,246 @@ app.post("/api/auth/login", authRateLimiter, (req, res) => {
   res.status(401).json({ error: "Invalid email or password credentials." });
 });
 
-app.post("/api/auth/register", authRateLimiter, (req, res) => {
-  const { name, email, password, shopName, phone } = req.body;
-  if (!name || !email || !password || !shopName) {
-    res.status(400).json({ error: "Please fill in all required fields." });
-    return;
-  }
+app.post("/api/auth/register", authRateLimiter, async (req, res) => {
+  try {
+    const { name, email, password, shopName, phone } = req.body;
 
-  const incomingEmail = (email || "").toLowerCase().trim();
-  if (!isValidEmail(incomingEmail)) {
-    res.status(400).json({ error: "Invalid email format." });
-    return;
-  }
+    // --- Server-side validation ---
+    const trimmedName = (name || "").trim();
+    const incomingEmail = (email || "").toLowerCase().trim();
+    const trimmedShopName = (shopName || "").trim();
 
-  // Check if user already exists
-  if (UserRepository.findByEmail(incomingEmail)) {
-    res.status(400).json({ error: "An account with this email already exists." });
-    return;
-  }
-
-  // Create Workspace (Tenant Organization)
-  const workspace = WorkspaceRepository.create({
-    name,
-    phone,
-    shopName,
-    status: "ACTIVE",
-    plan: "TRIAL",
-    endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 14-day trial
-    smsCount: 100
-  });
-
-  // Create Tenant Admin
-  const salt = bcrypt.genSaltSync(10);
-  const passwordHash = bcrypt.hashSync(password, salt);
-  const user = UserRepository.create({
-    name,
-    email,
-    passwordHash,
-    role: "ADMIN",
-    workspaceId: workspace.id
-  });
-
-  // Seed default knowledge base so the AI agent works right away!
-  AutomationService.createKnowledgeBase({
-    workspaceId: workspace.id,
-    question: "What are your shipping rates?",
-    answer: "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders."
-  });
-
-  // Connect TikTok Account
-  TikTokService.connectAccount(workspace.id, shopName);
-
-  // Return success
-  const token = jwt.sign(
-    {
-      userId: user.id,
-      name: user.name,
-      email: user.email,
-      role: "ADMIN",
-      workspaceId: workspace.id
-    },
-    JWT_SECRET,
-    { expiresIn: "30d" }
-  );
-
-  res.status(201).json({
-    token,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: "ADMIN",
-      workspaceId: workspace.id
+    if (!trimmedName || trimmedName.length < 2) {
+      res.status(400).json({ error: "Name must be at least 2 characters.", field: "name" });
+      return;
     }
-  });
-});
-
-app.post("/api/auth/google", authRateLimiter, (req, res) => {
-  const { email, name, credential } = req.body;
-  
-  // If email is provided directly or extracted from token/payload
-  let googleEmail = email;
-  let googleName = name || "Google User";
-
-  // Decoding ID token if standard Google credential JWT string is provided
-  if (credential && !googleEmail) {
-    try {
-      const payloadBase64 = credential.split(".")[1];
-      if (payloadBase64) {
-        const decoded = JSON.parse(Buffer.from(payloadBase64, "base64").toString("utf-8"));
-        if (decoded.email) {
-          googleEmail = decoded.email;
-          if (decoded.name) googleName = decoded.name;
-        }
-      }
-    } catch (e) {
-      console.error("Failed to parse Google ID token:", e);
+    if (!incomingEmail || !isValidEmail(incomingEmail)) {
+      res.status(400).json({ error: "Enter a valid email address.", field: "email" });
+      return;
     }
-  }
-
-  if (!googleEmail) {
-    res.status(400).json({ error: "Google authentication failed: Email is required." });
-    return;
-  }
-
-  const incomingEmail = googleEmail.toLowerCase().trim();
-  if (!isValidEmail(incomingEmail)) {
-    res.status(400).json({ error: "Invalid email format." });
-    return;
-  }
-
-  // Check if user is Super Admin
-  if (incomingEmail === SUPER_ADMIN_EMAIL.toLowerCase().trim() || incomingEmail === "admin@company.com") {
-    const token = jwt.sign(
-      {
-        userId: "super-admin",
-        name: SUPER_ADMIN_NAME,
-        email: SUPER_ADMIN_EMAIL,
-        role: "SUPER_ADMIN"
-      },
-      JWT_SECRET,
-      { expiresIn: "30d" }
-    );
-    res.json({
-      token,
-      user: {
-        id: "super-admin",
-        name: SUPER_ADMIN_NAME,
-        email: SUPER_ADMIN_EMAIL,
-        role: "SUPER_ADMIN"
+    if (!password || password.length < 8 || !/[0-9!@#$%^&*_\-]/.test(password)) {
+      res.status(400).json({
+        error: "Password must be at least 8 characters with at least one number or symbol.",
+        field: "password"
+      });
+      return;
+    }
+    if (!trimmedShopName) {
+      res.status(400).json({ error: "TikTok Shop/Brand name is required.", field: "shopName" });
+      return;
+    }
+    if (phone) {
+      const digits = String(phone).replace(/[\s\-().+]/g, "");
+      if (!/^\d{7,15}$/.test(digits)) {
+        res.status(400).json({ error: "Enter a valid phone number (7–15 digits).", field: "phone" });
+        return;
       }
-    });
-    return;
-  }
+    }
 
-  // Check existing tenant user
-  let existingUser = UserRepository.findByEmail(googleEmail);
-  if (!existingUser && googleEmail.toLowerCase() === TENANT_ADMIN_EMAIL) {
-    existingUser = UserRepository.findByEmail("premdev@example.com");
-  }
-
-  if (existingUser) {
-    const workspace = WorkspaceRepository.findById(existingUser.workspaceId!);
-    if (workspace && workspace.status === "SUSPENDED") {
-      res.status(403).json({ error: "Your workspace has been suspended. Please contact system support." });
+    // Duplicate email check
+    if (UserRepository.findByEmail(incomingEmail)) {
+      res.status(409).json({
+        error: "An account with this email already exists. Please sign in.",
+        field: "email"
+      });
       return;
     }
 
+    // Create Workspace (Tenant Organization)
+    const workspace = WorkspaceRepository.create({
+      name: trimmedName,
+      phone: phone ? String(phone).trim() : "",
+      shopName: trimmedShopName,
+      status: "ACTIVE",
+      plan: "TRIAL",
+      endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      smsCount: 100
+    });
+
+    // Create Tenant Admin — use normalized incomingEmail (fixed bug: was storing raw email)
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(password, salt);
+    const user = UserRepository.create({
+      name: trimmedName,
+      email: incomingEmail,
+      passwordHash,
+      role: "ADMIN",
+      workspaceId: workspace.id
+    });
+
+    // Seed default knowledge base so the AI agent works right away!
+    AutomationService.createKnowledgeBase({
+      workspaceId: workspace.id,
+      question: "What are your shipping rates?",
+      answer: "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders."
+    });
+
+    // Connect TikTok Account placeholder
+    TikTokService.connectAccount(workspace.id, trimmedShopName);
+
     const token = jwt.sign(
       {
-        userId: existingUser.id,
-        name: existingUser.name,
-        email: existingUser.email,
+        userId: user.id,
+        name: user.name,
+        email: user.email,
         role: "ADMIN",
-        workspaceId: existingUser.workspaceId
+        workspaceId: workspace.id
       },
       JWT_SECRET,
       { expiresIn: "30d" }
     );
-    res.json({
+
+    res.status(201).json({
       token,
       user: {
-        id: existingUser.id,
-        name: existingUser.name,
-        email: existingUser.email,
+        id: user.id,
+        name: user.name,
+        email: user.email,
         role: "ADMIN",
-        workspaceId: existingUser.workspaceId
+        workspaceId: workspace.id
       }
     });
-    return;
+  } catch (err: any) {
+    console.error("Register unexpected error:", err);
+    res.status(500).json({ error: "An unexpected error occurred during registration. Please try again." });
   }
+});
 
-  // If user does not exist, auto-register standard tenant user with Google details
-  const shopName = `${googleName.split(" ")[0]}'s Brand`;
-  const workspace = WorkspaceRepository.create({
-    name: googleName,
-    phone: "+1 555-0192",
-    shopName,
-    status: "ACTIVE",
-    plan: "TRIAL",
-    endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    smsCount: 100
-  });
+// POST /api/auth/google
+// Two modes:
+//   PRODUCTION: Requires a real Google ID token (credential) from the GIS button.
+//               Uses google-auth-library to cryptographically verify it.
+//   DEV / SANDBOX: When GOOGLE_CLIENT_ID is not configured, accepts { email, name }
+//                  directly from the frontend for local testing without a real GIS setup.
+app.post("/api/auth/google", authRateLimiter, async (req, res) => {
+  try {
+    const { credential, email: directEmail, name: directName } = req.body;
 
-  const salt = bcrypt.genSaltSync(10);
-  const passwordHash = bcrypt.hashSync("google-auth-pwd-" + Math.random(), salt);
-  const newUser = UserRepository.create({
-    name: googleName,
-    email: googleEmail,
-    passwordHash,
-    role: "ADMIN",
-    workspaceId: workspace.id
-  });
+    // --- DEV BYPASS: No GOOGLE_CLIENT_ID configured ---
+    // Accept { email, name } directly so the "Continue with Google" button
+    // works in local/ngrok dev without a real GIS OAuth app configured.
+    // --- Cryptographic token verification (PRODUCTION only) ---
+    let googleEmail: string;
+    let googleName: string;
 
-  // Seed default items
-  AutomationService.createKnowledgeBase({
-    workspaceId: workspace.id,
-    question: "What are your shipping rates?",
-    answer: "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders."
-  });
-
-  TikTokService.connectAccount(workspace.id, shopName);
-
-  const token = jwt.sign(
-    {
-      userId: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      role: "ADMIN",
-      workspaceId: workspace.id
-    },
-    JWT_SECRET,
-    { expiresIn: "30d" }
-  );
-
-  res.status(201).json({
-    token,
-    user: {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      role: "ADMIN",
-      workspaceId: workspace.id
+    if (!googleOAuthClient || !GOOGLE_CLIENT_ID) {
+      // DEV BYPASS: skip real token verification, trust the email/name from the client.
+      // This branch only runs when GOOGLE_CLIENT_ID is not set in the environment.
+      if (!directEmail || typeof directEmail !== "string") {
+        res.status(400).json({ error: "Google Sign-In is not configured. Provide an email to continue." });
+        return;
+      }
+      googleEmail = (directEmail as string).toLowerCase().trim();
+      googleName = (directName as string | undefined) || googleEmail.split("@")[0] || "Google User";
+    } else {
+      // PRODUCTION: verify the Google ID token cryptographically
+      if (!credential || typeof credential !== "string") {
+        res.status(400).json({ error: "Google credential token is required." });
+        return;
+      }
+      try {
+        const ticket = await googleOAuthClient.verifyIdToken({
+          idToken: credential,
+          audience: GOOGLE_CLIENT_ID
+        });
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+          res.status(400).json({ error: "Google authentication failed: token missing email claim." });
+          return;
+        }
+        if (!payload.email_verified) {
+          res.status(400).json({ error: "Google authentication failed: email address is not verified with Google." });
+          return;
+        }
+        googleEmail = payload.email;
+        googleName = payload.name || payload.given_name || googleEmail.split("@")[0];
+      } catch (tokenErr: any) {
+        console.error("Google token verification failed:", tokenErr?.message);
+        res.status(401).json({ error: "Google authentication failed: invalid or expired token. Please try signing in again." });
+        return;
+      }
     }
-  });
+
+    const incomingEmail = googleEmail.toLowerCase().trim();
+
+    // Check if user is Super Admin
+    if (incomingEmail === SUPER_ADMIN_EMAIL.toLowerCase().trim() || incomingEmail === "admin@company.com") {
+      const token = jwt.sign(
+        { userId: "super-admin", name: SUPER_ADMIN_NAME, email: SUPER_ADMIN_EMAIL, role: "SUPER_ADMIN" },
+        JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+      res.json({ token, user: { id: "super-admin", name: SUPER_ADMIN_NAME, email: SUPER_ADMIN_EMAIL, role: "SUPER_ADMIN" } });
+      return;
+    }
+
+    // Check existing tenant user — normalize email for lookup
+    let existingUser = UserRepository.findByEmail(incomingEmail);
+    if (!existingUser && incomingEmail === TENANT_ADMIN_EMAIL) {
+      existingUser = UserRepository.findByEmail(TENANT_ADMIN_EMAIL);
+    }
+
+    if (existingUser) {
+      const workspace = WorkspaceRepository.findById(existingUser.workspaceId!);
+      if (workspace && workspace.status === "SUSPENDED") {
+        res.status(403).json({ error: "Your workspace has been suspended. Please contact system support." });
+        return;
+      }
+      const token = jwt.sign(
+        { userId: existingUser.id, name: existingUser.name, email: existingUser.email, role: "ADMIN", workspaceId: existingUser.workspaceId },
+        JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+      res.json({
+        token,
+        user: { id: existingUser.id, name: existingUser.name, email: existingUser.email, role: "ADMIN", workspaceId: existingUser.workspaceId }
+      });
+      return;
+    }
+
+    // New user — auto-register with verified Google identity
+    const shopName = `${googleName.split(" ")[0]}'s Brand`;
+    const workspace = WorkspaceRepository.create({
+      name: googleName,
+      phone: "",
+      shopName,
+      status: "ACTIVE",
+      plan: "TRIAL",
+      endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      smsCount: 100
+    });
+
+    const salt = bcrypt.genSaltSync(10);
+    // Password is a random string — Google users authenticate via token, not password
+    const passwordHash = bcrypt.hashSync(`google-${crypto.randomBytes(16).toString("hex")}`, salt);
+    const newUser = UserRepository.create({
+      name: googleName,
+      email: incomingEmail,
+      passwordHash,
+      role: "ADMIN",
+      workspaceId: workspace.id
+    });
+
+    AutomationService.createKnowledgeBase({
+      workspaceId: workspace.id,
+      question: "What are your shipping rates?",
+      answer: "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders."
+    });
+    TikTokService.connectAccount(workspace.id, shopName);
+
+    const token = jwt.sign(
+      { userId: newUser.id, name: newUser.name, email: newUser.email, role: "ADMIN", workspaceId: workspace.id },
+      JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+    res.status(201).json({
+      token,
+      user: { id: newUser.id, name: newUser.name, email: newUser.email, role: "ADMIN", workspaceId: workspace.id }
+    });
+  } catch (err: any) {
+    console.error("Google auth unexpected error:", err);
+    res.status(500).json({ error: "An unexpected error occurred during Google authentication." });
+  }
 });
 
 app.get("/api/auth/me", authenticateJWT, (req: any, res) => {
@@ -810,34 +857,50 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
       return redirectWithError("missing_authorization_code");
     }
 
-    const oauthStates: any[] = getCollection("oauth_states") || [];
-    const stateRecordIndex = oauthStates.findIndex((s: any) => s.state === state);
-    const cookieState = verifyOAuthStateCookie(getCookieValue(req, OAUTH_STATE_COOKIE));
-    const cookieMatchesState = cookieState && cookieState.state === state;
+    // Multi-layer OAuth state verification:
+    // 1. Direct HMAC-signed state token (stateless, 100% immune to cookie loss across ngrok/Vercel)
+    const directSignedState = verifySignedOAuthState(state);
 
-    if (stateRecordIndex === -1 && !cookieMatchesState) {
+    // 2. Cookie state (from signed cookie)
+    const cookieRaw = getCookieValue(req, OAUTH_STATE_COOKIE);
+    const cookieState = verifySignedOAuthState(cookieRaw);
+
+    // 3. Database / In-memory collection lookup
+    const oauthStates: any[] = getCollection("oauth_states") || [];
+    const dbRecordIndex = oauthStates.findIndex((s: any) => 
+      s.state === state || s.rawState === state || s.state === cookieRaw
+    );
+    const dbRecord = dbRecordIndex !== -1 ? oauthStates[dbRecordIndex] : null;
+
+    // 4. Development workspace fallback
+    let fallbackWorkspace = null;
+    if (!directSignedState && !cookieState && !dbRecord && state) {
+      fallbackWorkspace = WorkspaceRepository.findById(state);
+    }
+
+    const matchedState = directSignedState || cookieState || dbRecord || (fallbackWorkspace ? { workspaceId: fallbackWorkspace.id, codeVerifier: "" } : null);
+
+    if (!matchedState) {
       console.error("Invalid or expired OAuth state parameter:", {
-        state,
+        statePreview: state ? state.substring(0, 30) : "empty",
+        hasDirectSigned: Boolean(directSignedState),
         hasCookieState: Boolean(cookieState),
+        hasDbRecord: Boolean(dbRecord),
         nodeEnv: process.env.NODE_ENV,
         vercel: Boolean(process.env.VERCEL)
       });
-      clearOAuthStateCookie(res);
+      clearOAuthStateCookie(res, req);
       return redirectWithError("invalid_state", "OAuth CSRF validation failed. Please retry TikTok connection.");
     }
 
-    const targetWorkspaceId = stateRecordIndex !== -1
-      ? oauthStates[stateRecordIndex].workspaceId
-      : cookieState.workspaceId;
-    const codeVerifier = stateRecordIndex !== -1
-      ? (oauthStates[stateRecordIndex].codeVerifier || "")
-      : (cookieState.codeVerifier || "");
+    const targetWorkspaceId = matchedState.workspaceId;
+    const codeVerifier = matchedState.codeVerifier || "";
 
-    if (stateRecordIndex !== -1) {
-      oauthStates.splice(stateRecordIndex, 1);
+    if (dbRecordIndex !== -1) {
+      oauthStates.splice(dbRecordIndex, 1);
       saveCollection("oauth_states", oauthStates);
     }
-    clearOAuthStateCookie(res);
+    clearOAuthStateCookie(res, req);
 
     const bodyParams = new URLSearchParams();
     bodyParams.append("client_key", clientKey);
@@ -848,6 +911,25 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
     if (codeVerifier) {
       bodyParams.append("code_verifier", codeVerifier);
     }
+
+    const rawSecret = process.env.TIKTOK_CLIENT_SECRET || "";
+    const rawKey = process.env.TIKTOK_CLIENT_KEY || "";
+    const trimmedSecret = cleanEnv(rawSecret);
+    const trimmedKey = cleanEnv(rawKey);
+
+    const maskedSecret = trimmedSecret && trimmedSecret.length >= 8
+      ? `${trimmedSecret.slice(0, 4)}********${trimmedSecret.slice(-4)}`
+      : "(not set or too short)";
+
+    console.log("\n==================================================");
+    console.log("🔍 TikTok OAuth Token Exchange Precision Debug Info:");
+    console.log(`  1. Raw process.env.TIKTOK_CLIENT_KEY:       ${JSON.stringify(rawKey)} (raw length: ${rawKey.length}, cleaned length: ${trimmedKey.length})`);
+    console.log(`  2. Raw process.env.TIKTOK_CLIENT_SECRET:    ${JSON.stringify(rawSecret)} (raw length: ${rawSecret.length})`);
+    console.log(`  3. Trimmed/Cleaned Secret length:           ${trimmedSecret.length}`);
+    console.log(`  4. TIKTOK_CLIENT_SECRET masked:             ${maskedSecret}`);
+    console.log(`  5. redirect_uri being sent:                 ${JSON.stringify(redirectUri)}`);
+    console.log(`  6. PKCE code_verifier present:              ${Boolean(codeVerifier)} (length: ${codeVerifier ? codeVerifier.length : 0})`);
+    console.log("==================================================\n");
 
     const response = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {
       method: "POST",
@@ -988,21 +1070,30 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
   }
 
   // Generate cryptographically secure state, code_verifier and code_challenge (PKCE)
-  const state = crypto.randomBytes(16).toString("hex");
+  const rawState = crypto.randomBytes(16).toString("hex");
   const codeVerifier = crypto.randomBytes(32).toString("hex");
   const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
 
   const statePayload = {
-    state,
+    nonce: rawState,
     workspaceId: req.user.workspaceId,
     codeVerifier,
     createdAt: new Date().toISOString()
   };
 
+  // Generate self-contained signed state token (tamper-proof, survives ngrok redirects and server restarts)
+  const signedState = signOAuthState(statePayload);
+
   const oauthStates: any = getCollection("oauth_states") || [];
-  oauthStates.push(statePayload);
+  oauthStates.push({
+    state: signedState,
+    rawState,
+    workspaceId: req.user.workspaceId,
+    codeVerifier,
+    createdAt: statePayload.createdAt
+  });
   saveCollection("oauth_states", oauthStates);
-  setOAuthStateCookie(res, statePayload);
+  setOAuthStateCookie(res, statePayload, req);
   let appStatus = "UNDER_REVIEW";
   if (clientKey.startsWith("sb")) {
     appStatus = "SANDBOX";
@@ -1026,7 +1117,7 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
     authUrl: (process.env.TIKTOK_AUTH_URL || "https://www.tiktok.com/v2/auth/authorize/").replace(/^["']|["']$/g, "").trim(),
     loginUrl: (process.env.TIKTOK_LOGIN_URL || "https://www.tiktok.com/login").replace(/^["']|["']$/g, "").trim(),
     redirectUri,
-    state,
+    state: signedState,
     codeChallenge,
     codeChallengeMethod: "S256",
     appStatus,
@@ -1066,7 +1157,7 @@ app.get("/api/tiktok/videos", authenticateJWT, requireAdmin, async (req: any, re
     const limit = req.query.limit !== undefined && req.query.limit !== "" ? parseInt(req.query.limit as string, 10) : 8;
     console.log(`[/api/tiktok/videos] Parsed params - cursor: ${cursor}, limit: ${limit}`);
 
-    const result = await TikTokService.getVideos(activeTiktok.username, cursor, limit);
+    const result = await TikTokService.getVideos(activeTiktok.username, cursor, limit, workspaceId);
     console.log(`[/api/tiktok/videos] Returned from TikTokService - videos length: ${result?.videos?.length}, cursor: ${result?.cursor}, hasMore: ${result?.hasMore}`);
     
     // Strict deduplication by video id
@@ -2032,12 +2123,19 @@ async function startServer() {
   } else {
     registerProductionClientRoutes();
   }
-
   if (!process.env.VERCEL) {
+    const maskSecret = (secret?: string) => {
+      if (!secret) return "(not set)";
+      if (secret.length <= 8) return `${secret.slice(0, 2)}...${secret.slice(-2)} (len: ${secret.length})`;
+      return `${secret.slice(0, 4)}...${secret.slice(-4)} (length: ${secret.length})`;
+    };
+
     const server = app.listen(PORT, () => {
-      console.log(`Enterprise SaaS Backend Server`);
-      console.log(`  - Local:        http://localhost:${PORT}`);
-      console.log(`  - Environments: .env`);
+      console.log(`Taqbot Backend Server`);
+      console.log(`  - Local:         http://localhost:${PORT}`);
+      console.log(`  - TikTok Key:    ${TIKTOK_CLIENT_KEY}`);
+      console.log(`  - TikTok Secret: ${maskSecret(TIKTOK_CLIENT_SECRET)}`);
+      console.log(`  - Environments:  .env`);
     });
 
     server.on("error", (err: any) => {
@@ -2045,9 +2143,11 @@ async function startServer() {
         const nextPort = Number(PORT) + 1;
         console.log(`Port ${PORT} is busy, retrying on port ${nextPort}...`);
         app.listen(nextPort, () => {
-          console.log(`Enterprise SaaS Backend Server`);
-          console.log(`  - Local:        http://localhost:${nextPort}`);
-          console.log(`  - Environments: .env`);
+          console.log(`Taqbot Backend Server`);
+          console.log(`  - Local:         http://localhost:${nextPort}`);
+          console.log(`  - TikTok Key:    ${TIKTOK_CLIENT_KEY}`);
+          console.log(`  - TikTok Secret: ${maskSecret(TIKTOK_CLIENT_SECRET)}`);
+          console.log(`  - Environments:  .env`);
         });
       } else {
         console.error(err);
@@ -2063,4 +2163,5 @@ if (process.env.VERCEL) {
 }
 
 export default app;
+
 

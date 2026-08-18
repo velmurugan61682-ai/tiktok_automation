@@ -125,13 +125,19 @@ export class TikTokService {
   static async getVideos(
     username: string,
     cursor?: number,
-    limit = 8
+    limit = 8,
+    workspaceId?: string
   ): Promise<{ videos: any[]; cursor?: number; hasMore: boolean }> {
     const videos: any[] = [];
-    console.log(`[TikTokService.getVideos] ENTER. username: ${username}, cursor: ${cursor} (type: ${typeof cursor}), limit: ${limit} (type: ${typeof limit})`);
+    console.log(`[TikTokService.getVideos] ENTER. username: ${username}, workspaceId: ${workspaceId}, cursor: ${cursor} (type: ${typeof cursor}), limit: ${limit} (type: ${typeof limit})`);
 
     // 1. Try fetching using the official TikTok Video List API
-    const accounts = getCollection("connectedAccounts").filter(ca => ca.username === username && ca.platform === "TIKTOK" && ca.status === "CONNECTED");
+    const accounts = getCollection("connectedAccounts").filter(ca => 
+      (workspaceId ? ca.workspaceId === workspaceId : true) &&
+      ca.username.toLowerCase() === username.toLowerCase() && 
+      ca.platform === "TIKTOK" && 
+      ca.status === "CONNECTED"
+    );
     const activeTiktok = accounts[0];
     const accessToken = activeTiktok?.accessToken;
 
@@ -281,7 +287,12 @@ export class TikTokService {
     // 4. Mock Generator Fallback
     const cleanUsername = username.replace(/^@/, "");
     const accountsList = getCollection("connectedAccounts");
-    const connected = accountsList.find(ca => ca.username.toLowerCase() === cleanUsername.toLowerCase() && ca.platform === "TIKTOK");
+    const connected = accountsList.find(ca => 
+      (workspaceId ? ca.workspaceId === workspaceId : true) &&
+      ca.username.toLowerCase() === cleanUsername.toLowerCase() && 
+      ca.platform === "TIKTOK" &&
+      ca.status === "CONNECTED"
+    );
     const targetCount = connected?.videoCount && connected.videoCount > 0 ? connected.videoCount : 234;
     console.log(`[TikTokService.getVideos] Scrape fallback empty. Using Mock Generator. targetCount: ${targetCount}`);
 
