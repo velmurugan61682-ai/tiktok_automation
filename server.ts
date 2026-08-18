@@ -38,9 +38,54 @@ import { automationRouter } from "./src/api/automation/route.js";
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-const JWT_SECRET = (process.env.JWT_SECRET || "enterprise-tenant-saas-secret-key-998").replace(/^["']|["']$/g, "").trim();
+const cleanEnv = (value?: string) => (value || "").replace(/^["']|["']$/g, "").trim();
+const JWT_SECRET = cleanEnv(process.env.JWT_SECRET || "enterprise-tenant-saas-secret-key-998");
 
 app.use(express.json());
+
+// CORS Middleware to support ngrok tunneling, APP_URL, and localhost
+// NOTE: Wildcard ngrok domain matching (*.ngrok-free.app) is intended for local testing/development.
+// REMINDER: Remove or restrict ngrok wildcards when deploying to production!
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const configuredUrl = cleanEnv(process.env.APP_URL);
+  const redirectUri = cleanEnv(process.env.TIKTOK_REDIRECT_URI);
+  
+  let redirectOrigin = "";
+  if (redirectUri) {
+    try {
+      redirectOrigin = new URL(redirectUri).origin;
+    } catch (e) {
+      // Ignore invalid URL format
+    }
+  }
+
+  if (origin) {
+    if (
+      origin.endsWith(".ngrok-free.app") ||
+      origin.endsWith(".ngrok.io") ||
+      origin === configuredUrl ||
+      origin === redirectOrigin ||
+      origin.includes("localhost") ||
+      origin.includes("127.0.0.1")
+    ) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    } else {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 // TikTok Domain Verification File Route
 app.get("/tiktok*.txt", (req, res) => {
@@ -49,21 +94,19 @@ app.get("/tiktok*.txt", (req, res) => {
 });
 
 // --- SUPER ADMIN ENV CREDENTIALS ---
-const SUPER_ADMIN_EMAIL = (process.env.SUPER_ADMIN_EMAIL || "admin@company.com").replace(/^["']|["']$/g, "").trim();
-const SUPER_ADMIN_PASSWORD = (process.env.SUPER_ADMIN_PASSWORD || "adminpassword").replace(/^["']|["']$/g, "").trim(); // Plain text default or env
-const SUPER_ADMIN_NAME = (process.env.SUPER_ADMIN_NAME || "System Administrator").replace(/^["']|["']$/g, "").trim();
+const SUPER_ADMIN_EMAIL = cleanEnv(process.env.SUPER_ADMIN_EMAIL || "admin@company.com");
+const SUPER_ADMIN_PASSWORD = cleanEnv(process.env.SUPER_ADMIN_PASSWORD || "adminpassword");
+const SUPER_ADMIN_NAME = cleanEnv(process.env.SUPER_ADMIN_NAME || "System Administrator");
 
 // --- TENANT ADMIN ENV CREDENTIALS ---
-const TENANT_ADMIN_EMAIL = (process.env.TENANT_ADMIN_EMAIL || "owner@smartmart.com").replace(/^["']|["']$/g, "").trim().toLowerCase();
-const TENANT_ADMIN_PASSWORD = (process.env.TENANT_ADMIN_PASSWORD || "password123").replace(/^["']|["']$/g, "").trim();
+const TENANT_ADMIN_EMAIL = cleanEnv(process.env.TENANT_ADMIN_EMAIL || "owner@smartmart.com").toLowerCase();
+const TENANT_ADMIN_PASSWORD = cleanEnv(process.env.TENANT_ADMIN_PASSWORD || "password123");
 
 // --- TIKTOK ENV CREDENTIALS ---
-const TIKTOK_CLIENT_KEY = (process.env.TIKTOK_CLIENT_KEY || "sbawa2w03kqoovgg7z").replace(/^["']|["']$/g, "").trim();
-const TIKTOK_CLIENT_SECRET = (process.env.TIKTOK_CLIENT_SECRET || "7tUA7YDvYRNFIo5Voe7MXdxUraWMwfuC").replace(/^["']|["']$/g, "").trim();
-const TIKTOK_REDIRECT_URI = (process.env.TIKTOK_REDIRECT_URI || "http://localhost:3000/api/tiktok/oauth/callback").replace(/^["']|["']$/g, "").trim();
+const TIKTOK_CLIENT_KEY = cleanEnv(process.env.TIKTOK_CLIENT_KEY || "sbawa2w03kqoovgg7z");
+const TIKTOK_CLIENT_SECRET = cleanEnv(process.env.TIKTOK_CLIENT_SECRET || "7tUA7YDvYRNFIo5Voe7MXdxUraWMwfuC");
 
 // --- RAZORPAY SUBSCRIPTION CREDENTIALS ---
-const cleanEnv = (value?: string) => (value || "").replace(/^["']|["']$/g, "").trim();
 const RAZORPAY_KEY_ID = cleanEnv(process.env.RAZORPAY_KEY_ID);
 const RAZORPAY_KEY_SECRET = cleanEnv(process.env.RAZORPAY_KEY_SECRET);
 const RAZORPAY_PLAN_ID = cleanEnv(process.env.RAZORPAY_PLAN_ID);

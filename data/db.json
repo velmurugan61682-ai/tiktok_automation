@@ -383,25 +383,31 @@
       "platform": "TIKTOK",
       "username": "velmuruganr45",
       "status": "CONNECTED",
-      "expiresAt": "2026-09-12T04:55:10.090Z",
-      "accessToken": "act.qIhKqvYBvRyYf0SXp5tpJaKSrxNh6YgxxrNveWOm90OlK3H5gYDZYDC9YcxR!6413.u1",
-      "refreshToken": "rft.acHtET9gHwMjLptHZwrbwiIJ8ENnVbm8gBGpZo697CCjLUTSTU4OgdbUtmL6!6439.u1",
-      "connectedAt": "August 13, 2026",
+      "expiresAt": "2026-09-17T04:22:14.370Z",
+      "accessToken": "act.mE7cecF4DgOTbod0YE1ibT8Vfu2OWvgwveHJONuuYyRjecfRHLpTqt71Xo2W!6438.u1",
+      "refreshToken": "rft.r4EuoX3m1F4Rz85efIllhc77L3IqcOginAxDQoaK6VlTNeUef5xv5rrgENkK!6397.u1",
+      "connectedAt": "August 18, 2026",
       "followerCount": 0,
       "followingCount": 0,
-      "likesCount": 0,
+      "likesCount": 4,
       "display_name": "wwqui8lm",
-      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=b96abd18&x-expires=1786773600&x-signature=5ZCMJWY5FjEMr1GyGW%2FDtQePPxs%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
+      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=6a144592&x-expires=1787198400&x-signature=i69VPllMs%2FQww8uPh2pEbCXFyG0%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
       "open_id": "-000NEF0ocsmR0PAumKE3gTE253VXCN2UR2M",
       "union_id": "976d35e6-29b4-50bc-bfe7-fef2d9ff91bd",
-      "videoCount": 0
+      "videoCount": 1,
+      "scopes": [
+        "user.info.basic",
+        "user.info.profile",
+        "user.info.stats",
+        "video.list"
+      ]
     },
     {
       "id": "ca-10",
       "workspaceId": "ws-11",
       "platform": "TIKTOK",
       "username": "velmuruganr45",
-      "status": "CONNECTED",
+      "status": "DISCONNECTED",
       "expiresAt": "2026-09-12T06:36:40.801Z",
       "accessToken": "act.qIhKqvYBvRyYf0SXp5tpJaKSrxNh6YgxxrNveWOm90OlK3H5gYDZYDC9YcxR!6413.u1",
       "refreshToken": "rft.acHtET9gHwMjLptHZwrbwiIJ8ENnVbm8gBGpZo697CCjLUTSTU4OgdbUtmL6!6439.u1",
@@ -444,11 +450,11 @@
       "accessToken": "act.ggAkx9Aowh5nVPX46l8KD6n5LRUf2hnBtKogkDAEY4GgIPdpRBCeeXiYq3K8!5216.s1",
       "refreshToken": "rft.NDGuJDJS1eX6jlTiu02orVplcazB1DYIYny5alBe3YXLm3OevyvfMTq3ZJEb!5235.s1",
       "connectedAt": "August 17, 2026",
-      "followerCount": 2278,
+      "followerCount": 2277,
       "followingCount": 1,
       "likesCount": 11781,
       "display_name": "Tech Vaseegrah",
-      "avatar_url": "https://p19-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=f8ae2eda&x-expires=1787144400&x-signature=A9fRbgZcZ12lSIPKqH6IT1wwQm8%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=6c122720&x-expires=1787198400&x-signature=jkUIoJuRehKWEWKAE%2F20T6P9upo%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
       "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
       "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
       "videoCount": 234,
@@ -2400,6 +2406,48 @@
       "workspaceId": "ws-13",
       "codeVerifier": "2d119d33bc514e61419f094779e22059e2cb275a4093f6690f365b452c133b75",
       "createdAt": "2026-08-17T12:34:26.709Z"
+    },
+    {
+      "state": "95c6fa9972fd5bd431168b306ed26754",
+      "workspaceId": "ws-13",
+      "codeVerifier": "687336db2fff62f0e7e77a3c4664321217c6a0a45cff1730e5253baa6be39fb8",
+      "createdAt": "2026-08-17T13:12:06.334Z"
+    },
+    {
+      "state": "c9a921f349fa54ef5947aaaf06eb5a54",
+      "workspaceId": "ws-13",
+      "codeVerifier": "f9107d09e98b0ccbce7f8ebf9bb03ae0d2a8c90c6c35e8c243e50ac85142d5e0",
+      "createdAt": "2026-08-17T13:12:17.480Z"
+    },
+    {
+      "state": "0776a8688defbc52208c2068b0e3e30f",
+      "workspaceId": "ws-13",
+      "codeVerifier": "da4f410646143f10e8ccc6488288a983b2e0e2e2c9441d635a2a0e2a8d291fa2",
+      "createdAt": "2026-08-17T13:17:03.884Z"
+    },
+    {
+      "state": "fa5bff6c13caa77c25257aefc3f811b6",
+      "workspaceId": "ws-13",
+      "codeVerifier": "6f5ef0e2eba4259061a0325ac19e3696e57427ef6f62e4076f39dce932a63fcc",
+      "createdAt": "2026-08-17T13:21:42.127Z"
+    },
+    {
+      "state": "e1dbdf624c946a17d380157d07d66e78",
+      "workspaceId": "ws-11",
+      "codeVerifier": "50b377f160e7e6754c0b9852cd78d3378b321c7a960f7b9436e806932fdaefbb",
+      "createdAt": "2026-08-18T04:21:37.069Z"
+    },
+    {
+      "state": "fd66a66820ebbeb76c8532ebe33bf4ed",
+      "workspaceId": "ws-11",
+      "codeVerifier": "af47f0a0742d4c04e7ed749ec9c4780e4861ff097be78afc6d40fced785cd731",
+      "createdAt": "2026-08-18T04:21:41.372Z"
+    },
+    {
+      "state": "81ea495b49d6fe58070000977e4847fb",
+      "workspaceId": "ws-10",
+      "codeVerifier": "b3e5e49aea52ab1038ab88c505ddaa102db0eb10d79e22178e8023c474924382",
+      "createdAt": "2026-08-18T04:21:52.983Z"
     }
   ]
 }
