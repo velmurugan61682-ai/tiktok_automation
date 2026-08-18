@@ -241,7 +241,7 @@ const authenticateJWT = (req: any, res: any, next: any) => {
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(403).json({ error: "Forbidden. Invalid or expired token." });
+    return res.status(401).json({ error: "Unauthorized. Invalid or expired token." });
   }
 };
 
@@ -332,7 +332,7 @@ app.post("/api/auth/login", authRateLimiter, (req, res) => {
         role: "SUPER_ADMIN"
       },
       JWT_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "7d" }
     );
     res.json({
       token,
@@ -436,7 +436,7 @@ app.post("/api/auth/login", authRateLimiter, (req, res) => {
           workspaceId: user.workspaceId
         },
         JWT_SECRET,
-        { expiresIn: "30d" }
+        { expiresIn: "7d" }
       );
       res.json({
         token,
@@ -541,7 +541,7 @@ app.post("/api/auth/register", authRateLimiter, async (req, res) => {
         workspaceId: workspace.id
       },
       JWT_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "7d" }
     );
 
     res.status(201).json({
@@ -622,7 +622,7 @@ app.post("/api/auth/google", authRateLimiter, async (req, res) => {
       const token = jwt.sign(
         { userId: "super-admin", name: SUPER_ADMIN_NAME, email: SUPER_ADMIN_EMAIL, role: "SUPER_ADMIN" },
         JWT_SECRET,
-        { expiresIn: "30d" }
+        { expiresIn: "7d" }
       );
       res.json({ token, user: { id: "super-admin", name: SUPER_ADMIN_NAME, email: SUPER_ADMIN_EMAIL, role: "SUPER_ADMIN" } });
       return;
@@ -643,7 +643,7 @@ app.post("/api/auth/google", authRateLimiter, async (req, res) => {
       const token = jwt.sign(
         { userId: existingUser.id, name: existingUser.name, email: existingUser.email, role: "ADMIN", workspaceId: existingUser.workspaceId },
         JWT_SECRET,
-        { expiresIn: "30d" }
+        { expiresIn: "7d" }
       );
       res.json({
         token,
@@ -685,7 +685,7 @@ app.post("/api/auth/google", authRateLimiter, async (req, res) => {
     const token = jwt.sign(
       { userId: newUser.id, name: newUser.name, email: newUser.email, role: "ADMIN", workspaceId: workspace.id },
       JWT_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "7d" }
     );
     res.status(201).json({
       token,

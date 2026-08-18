@@ -9,7 +9,7 @@ import { registerPwa } from './pwa.ts';
 const originalFetch = window.fetch;
 window.fetch = async (input, init) => {
   const response = await originalFetch(input, init);
-  if (response.status === 401 || response.status === 403) {
+  if (response.status === 401) {
     const urlStr = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const isAuthRoute = urlStr.includes("/api/auth/login") || urlStr.includes("/api/auth/register");
     if (!isAuthRoute) {
