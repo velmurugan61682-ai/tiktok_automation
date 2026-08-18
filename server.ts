@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import dotenv from "dotenv";
-import { createServer as createViteServer } from "vite";
 import { initDb, getCollection, saveCollection } from "./src/lib/db.js";
 import { LiveStreamPlan } from "./src/types.js";
 
@@ -1973,6 +1972,7 @@ async function startServer() {
   startBackgroundSyncWorker();
 
   if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
