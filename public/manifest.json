@@ -20,7 +20,7 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "background_color": "#ffffff",
-  "theme_color": "#FE2C55",
+  "theme_color": "#0D1324",
   "display": "standalone",
   "orientation": "portrait-primary",
   "categories": ["business", "social", "productivity"],
