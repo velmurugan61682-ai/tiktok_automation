@@ -523,15 +523,22 @@ export const MainContent: React.FC = () => {
     return <AuthPortal />;
   }
 
-  // Dashboard protected routes
-  if (user && (location.pathname === "/dashboard" || location.pathname === "/superadmin" || location.pathname === "/settings")) {
-    if (user.role === "SUPER_ADMIN") {
-      return <SuperAdminDashboard />;
+  // Dashboard protected routes (Matches /dashboard, /superadmin, /live-chat, /products, /orders, /customers, /comments_chat, /subscription, /settings, etc.)
+  if (user) {
+    const isPublicPage = 
+      location.pathname === "/" ||
+      location.pathname === "/privacy-policy" ||
+      location.pathname === "/privacy" ||
+      location.pathname === "/terms-of-service" ||
+      location.pathname === "/terms" ||
+      location.pathname === "/contact";
+
+    if (!isPublicPage) {
+      return user.role === "SUPER_ADMIN" ? <SuperAdminDashboard /> : <TenantDashboard />;
     }
-    return <TenantDashboard />;
   }
 
-  // Default homepage (Rendered for unauthenticated visitors landing at /)
+  // Default homepage (Rendered for unauthenticated visitors landing at / or logged-in users visiting /)
   return <HomePage />;
 };
 
