@@ -1,101 +1,166 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Shield, Eye, Database, Share2, Mail, ArrowLeft } from "lucide-react";
+import Navbar from "../../components/Navbar.js";
+import Footer from "../../components/Footer.js";
+import { Shield, Eye, Database, Share2, Mail, Lock, UserCheck, Trash2, Phone, ArrowLeft } from "lucide-react";
 
 export const PrivacyPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-[#fafbfc] py-12 px-6 font-sans text-slate-800 antialiased relative overflow-hidden flex flex-col justify-between">
-      {/* Decorative gradient blur background */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full filter blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full filter blur-3xl translate-x-1/2 translate-y-1/2"></div>
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0b10] text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+      <Navbar />
 
-      <div className="max-w-2xl w-full mx-auto bg-white rounded-3xl border border-slate-150 shadow-xl overflow-hidden relative z-10 p-8 md:p-12">
-        {/* Back navigation */}
-        <div className="mb-8">
+      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
+        
+        {/* Navigation back */}
+        <div className="mb-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-xs font-bold text-indigo-650 hover:text-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#FE2C55] hover:underline"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
         </div>
 
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600">
-            <Shield className="w-8 h-8" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 leading-none">
-              Privacy Policy
-            </h1>
-            <p className="text-slate-400 text-xs mt-1.5 font-medium uppercase tracking-wider">
-              Taqbot Privacy Standards
-            </p>
-          </div>
-        </div>
-
-        <div className="border-t border-slate-100 pt-8 space-y-8">
-          {/* Intro Section */}
-          <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
-            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Eye className="w-4 h-4 text-indigo-500" />
-              Respect for Privacy
-            </h2>
-            <p className="text-slate-655 text-sm leading-relaxed font-medium">
-              Taqbot respects user privacy. We are committed to protecting your personal data and ensuring transparency in how we collect and process information.
-            </p>
-          </div>
-
-          {/* Tokens storage details */}
-          <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
-            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Database className="w-4 h-4 text-indigo-500" />
-              Secure Token Management
-            </h2>
-            <p className="text-slate-655 text-sm leading-relaxed font-medium">
-              We only store TikTok OAuth tokens after the user grants explicit permission. These tokens are used solely to run automations and sync integrations on your behalf.
-            </p>
-          </div>
-
-          {/* Sell statement */}
-          <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
-            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-indigo-500" />
-              No Data Monetization
-            </h2>
-            <p className="text-slate-655 text-sm leading-relaxed font-medium">
-              We never sell user information. Your account settings, profile data, and platform activities remain strictly private and dedicated to your workspace operations.
-            </p>
-          </div>
-
-          {/* Contact Details */}
-          <div className="p-5 bg-indigo-50/30 rounded-2xl border border-indigo-100/50 space-y-3">
-            <h2 className="text-sm font-bold text-indigo-950 uppercase tracking-wider flex items-center gap-2">
-              <Mail className="w-4 h-4 text-indigo-600" />
-              Get In Touch
-            </h2>
-            <p className="text-indigo-900/80 text-xs font-semibold leading-relaxed">
-              If you have any questions, concerns, or requests regarding this Privacy Policy, feel free to contact us:
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400">Email:</span>
-              <a
-                href="mailto:techvaseegrah@gmail.com"
-                className="text-xs font-bold text-indigo-650 hover:underline transition-all"
-              >
-                techvaseegrah@gmail.com
-              </a>
+        {/* Card wrapper */}
+        <div className="bg-white dark:bg-[#161823] rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl overflow-hidden p-6 sm:p-10 space-y-8">
+          
+          {/* Header */}
+          <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+            <div className="p-3.5 rounded-2xl bg-[#FE2C55]/10 text-[#FE2C55]">
+              <Shield className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Privacy Policy
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mt-1">
+                Last Updated: January 2026 • TaQ Bot Platform Data Standards
+              </p>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Footer */}
-      <div className="text-center py-6 text-[10px] text-slate-400 font-bold uppercase tracking-wider relative z-10">
-        &copy; {new Date().getFullYear()} Taqbot. All rights reserved.
-      </div>
+          {/* Section 1: Overview */}
+          <section className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Eye className="w-4 h-4 text-[#FE2C55]" />
+              1. Overview & Commitment
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+              TaQ Bot ("we", "our", or "us") respects your privacy. This Privacy Policy explains how we collect, use, store, protect, and manage your information when you use our SaaS web application platform at <strong>https://taqbot.com/</strong> and related services. By accessing or using TaQ Bot, you agree to the collection and use of information in accordance with this policy.
+            </p>
+          </section>
+
+          {/* Section 2: Information We Collect */}
+          <section className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Database className="w-4 h-4 text-[#FE2C55]" />
+              2. Information We Collect
+            </h2>
+            <div className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p>We collect only necessary information to operate your TaQ Bot workspace:</p>
+              <ul className="list-disc pl-5 space-y-1.5 text-xs">
+                <li>
+                  <strong>Account & Workspace Information:</strong> Name, email address, password hash, shop/brand name, phone number, and subscription billing details.
+                </li>
+                <li>
+                  <strong>TikTok Authorization Data:</strong> When you connect your TikTok account via TikTok's official OAuth flow, we securely store authorization tokens, granted scopes, and basic profile info (such as <code className="text-[11px] bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">open_id</code>, <code className="text-[11px] bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">display_name</code>, <code className="text-[11px] bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">avatar_url</code>, and follower/video counts).
+                </li>
+                <li>
+                  <strong>Automation & Comment Rules:</strong> Custom knowledge base items, keyword triggers, and engagement logs created within your workspace.
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          {/* Section 3: TikTok OAuth Integration & Security */}
+          <section className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Lock className="w-4 h-4 text-[#FE2C55]" />
+              3. TikTok Authorization & OAuth Security
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+              Account connection occurs exclusively through TikTok's official OAuth 2.0 authorization endpoints. 
+              <strong> We never request, collect, or store your personal TikTok login credentials or passwords.</strong> 
+              OAuth state tokens are cryptographically signed using HMAC validation to protect against CSRF attacks.
+            </p>
+          </section>
+
+          {/* Section 4: How Data Is Used */}
+          <section className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <UserCheck className="w-4 h-4 text-[#FE2C55]" />
+              4. How We Use Your Data
+            </h2>
+            <div className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p>Your data is strictly used for platform operations:</p>
+              <ul className="list-disc pl-5 space-y-1.5 text-xs">
+                <li>Executing configured comment automation rules and AI moderation workflows.</li>
+                <li>Displaying active conversations inside your workspace Social Inbox.</li>
+                <li>Providing analytics metrics regarding engagement volume and response rates.</li>
+                <li>Communicating critical workspace updates and billing notifications.</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* Section 5: Data Sharing & Non-Monetization */}
+          <section className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-[#FE2C55]" />
+              5. Data Sharing & Non-Monetization
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+              <strong>We never sell, rent, or monetize user data or TikTok authorization credentials to third parties.</strong> Data is shared only with trusted infrastructure providers (e.g. secure database hosting and Google Gemini AI processing for comment moderation) solely to deliver platform functionality.
+            </p>
+          </section>
+
+          {/* Section 6: Data Storage & Retention */}
+          <section className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Database className="w-4 h-4 text-[#FE2C55]" />
+              6. Data Security & Storage
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+              We employ industry-standard administrative, technical, and physical safeguards—including SSL/TLS encryption in transit and standard hashing protocols at rest—to prevent unauthorized access or disclosure of your account data.
+            </p>
+          </section>
+
+          {/* Section 7: User Rights & Data Deletion */}
+          <section className="space-y-3">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Trash2 className="w-4 h-4 text-[#FE2C55]" />
+              7. User Rights & Data Deletion
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+              You retain total control over your TikTok authorization. You can revoke TikTok account access at any time from your TikTok account security settings or by clicking "Disconnect" inside TaQ Bot. To request permanent deletion of your workspace data, contact our support team at <strong>techvaseegrah@gmail.com</strong>.
+            </p>
+          </section>
+
+          {/* Section 8: Contact Information */}
+          <section className="p-6 rounded-2xl bg-slate-50 dark:bg-[#12141f] border border-slate-200 dark:border-slate-800 space-y-3">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <Mail className="w-4 h-4 text-[#FE2C55]" />
+              8. Contact Us Regarding Privacy
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
+              If you have any questions, concerns, or data deletion requests regarding this Privacy Policy, reach out to us directly:
+            </p>
+            <div className="space-y-1.5 text-xs font-bold pt-1">
+              <p className="text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-[#FE2C55]" />
+                Support Email: <a href="mailto:techvaseegrah@gmail.com" className="text-[#FE2C55] hover:underline">techvaseegrah@gmail.com</a>
+              </p>
+              <p className="text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-[#FE2C55]" />
+                Phone: <a href="tel:+919047484484" className="text-[#FE2C55] hover:underline">+91 90474 84484</a>
+              </p>
+            </div>
+          </section>
+
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };
