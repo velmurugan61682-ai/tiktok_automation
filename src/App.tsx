@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from "./components/AuthContext.js";
 import { ThemeProvider, useTheme } from "./components/ThemeContext.js";
 import { SuperAdminDashboard } from "./components/SuperAdminDashboard.js";
 import { TenantDashboard } from "./components/TenantDashboard.js";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link, Navigate } from "react-router-dom";
 import { HomePage } from "./app/home/HomePage.js";
 import { PrivacyPage } from "./app/privacy/page.js";
 import { TermsPage } from "./app/terms/page.js";
@@ -506,7 +506,7 @@ export const MainContent: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Public Marketing Routes (Accessible to anyone, even when logged out)
+  // Public Routes (Accessible without logging in!)
   if (location.pathname === "/privacy-policy" || location.pathname === "/privacy") {
     return <PrivacyPage />;
   }
@@ -516,8 +516,6 @@ export const MainContent: React.FC = () => {
   if (location.pathname === "/contact") {
     return <ContactPage />;
   }
-
-  // Authentication Routes
   if (location.pathname === "/login" || location.pathname === "/register") {
     if (user) {
       return user.role === "SUPER_ADMIN" ? <SuperAdminDashboard /> : <TenantDashboard />;
@@ -525,11 +523,23 @@ export const MainContent: React.FC = () => {
     return <AuthPortal />;
   }
 
-  // Logged-in Dashboard Routing:
-  // If the user IS logged in, any dashboard route (/dashboard, /live-chat, /products, /orders, /customers, /comments_chat, /subscription, /billing, /settings, /superadmin, etc.) renders the dashboard!
-  if (user) {
-    if (location.pathname === "/") {
-      return <HomePage />;
+  // Dashboard protected routes
+  const isDashboardRoute = [
+    "/dashboard",
+    "/live-chat",
+    "/products",
+    "/orders",
+    "/customers",
+    "/comments_chat",
+    "/subscription",
+    "/billing",
+    "/settings",
+    "/superadmin"
+  ].includes(location.pathname);
+
+  if (isDashboardRoute) {
+    if (!user) {
+      return <Navigate to="/login" replace />;
     }
     if (user.role === "SUPER_ADMIN") {
       return <SuperAdminDashboard />;
@@ -537,13 +547,8 @@ export const MainContent: React.FC = () => {
     return <TenantDashboard />;
   }
 
-  // Unauthenticated user on root homepage /
-  if (location.pathname === "/") {
-    return <HomePage />;
-  }
-
-  // Unauthenticated user attempting to access dashboard routes (/dashboard, /live-chat, etc.) -> redirect to login
-  return <AuthPortal />;
+  // Default homepage (Rendered for unauthenticated visitors landing at /)
+  return <HomePage />;
 };
 
 export default function App() {
