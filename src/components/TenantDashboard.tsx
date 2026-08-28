@@ -437,10 +437,8 @@ export const TenantDashboard: React.FC = () => {
           {/* Brand header */}
           <div className="flex h-16 items-center justify-between px-6 border-b border-slate-150 dark:border-[#2f3142]">
             <div className="flex items-center gap-2.5">
-              <div className="p-1 rounded-xl bg-gradient-to-tr from-[#FE2C55] to-[#25F4EE] shadow-xs">
-                <img src="/logo.png" alt="Taqbot Logo" className="tt-brand-mark h-7 w-7 rounded-lg object-cover bg-slate-900" />
-              </div>
-              <span className="text-base font-extrabold tracking-tight text-slate-800 dark:text-slate-100">Taqbot</span>
+              <img src="/favicon.png" alt="TaQ Bot Logo" className="h-8 w-8 rounded-xl object-cover shadow-sm" />
+              <span className="text-base font-extrabold tracking-tight text-slate-800 dark:text-slate-100">TaQ Bot</span>
             </div>
             <button 
               type="button"

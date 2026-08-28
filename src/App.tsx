@@ -207,7 +207,7 @@ const AuthPortal: React.FC = () => {
         <div className="tt-auth-hero text-white p-12 flex flex-col justify-between md:w-[42%] shrink-0 relative overflow-hidden">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="TaQ Bot Logo" className="tt-brand-mark w-10 h-10 rounded-xl object-cover border border-white/10 shadow-md" />
+              <img src="/favicon.png" alt="TaQ Bot Logo" className="w-10 h-10 rounded-xl object-cover border border-white/10 shadow-md" />
               <span className="font-extrabold tracking-tight text-xl text-white">TaQ Bot</span>
             </Link>
             

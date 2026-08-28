@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-3">
               <img
-                src="/logo.png"
+                src="/favicon.png"
                 alt="TaQ Bot Logo"
                 className="w-8 h-8 rounded-xl object-cover border border-white/10"
               />

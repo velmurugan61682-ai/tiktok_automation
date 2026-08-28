@@ -45,7 +45,7 @@ export const Navbar: React.FC = () => {
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
             <img
-              src="/logo.png"
+              src="/favicon.png"
               alt="TaQ Bot Logo"
               className="w-9 h-9 rounded-xl object-cover border border-slate-200 dark:border-white/10 shadow-sm transition-transform group-hover:scale-105"
             />
