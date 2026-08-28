@@ -22,7 +22,10 @@ import {
   Clock,
   Mail,
   Flame,
-  Award
+  Award,
+  Package,
+  ShoppingBag,
+  CreditCard
 } from "lucide-react";
 
 export const HomePage: React.FC = () => {
@@ -33,68 +36,64 @@ export const HomePage: React.FC = () => {
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setContactSubmitted(true);
-    setTimeout(() => {
-      setContactSubmitted(false);
-      setContactName("");
-      setContactEmail("");
-      setContactMessage("");
-    }, 4000);
+    if (contactName && contactEmail && contactMessage) {
+      setContactSubmitted(true);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0b10] text-slate-800 dark:text-slate-100 font-sans antialiased selection:bg-[#FE2C55]/20 selection:text-[#FE2C55]">
-      {/* Sticky Header Navigation */}
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0b10] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-[#FE2C55]/20 selection:text-[#FE2C55]">
+      {/* Universal Public Navbar */}
       <Navbar />
 
       {/* 1. HERO SECTION */}
-      <section id="hero" className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
-        {/* Background Decorative Gradients */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FE2C55]/10 rounded-full filter blur-[120px] pointer-events-none"></div>
-        <div className="absolute top-1/3 right-10 w-[350px] h-[350px] bg-[#FE2C55]/10 rounded-full filter blur-[90px] pointer-events-none"></div>
+      <section className="pt-32 pb-20 md:pt-40 md:pb-28 relative overflow-hidden">
+        {/* Ambient Glow Effects */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-[#FE2C55]/20 via-rose-500/10 to-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-3xl mx-auto space-y-6">
+          <div className="text-center max-w-4xl mx-auto space-y-6">
             
-            {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200">
-              <span className="flex h-2 w-2 rounded-full bg-[#FE2C55] animate-ping"></span>
-              <span className="text-[#FE2C55] font-extrabold">TaQ Bot Platform</span>
-              <span className="text-slate-300 dark:text-slate-600">•</span>
-              <span>TikTok Official Integration</span>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-200/60 dark:bg-white/5 border border-slate-300/80 dark:border-white/10 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-sm backdrop-blur-md">
+              <span className="flex h-2 w-2 rounded-full bg-[#FE2C55] animate-pulse"></span>
+              Official TikTok Commercial Content API Integration
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
-              AI-Powered TikTok Automation & <span className="bg-gradient-to-r from-[#FE2C55] via-rose-500 to-amber-500 bg-clip-text text-transparent">Engagement Platform</span>
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
+              AI-Powered <span className="bg-gradient-to-r from-[#FE2C55] via-rose-500 to-pink-500 bg-clip-text text-transparent">TikTok Automation</span> & Engagement Platform
             </h1>
 
             {/* Description */}
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-              TaQ Bot helps creators, e-commerce brands, and businesses manage TikTok engagement, moderate comments with AI keyword rules, automate supported reply workflows, and unify social inbox conversations.
+            <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal">
+              TaQ Bot empowers creators, TikTok Shop merchants, and brands to automate comment replies, moderate interactions with AI, manage unified social inboxes, track product catalogs and orders, and scale engagement effortlessly.
             </p>
 
             {/* Action Buttons */}
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                to="/login"
-                className="w-full sm:w-auto bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold text-base px-8 py-3.5 rounded-2xl shadow-lg hover:shadow-[0_0_25px_rgba(254,44,85,0.4)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                to="/register"
+                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#FE2C55] hover:bg-[#e02449] text-white font-extrabold text-base shadow-lg shadow-[#FE2C55]/25 hover:shadow-[#FE2C55]/40 transition-all flex items-center justify-center gap-2 group"
               >
-                <span>Get Started</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                Get Started Free <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
+              
               <Link
                 to="/login"
-                className="w-full sm:w-auto bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-base px-8 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all text-center cursor-pointer"
+                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-extrabold text-base shadow-sm transition-all flex items-center justify-center"
               >
-                Sign In
+                Sign In to Dashboard
               </Link>
             </div>
 
-            {/* Sub-trust text */}
-            <div className="pt-4 flex items-center justify-center gap-6 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {/* Key Guarantees */}
+            <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs font-semibold text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#FE2C55]" /> Official TikTok Authorization
+                <CheckCircle2 className="w-4 h-4 text-[#FE2C55]" /> Official TikTok OAuth 2.0
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#FE2C55]" /> Instant Setup in 2 Minutes
               </span>
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#FE2C55]" /> No Password Sharing Required
@@ -174,100 +173,78 @@ export const HomePage: React.FC = () => {
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
             <h2 className="text-xs font-extrabold text-[#FE2C55] uppercase tracking-widest">Platform Capabilities</h2>
             <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Built for Modern TikTok Creators & Brands
+              Built for Modern TikTok Creators & E-commerce Merchants
             </h3>
             <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
-              Powerful tools designed strictly within supported platform capabilities to help you scale engagement safely.
+              Comprehensive suite of tools designed strictly within supported platform capabilities to help you scale engagement safely.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            {/* Feature 1 */}
+            {/* Feature 1: TikTok Automation */}
             <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#161823] border border-slate-200/70 dark:border-slate-800 hover:border-[#FE2C55]/50 transition-all duration-300 group hover:-translate-y-1">
               <div className="w-12 h-12 rounded-xl bg-[#FE2C55]/10 text-[#FE2C55] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                 <MessageSquare className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">TikTok Comment Automation</h4>
+              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">TikTok Automation</h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Automatically detect incoming comments on your TikTok posts and trigger keyword-based response sequences.
+                Automatically monitor video comments, execute keyword-matched response rules, moderate spam, and reply 24/7 without manual effort.
               </p>
             </div>
 
-            {/* Feature 2 */}
-            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#161823] border border-slate-200/70 dark:border-slate-800 hover:border-[#FE2C55]/50 transition-all duration-300 group hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-xl bg-[#FE2C55]/10 text-[#FE2C55] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <Bot className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">AI Comment Moderation</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Filter spam, flag toxic language, and prioritize high-intent product inquiries using intelligent rule scoring.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#161823] border border-slate-200/70 dark:border-slate-800 hover:border-[#FE2C55]/50 transition-all duration-300 group hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-xl bg-[#FE2C55]/10 text-[#FE2C55] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <Zap className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Automated Replies</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Configure instant templates for FAQs, pricing details, discount codes, and store location questions.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
+            {/* Feature 2: Social Inbox */}
             <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#161823] border border-slate-200/70 dark:border-slate-800 hover:border-[#FE2C55]/50 transition-all duration-300 group hover:-translate-y-1">
               <div className="w-12 h-12 rounded-xl bg-[#FE2C55]/10 text-[#FE2C55] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                 <Inbox className="w-6 h-6" />
               </div>
               <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Social Inbox</h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Consolidate conversations into a unified dual-pane dashboard for easy tracking and organization.
+                Unified dual-pane live messaging interface that consolidates TikTok customer conversations, comment threads, and live support requests.
               </p>
             </div>
 
-            {/* Feature 5 */}
+            {/* Feature 3: Product Catalog */}
             <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#161823] border border-slate-200/70 dark:border-slate-800 hover:border-[#FE2C55]/50 transition-all duration-300 group hover:-translate-y-1">
               <div className="w-12 h-12 rounded-xl bg-[#FE2C55]/10 text-[#FE2C55] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <Headphones className="w-6 h-6" />
+                <Package className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Live Chat Handover</h4>
+              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Product Catalog</h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Seamlessly transfer complex conversations from automated bots to live support agents at any time.
+                Organize your store products, manage SKUs, link inventory to automated comment replies, and showcase product cards directly in customer chats.
               </p>
             </div>
 
-            {/* Feature 6 */}
+            {/* Feature 4: Order Listings */}
             <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#161823] border border-slate-200/70 dark:border-slate-800 hover:border-[#FE2C55]/50 transition-all duration-300 group hover:-translate-y-1">
               <div className="w-12 h-12 rounded-xl bg-[#FE2C55]/10 text-[#FE2C55] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-6 h-6" />
+                <ShoppingBag className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Story Automation</h4>
+              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Order Listings</h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Manage engagement rules and track response rates for interactive story content and announcements.
+                Track customer purchase orders, fulfillment statuses, payment statuses, and generate instant invoice reports for TikTok buyers.
               </p>
             </div>
 
-            {/* Feature 7 */}
+            {/* Feature 5: Customer Profiles */}
             <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#161823] border border-slate-200/70 dark:border-slate-800 hover:border-[#FE2C55]/50 transition-all duration-300 group hover:-translate-y-1">
               <div className="w-12 h-12 rounded-xl bg-[#FE2C55]/10 text-[#FE2C55] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <Sliders className="w-6 h-6" />
+                <Users className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Engagement Management</h4>
+              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Customer Profiles</h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Tag leads, organize customer profiles, and assign support tickets across team members.
+                Maintain comprehensive CRM customer records, track interaction history, view lifetime spend, and segment active TikTok followers.
               </p>
             </div>
 
-            {/* Feature 8 */}
+            {/* Feature 6: Billing & Subscription */}
             <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#161823] border border-slate-200/70 dark:border-slate-800 hover:border-[#FE2C55]/50 transition-all duration-300 group hover:-translate-y-1">
               <div className="w-12 h-12 rounded-xl bg-[#FE2C55]/10 text-[#FE2C55] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-6 h-6" />
+                <CreditCard className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Analytics & Reporting</h4>
+              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Billing & Subscription</h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Track comment volume, response resolution times, popular keywords, and engagement growth metrics.
+                Transparent multi-tier subscription plans, automated invoicing via Razorpay, usage analytics, and seamless plan upgrades.
               </p>
             </div>
 
