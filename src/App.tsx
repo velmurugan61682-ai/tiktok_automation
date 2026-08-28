@@ -506,7 +506,7 @@ export const MainContent: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Public Routes (Accessible without logging in!)
+  // Public Marketing Routes (Accessible to anyone, even when logged out)
   if (location.pathname === "/privacy-policy" || location.pathname === "/privacy") {
     return <PrivacyPage />;
   }
@@ -516,6 +516,8 @@ export const MainContent: React.FC = () => {
   if (location.pathname === "/contact") {
     return <ContactPage />;
   }
+
+  // Authentication Routes
   if (location.pathname === "/login" || location.pathname === "/register") {
     if (user) {
       return user.role === "SUPER_ADMIN" ? <SuperAdminDashboard /> : <TenantDashboard />;
@@ -523,23 +525,25 @@ export const MainContent: React.FC = () => {
     return <AuthPortal />;
   }
 
-  // Dashboard protected routes (Matches /dashboard, /superadmin, /live-chat, /products, /orders, /customers, /comments_chat, /subscription, /settings, etc.)
+  // Logged-in Dashboard Routing:
+  // If the user IS logged in, any dashboard route (/dashboard, /live-chat, /products, /orders, /customers, /comments_chat, /subscription, /billing, /settings, /superadmin, etc.) renders the dashboard!
   if (user) {
-    const isPublicPage = 
-      location.pathname === "/" ||
-      location.pathname === "/privacy-policy" ||
-      location.pathname === "/privacy" ||
-      location.pathname === "/terms-of-service" ||
-      location.pathname === "/terms" ||
-      location.pathname === "/contact";
-
-    if (!isPublicPage) {
-      return user.role === "SUPER_ADMIN" ? <SuperAdminDashboard /> : <TenantDashboard />;
+    if (location.pathname === "/") {
+      return <HomePage />;
     }
+    if (user.role === "SUPER_ADMIN") {
+      return <SuperAdminDashboard />;
+    }
+    return <TenantDashboard />;
   }
 
-  // Default homepage (Rendered for unauthenticated visitors landing at / or logged-in users visiting /)
-  return <HomePage />;
+  // Unauthenticated user on root homepage /
+  if (location.pathname === "/") {
+    return <HomePage />;
+  }
+
+  // Unauthenticated user attempting to access dashboard routes (/dashboard, /live-chat, etc.) -> redirect to login
+  return <AuthPortal />;
 };
 
 export default function App() {
