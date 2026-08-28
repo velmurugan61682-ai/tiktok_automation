@@ -1,21 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../../components/Navbar.js";
-import Footer from "../../components/Footer.js";
-import { Mail, Clock, ShieldCheck, ArrowLeft, Send, Phone, MessageSquare } from "lucide-react";
+import { Mail, Clock, ShieldCheck, ArrowLeft, Send } from "lucide-react";
 
 export const ContactPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0b10] text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
-      <Navbar />
+    <div className="min-h-screen bg-[#fafbfc] py-12 px-6 font-sans text-slate-800 antialiased relative overflow-hidden flex flex-col justify-between">
+      {/* Decorative gradient blur background */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full filter blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full filter blur-3xl translate-x-1/2 translate-y-1/2"></div>
 
-      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
-        
-        {/* Navigation back */}
-        <div className="mb-6">
+      <div className="max-w-2xl w-full mx-auto bg-white rounded-3xl border border-slate-150 shadow-xl overflow-hidden relative z-10 p-8 md:p-12">
+        {/* Back navigation */}
+        <div className="mb-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-xs font-bold text-[#FE2C55] hover:underline"
+            className="inline-flex items-center gap-2 text-xs font-bold text-indigo-650 hover:text-indigo-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -23,149 +22,74 @@ export const ContactPage: React.FC = () => {
         </div>
 
         {/* Header */}
-        <div className="bg-white dark:bg-[#161823] rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl overflow-hidden p-6 sm:p-10 space-y-8">
-          
-          <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
-            <div className="p-3.5 rounded-2xl bg-[#FE2C55]/10 text-[#FE2C55]">
-              <Mail className="w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Contact TaQ Bot Support
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mt-1">
-                We're Here to Help Your Workspace Succeed
-              </p>
-            </div>
+        <div className="flex items-center gap-4 mb-8">
+          <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600">
+            <Mail className="w-8 h-8" />
           </div>
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 leading-none">
+              Contact Us
+            </h1>
+            <p className="text-slate-400 text-xs mt-1.5 font-medium uppercase tracking-wider">
+              Taqbot Support and Inquiries
+            </p>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            {/* Left Info Cards */}
-            <div className="space-y-4">
-              
-              <div className="p-5 bg-slate-50 dark:bg-[#12141f] rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-[#FE2C55]" />
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Official Support Email
-                  </h3>
-                </div>
-                <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed font-medium">
-                  Send inquiries regarding TikTok account connections, technical issues, or platform setup:
+        <div className="border-t border-slate-100 pt-8 space-y-8">
+          {/* Main Contact Card */}
+          <div className="p-6 bg-indigo-50/30 rounded-2xl border border-indigo-100/50 space-y-4">
+            <div className="flex items-start gap-3">
+              <Mail className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-indigo-950 uppercase tracking-wider">
+                  Support Email
+                </h3>
+                <p className="text-indigo-900/80 text-xs font-semibold leading-relaxed">
+                  For inquiries, API partnerships, feature requests, or technical assistance, send us an email:
                 </p>
-                <div>
+                <div className="pt-2">
                   <a
                     href="mailto:techvaseegrah@gmail.com"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#FE2C55] hover:bg-[#e02447] text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
                   >
                     <Send className="w-3.5 h-3.5" />
                     techvaseegrah@gmail.com
                   </a>
                 </div>
               </div>
-
-              <div className="p-5 bg-slate-50 dark:bg-[#12141f] rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Phone className="w-5 h-5 text-[#FE2C55]" />
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Direct Phone Support
-                  </h3>
-                </div>
-                <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed font-medium">
-                  Contact our customer engineering desk during business hours:
-                </p>
-                <div>
-                  <a
-                    href="tel:+919047484484"
-                    className="text-sm font-bold text-[#FE2C55] hover:underline"
-                  >
-                    +91 90474 84484
-                  </a>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="p-4 bg-slate-50 dark:bg-[#12141f] rounded-xl border border-slate-200/60 dark:border-slate-800 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-[#FE2C55]" /> SLA Response
-                  </span>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">24–48 Business Hours</p>
-                </div>
-
-                <div className="p-4 bg-slate-50 dark:bg-[#12141f] rounded-xl border border-slate-200/60 dark:border-slate-800 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#FE2C55]" /> Security
-                  </span>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Encrypted Channels</p>
-                </div>
-              </div>
-
             </div>
-
-            {/* Right Message Form */}
-            <div className="p-6 bg-slate-50 dark:bg-[#12141f] rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-4">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-[#FE2C55]" />
-                Send Us a Direct Message
-              </h3>
-
-              <form onSubmit={(e) => { e.preventDefault(); alert("Thank you! Your message has been sent to techvaseegrah@gmail.com."); }} className="space-y-3 text-xs sm:text-sm">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300 uppercase text-[10px]">Your Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Alex Morgan"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#161823] focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300 uppercase text-[10px]">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. alex@brand.com"
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#161823] focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300 uppercase text-[10px]">Inquiry Type</label>
-                  <select className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#161823] focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20 text-xs">
-                    <option value="general">General Support</option>
-                    <option value="tiktok">TikTok OAuth Integration</option>
-                    <option value="billing">Subscription & Billing</option>
-                    <option value="privacy">Privacy & Data Deletion</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300 uppercase text-[10px]">Message</label>
-                  <textarea
-                    rows={4}
-                    required
-                    placeholder="Describe your inquiry..."
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#161823] focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20"
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-2.5 rounded-xl bg-[#FE2C55] hover:bg-[#e02447] text-white font-bold transition-all shadow-md cursor-pointer"
-                >
-                  Send Message
-                </button>
-              </form>
-            </div>
-
           </div>
 
-        </div>
-      </main>
+          {/* SLA Card */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <Clock className="w-4 h-4 text-indigo-500" />
+                Response Time
+              </h2>
+              <p className="text-slate-655 text-xs font-semibold leading-relaxed">
+                We generally respond to all support tickets and inquiries within 24 to 48 business hours.
+              </p>
+            </div>
 
-      <Footer />
+            <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-2">
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-indigo-500" />
+                Secure Channels
+              </h2>
+              <p className="text-slate-655 text-xs font-semibold leading-relaxed">
+                Your support emails and communications with us are handled via secure, encrypted email servers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="text-center py-6 text-[10px] text-slate-400 font-bold uppercase tracking-wider relative z-10">
+        &copy; {new Date().getFullYear()} Taqbot. All rights reserved.
+      </div>
     </div>
   );
 };
