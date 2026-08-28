@@ -103,8 +103,8 @@ const TENANT_ADMIN_EMAIL = cleanEnv(process.env.TENANT_ADMIN_EMAIL || "owner@sma
 const TENANT_ADMIN_PASSWORD = cleanEnv(process.env.TENANT_ADMIN_PASSWORD || "password123");
 
 // --- TIKTOK ENV CREDENTIALS ---
-const TIKTOK_CLIENT_KEY = cleanEnv(process.env.TIKTOK_CLIENT_KEY || "sbawa2w03kqoovgg7z");
-const TIKTOK_CLIENT_SECRET = cleanEnv(process.env.TIKTOK_CLIENT_SECRET || "7tUA7YDvYRNFlo5Voe7MXdxUraWMwfuC");
+const TIKTOK_CLIENT_KEY = cleanEnv(process.env.TIKTOK_CLIENT_KEY || process.env["Client key"] || process.env["Client Key"] || "sbawa2w03kqoovgg7z");
+const TIKTOK_CLIENT_SECRET = cleanEnv(process.env.TIKTOK_CLIENT_SECRET || process.env["Client secret"] || process.env["Client Secret"] || "7tUA7YDvYRNFlo5Voe7MXdxUraWMwfuC");
 
 // --- GOOGLE OAUTH 2.0 (GIS ID-token verification) ---
 const GOOGLE_CLIENT_ID = cleanEnv(process.env.GOOGLE_CLIENT_ID);
@@ -818,10 +818,10 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
       return res.redirect(buildAppRedirect(req, `/settings?${params.toString()}`));
     };
 
-    const clientKey = cleanEnv(process.env.TIKTOK_CLIENT_KEY);
-    const clientSecret = cleanEnv(process.env.TIKTOK_CLIENT_SECRET);
+    const clientKey = cleanEnv(process.env.TIKTOK_CLIENT_KEY || process.env["Client key"] || process.env["Client Key"] || TIKTOK_CLIENT_KEY);
+    const clientSecret = cleanEnv(process.env.TIKTOK_CLIENT_SECRET || process.env["Client secret"] || process.env["Client Secret"] || TIKTOK_CLIENT_SECRET);
     const configuredRedirectUri = cleanEnv(process.env.TIKTOK_REDIRECT_URI);
-    const configuredScope = cleanEnv(process.env.TIKTOK_SCOPE);
+    const configuredScope = cleanEnv(process.env.TIKTOK_SCOPE || "user.info.basic,user.info.profile,user.info.stats,video.list");
 
     if (!clientKey || !clientSecret || !configuredRedirectUri || !configuredScope) {
       const missing = [];
@@ -1053,10 +1053,10 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
 
 app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => {
   // Validate environment variables before starting OAuth
-  const clientKey = cleanEnv(process.env.TIKTOK_CLIENT_KEY);
-  const clientSecret = cleanEnv(process.env.TIKTOK_CLIENT_SECRET);
+  const clientKey = cleanEnv(process.env.TIKTOK_CLIENT_KEY || process.env["Client key"] || process.env["Client Key"] || (typeof TIKTOK_CLIENT_KEY !== 'undefined' ? TIKTOK_CLIENT_KEY : ""));
+  const clientSecret = cleanEnv(process.env.TIKTOK_CLIENT_SECRET || process.env["Client secret"] || process.env["Client Secret"] || (typeof TIKTOK_CLIENT_SECRET !== 'undefined' ? TIKTOK_CLIENT_SECRET : ""));
   const redirectUri = cleanEnv(process.env.TIKTOK_REDIRECT_URI);
-  const scope = cleanEnv(process.env.TIKTOK_SCOPE);
+  const scope = cleanEnv(process.env.TIKTOK_SCOPE || "user.info.basic,user.info.profile,user.info.stats,video.list");
   const missing = [];
   if (!clientKey) missing.push("TIKTOK_CLIENT_KEY");
   if (!clientSecret) missing.push("TIKTOK_CLIENT_SECRET");
