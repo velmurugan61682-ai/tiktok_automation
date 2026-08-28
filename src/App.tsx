@@ -4,6 +4,7 @@ import { ThemeProvider, useTheme } from "./components/ThemeContext.js";
 import { SuperAdminDashboard } from "./components/SuperAdminDashboard.js";
 import { TenantDashboard } from "./components/TenantDashboard.js";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { HomePage } from "./app/home/HomePage.js";
 import { PrivacyPage } from "./app/privacy/page.js";
 import { TermsPage } from "./app/terms/page.js";
 import { ContactPage } from "./app/contact/page.js";
@@ -28,7 +29,7 @@ const AuthPortal: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isRegister, setIsRegister] = useState(false);
+  const [isRegister, setIsRegister] = useState(location.pathname === "/register");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -50,47 +51,6 @@ const AuthPortal: React.FC = () => {
       })
       .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      if (user.role === "SUPER_ADMIN") {
-        if (location.pathname === "/" || location.pathname === "") {
-          navigate("/superadmin");
-        }
-      } else {
-        if (location.pathname === "/" || location.pathname === "") {
-          navigate("/dashboard");
-        }
-      }
-    } else {
-      if (
-        location.pathname !== "/" &&
-        location.pathname !== "/login" &&
-        location.pathname !== "/privacy" &&
-        location.pathname !== "/terms" &&
-        location.pathname !== "/contact"
-      ) {
-        navigate("/");
-      }
-    }
-  }, [user, location.pathname, navigate]);
-
-  if (location.pathname === "/privacy") {
-    return <PrivacyPage />;
-  }
-  if (location.pathname === "/terms") {
-    return <TermsPage />;
-  }
-  if (location.pathname === "/contact") {
-    return <ContactPage />;
-  }
-
-  if (user) {
-    if (user.role === "SUPER_ADMIN") {
-      return <SuperAdminDashboard />;
-    }
-    return <TenantDashboard />;
-  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,22 +200,22 @@ const AuthPortal: React.FC = () => {
           className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm cursor-pointer"
           title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
-          {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+          {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-[#FE2C55]" />}
         </button>
         
         {/* Left column marketing splash */}
         <div className="tt-auth-hero text-white p-12 flex flex-col justify-between md:w-[42%] shrink-0 relative overflow-hidden">
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="Taqbot Logo" className="tt-brand-mark w-10 h-10 rounded-xl object-cover border border-white/10 shadow-md" />
-              <span className="font-extrabold tracking-tight text-xl text-white">Taqbot</span>
-            </div>
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/logo.png" alt="TaQ Bot Logo" className="tt-brand-mark w-10 h-10 rounded-xl object-cover border border-white/10 shadow-md" />
+              <span className="font-extrabold tracking-tight text-xl text-white">TaQ Bot</span>
+            </Link>
             
             <h2 className="text-2xl font-extrabold tracking-tight leading-tight pt-6">
-              Taqbot CRM & Unified Social Inbox.
+              AI-Powered TikTok Automation & Engagement Platform
             </h2>
             <p className="text-slate-400 text-xs leading-relaxed">
-              Connect your TikTok Shop accounts, moderate post commenting with keyword automation rules, and converse using our dual-pane Social Inbox driven by Google Gemini.
+              Connect your TikTok accounts, moderate comments with AI rules, and manage social inbox conversations securely.
             </p>
           </div>
 
@@ -264,35 +224,35 @@ const AuthPortal: React.FC = () => {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Core Capabilities</span>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Dual-role control center (Super vs Tenant)</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#FE2C55] shrink-0" />
+                  <span>TikTok Comment Automation & AI Moderation</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#FE2C55] shrink-0" />
                   <span>Real-time human-to-AI chat handover</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Direct checkout invoice generation</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#FE2C55] shrink-0" />
+                  <span>Official TikTok OAuth 2.0 Integration</span>
                 </div>
               </div>
             </div>
 
             {/* Quick Demo Autofills */}
             <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50 space-y-2.5">
-              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">Sandbox Quick Access</span>
+              <span className="text-[10px] font-bold text-[#FE2C55] uppercase tracking-wider block">Sandbox Quick Access</span>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={autofillSuperAdmin}
-                  className="bg-slate-800 hover:bg-slate-700 text-[11px] font-bold py-1.5 px-2.5 rounded-lg border border-slate-700 text-slate-200 transition-colors"
+                  className="bg-slate-800 hover:bg-slate-700 text-[11px] font-bold py-1.5 px-2.5 rounded-lg border border-slate-700 text-slate-200 transition-colors cursor-pointer"
                 >
                   Super Admin
                 </button>
                 <button
                   type="button"
                   onClick={autofillTenantAdmin}
-                  className="bg-slate-800 hover:bg-slate-700 text-[11px] font-bold py-1.5 px-2.5 rounded-lg border border-slate-700 text-slate-200 transition-colors"
+                  className="bg-slate-800 hover:bg-slate-700 text-[11px] font-bold py-1.5 px-2.5 rounded-lg border border-slate-700 text-slate-200 transition-colors cursor-pointer"
                 >
                   Tenant Admin
                 </button>
@@ -305,12 +265,12 @@ const AuthPortal: React.FC = () => {
         <div className="tt-auth-form flex-1 p-12 flex flex-col justify-center">
           <div className="max-w-md w-full mx-auto space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-slate-800">
-                {isRegister ? "Get Started with Taqbot" : "Sign In to Your Workspace"}
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white">
+                {isRegister ? "Get Started with TaQ Bot" : "Sign In to Your Workspace"}
               </h3>
               <p className="text-xs text-slate-400 mt-1">
                 {isRegister 
-                  ? "Launch a brand-new tenant account seeded with premium sample products."
+                  ? "Launch a brand-new tenant account seeded with premium sample features."
                   : "Enter your supervisor credentials or tenant credentials."}
               </p>
             </div>
@@ -337,7 +297,7 @@ const AuthPortal: React.FC = () => {
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       placeholder="e.g. owner@smartmart.com"
-                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20 focus:border-[#FE2C55]"
                     />
                   </div>
                 </div>
@@ -353,8 +313,8 @@ const AuthPortal: React.FC = () => {
                       required
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
-                      className="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                      placeholder="••••••••••••"
+                      className="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20 focus:border-[#FE2C55]"
                     />
                     <button
                       type="button"
@@ -394,7 +354,7 @@ const AuthPortal: React.FC = () => {
                         value={name}
                         onChange={e => setName(e.target.value)}
                         placeholder="e.g. Priyanjali Sen"
-                        className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
+                        className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20"
                       />
                     </div>
                   </div>
@@ -407,7 +367,7 @@ const AuthPortal: React.FC = () => {
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       placeholder="e.g. sen@brand.com"
-                      className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
+                      className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20"
                     />
                   </div>
 
@@ -421,7 +381,7 @@ const AuthPortal: React.FC = () => {
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
                         placeholder="e.g. 984534..."
-                        className="w-full pl-9 pr-3.5 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
+                        className="w-full pl-9 pr-3.5 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20"
                       />
                     </div>
                   </div>
@@ -434,7 +394,7 @@ const AuthPortal: React.FC = () => {
                       value={shopName}
                       onChange={e => setShopName(e.target.value)}
                       placeholder="e.g. Factory Vaseegrah Veda"
-                      className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
+                      className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20"
                     />
                   </div>
 
@@ -447,8 +407,8 @@ const AuthPortal: React.FC = () => {
                         required
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
-                        className="w-full pl-10 pr-10 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
+                        placeholder="••••••••••••"
+                        className="w-full pl-10 pr-10 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#FE2C55]/20"
                       />
                       <button
                         type="button"
@@ -477,18 +437,18 @@ const AuthPortal: React.FC = () => {
               </form>
             )}
 
-            {/* Google OAuth Button (Positioned below forms) */}
+            {/* Google OAuth Button */}
             <div className="space-y-3 pt-2">
               <div className="relative flex items-center justify-center my-2">
                 <div className="border-t border-slate-200 w-full"></div>
-                <span className="bg-white px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider absolute">Or</span>
+                <span className="bg-white dark:bg-[#161823] px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider absolute">Or</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => handleGoogleAuth()}
                 disabled={loading}
-                className="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 border border-slate-300 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-3 disabled:opacity-50 hover:border-slate-400 cursor-pointer"
+                className="w-full bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 font-bold py-2.5 px-4 border border-slate-300 dark:border-slate-700 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-3 disabled:opacity-50 hover:border-slate-400 cursor-pointer"
               >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path
@@ -520,19 +480,19 @@ const AuthPortal: React.FC = () => {
                   setError(null);
                   setIsRegister(!isRegister);
                 }}
-                className="text-xs font-bold text-[#25F4EE] hover:underline"
+                className="text-xs font-bold text-[#FE2C55] hover:underline cursor-pointer"
               >
                 {isRegister ? "Already registered? Sign in here" : "Need a workspace? Register new brand"}
               </button>
             </div>
 
             {/* Footer Links */}
-            <div className="flex justify-center gap-4 pt-6 border-t border-slate-100 text-[11px] font-bold text-slate-400">
-              <Link to="/privacy" className="hover:text-[#25F4EE] transition-colors">Privacy Policy</Link>
+            <div className="flex justify-center gap-4 pt-6 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-400">
+              <Link to="/privacy-policy" className="hover:text-[#FE2C55] transition-colors">Privacy Policy</Link>
               <span>•</span>
-              <Link to="/terms" className="hover:text-[#25F4EE] transition-colors">Terms of Service</Link>
+              <Link to="/terms-of-service" className="hover:text-[#FE2C55] transition-colors">Terms of Service</Link>
               <span>•</span>
-              <Link to="/contact" className="hover:text-[#25F4EE] transition-colors">Contact Support</Link>
+              <Link to="/contact" className="hover:text-[#FE2C55] transition-colors">Contact Support</Link>
             </div>
           </div>
         </div>
@@ -542,14 +502,45 @@ const AuthPortal: React.FC = () => {
   );
 };
 
+export const MainContent: React.FC = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  // Public Routes (Accessible without logging in!)
+  if (location.pathname === "/privacy-policy" || location.pathname === "/privacy") {
+    return <PrivacyPage />;
+  }
+  if (location.pathname === "/terms-of-service" || location.pathname === "/terms") {
+    return <TermsPage />;
+  }
+  if (location.pathname === "/contact") {
+    return <ContactPage />;
+  }
+  if (location.pathname === "/login" || location.pathname === "/register") {
+    if (user) {
+      return user.role === "SUPER_ADMIN" ? <SuperAdminDashboard /> : <TenantDashboard />;
+    }
+    return <AuthPortal />;
+  }
+
+  // Dashboard protected routes
+  if (user && (location.pathname === "/dashboard" || location.pathname === "/superadmin" || location.pathname === "/settings")) {
+    if (user.role === "SUPER_ADMIN") {
+      return <SuperAdminDashboard />;
+    }
+    return <TenantDashboard />;
+  }
+
+  // Default homepage (Rendered for unauthenticated visitors landing at /)
+  return <HomePage />;
+};
+
 export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AuthPortal />
+        <MainContent />
       </AuthProvider>
     </ThemeProvider>
   );
 }
-
-
