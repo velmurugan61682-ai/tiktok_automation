@@ -44,6 +44,7 @@ export const PrivacyPage: React.FC = () => {
               <ul className="list-disc pl-5 space-y-1.5 text-xs">
                 <li><strong className="text-slate-800 dark:text-slate-200">Account Information:</strong> Name, business email address, shop name, contact phone number, and account credentials when you register.</li>
                 <li><strong className="text-slate-800 dark:text-slate-200">TikTok Authorization Information:</strong> When you connect your TikTok account through the official TikTok OAuth flow, we receive authorized OAuth access tokens, profile usernames, display names, avatar URLs, and public video identifiers.</li>
+                <li><strong className="text-slate-800 dark:text-slate-200">TikTok Comment & Interaction Data:</strong> Public comment text, commenter usernames, commenter display names, commenter open IDs, and video post IDs received via TikTok webhook events to execute authorized automated replies and moderation.</li>
                 <li><strong className="text-slate-800 dark:text-slate-200">Usage Data:</strong> Workspace configuration settings, comment automation rule criteria, and social inbox interaction records.</li>
               </ul>
             </section>
@@ -76,32 +77,43 @@ export const PrivacyPage: React.FC = () => {
               <p>Your data is used solely for operating and enhancing the TaQ Bot platform:</p>
               <ul className="list-disc pl-5 space-y-1.5 text-xs">
                 <li>To authenticate your user identity and grant access to your workspace.</li>
-                <li>To execute your configured comment automation rules and AI moderation logic.</li>
+                <li>To execute your configured comment automation rules, automated DM responses, and AI moderation logic.</li>
+                <li>To process comment queries through Google Gemini AI when AI Auto-Reply is selected by the creator.</li>
                 <li>To display live comments, analytics, and social inbox conversations inside your dashboard.</li>
                 <li>To send critical account notifications and support communications.</li>
               </ul>
             </section>
 
-            {/* Section 4: Data Sharing & Monetization */}
+            {/* Section 4: Data Sharing & Third-Party Processors */}
             <section className="space-y-3">
               <h2 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                 <Share2 className="w-5 h-5 text-[#FE2C55]" />
-                4. Data Sharing & Non-Monetization
+                4. Data Sharing & Third-Party Processors
               </h2>
               <div className="p-4 bg-[#FE2C55]/10 rounded-2xl border border-[#FE2C55]/20 text-xs font-semibold text-[#FE2C55]">
                 We NEVER sell, rent, or monetize your personal information or TikTok data under any circumstances.
               </div>
               <p className="text-xs">
-                Data is shared strictly with infrastructure service providers (such as cloud database hosting) bound by strict confidentiality agreements required to run the SaaS platform.
+                Data is shared strictly with:
               </p>
+              <ul className="list-disc pl-5 space-y-1.5 text-xs">
+                <li><strong>Cloud Infrastructure Providers:</strong> Secure cloud database and hosting providers bound by strict data protection agreements.</li>
+                <li><strong>AI Processing (Google Gemini AI):</strong> Comment text and user question context is transmitted securely to Google Gemini API exclusively to formulate real-time automated conversational replies. No data is used to train public AI models.</li>
+              </ul>
             </section>
 
-            {/* Section 5: Data Storage & Security */}
+            {/* Section 5: Data Retention & Security */}
             <section className="space-y-3">
               <h2 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                 <Lock className="w-5 h-5 text-[#FE2C55]" />
-                5. Data Storage & Security
+                5. Data Retention & Security
               </h2>
+              <div className="p-4 bg-slate-50 dark:bg-[#101116] rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-2 text-xs">
+                <p className="font-semibold text-slate-800 dark:text-slate-200">Data Retention Period:</p>
+                <p className="text-slate-600 dark:text-slate-300">
+                  TikTok comment logs, commenter identifiers, and automated interaction records are retained for a maximum of <strong>90 days</strong>, after which they are systematically deleted or anonymized. Account credentials and settings remain active until account closure or deletion request.
+                </p>
+              </div>
               <p className="text-xs">
                 We implement technical and organizational security measures, including SSL/TLS transport encryption, encrypted token storage, HMAC signature checks, and access controls to safeguard your data against unauthorized access or disclosure.
               </p>

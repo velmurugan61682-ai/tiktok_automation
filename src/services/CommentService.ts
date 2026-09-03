@@ -6,6 +6,35 @@ import { AIService } from "./AIService.js";
 import { TikTokService } from "./TikTokService.js";
 
 const TOXIC_WORDS = ["scam", "fraud", "fake", "bad", "useless", "abuse", "insult", "hate", "harass", "spam"];
+const COOLDOWN_WINDOW_MS = 24 * 60 * 60 * 1000; // 24-hour rate limit & deduplication window per user per post
+const TIKTOK_MAX_REPLY_LENGTH = 150; // Official TikTok comment 150-char limit
+
+/**
+ * Output content filter for outgoing automated replies:
+ * 1. Enforces TikTok 150-char length limit
+ * 2. Filters profane/toxic words
+ * 3. Strips unverified raw URLs to prevent spam flags
+ */
+const sanitizeOutgoingReply = (rawText: string): string => {
+  if (!rawText) return "";
+  let sanitized = rawText.trim();
+
+  // 1. Strip raw URLs (e.g. http:// or https:// links) to comply with spam prevention
+  sanitized = sanitized.replace(/https?:\/\/[^\s]+/gi, "[link]");
+
+  // 2. Filter obvious profanity/toxic words from outgoing replies
+  for (const word of TOXIC_WORDS) {
+    const regex = new RegExp(`\\b${word}\\b`, "gi");
+    sanitized = sanitized.replace(regex, "***");
+  }
+
+  // 3. Enforce TikTok 150-character limit
+  if (sanitized.length > TIKTOK_MAX_REPLY_LENGTH) {
+    sanitized = sanitized.slice(0, TIKTOK_MAX_REPLY_LENGTH - 3).trim() + "...";
+  }
+
+  return sanitized;
+};
 
 const isOwnerContent = (customerId: string, customerName: string) => {
   const nameLower = (customerName || "").toLowerCase();
@@ -63,9 +92,30 @@ export class CommentService {
       return comment;
     }
 
+    // 2. Per-user cooldown & deduplication safeguard (24h window per user per post)
+    const existingComments = CommentRepository.find(workspaceId);
+    const nowTime = Date.now();
+    const hasRecentReply = existingComments.some(c =>
+      c.customerId === customerId &&
+      c.postId === postId &&
+      c.status === "REPLIED" &&
+      c.id !== comment.id &&
+      (nowTime - new Date(c.createdAt || 0).getTime()) < COOLDOWN_WINDOW_MS
+    );
+
+    if (hasRecentReply) {
+      console.log(`[Rate Limit Safeguard] 24h cooldown active for user ${customerName} (${customerId}) on post ${postId}. Suppressing duplicate automated reply.`);
+      const updated = CommentRepository.update(workspaceId, comment.id, {
+        status: "REPLIED",
+        replyText: "[Rate-limited: 1 automated reply per user per 24h]",
+        dmSent: false
+      });
+      return updated || comment;
+    }
+
     const textLower = text.toLowerCase();
 
-    // 2. Toxicity & Custom Bad Words Moderation Rules
+    // 3. Toxicity & Custom Bad Words Moderation Rules (Creator Review Safeguard)
     const moderationRules = AutomationRepository.findRules(workspaceId).filter(
       r => r.isEnabled && r.type === "MODERATION"
     );
@@ -79,16 +129,12 @@ export class CommentService {
       const moderationAction: "DELETED" | "HIDDEN" = isSevere ? "DELETED" : "HIDDEN";
       const toxicityScore = isSevere ? 92 : 78;
       const moderationExplanation = isSevere 
-        ? "Comment contains severe allegations or toxic language flagged by AI moderation pipeline."
-        : "Comment contains potential negative sentiment or spam content flagged by AI moderation.";
+        ? "Comment contains severe allegations or toxic language flagged by AI moderation pipeline. Flagged for creator review."
+        : "Comment contains potential negative sentiment or spam content flagged by AI moderation. Flagged for creator review.";
 
-      console.log(`Flagging and moderating comment (${moderationAction}): "${text}"`);
+      console.log(`Flagging comment for creator review (${moderationAction}): "${text}"`);
       
-      // Execute moderation action via TikTok API
-      TikTokService.deleteOrHideComment(workspaceId, postId, comment.id, moderationAction).catch(err =>
-        console.error(`Failed to execute TikTok comment moderation (${moderationAction}):`, err)
-      );
-
+      // Update comment as FLAGGED in database for creator review in Moderation dashboard
       const updated = CommentRepository.update(workspaceId, comment.id, {
         status: "FLAGGED",
         moderationAction,
@@ -98,7 +144,7 @@ export class CommentService {
       return updated || comment;
     }
 
-    // 3. Keyword comment automation reply/DM rules
+    // 4. Keyword comment automation reply/DM rules
     const rules = AutomationRepository.findRules(workspaceId).filter(
       r => r.isEnabled && r.type === "COMMENT"
     );
@@ -140,6 +186,9 @@ export class CommentService {
         dmSent = true;
       }
 
+      // Enforce 150-char limit, profanity check, and URL sanitize on outgoing reply
+      replyText = sanitizeOutgoingReply(replyText);
+
       // If DM was triggered, create a conversation and message in local Chat Inbox
       if (dmSent) {
         const conversations = ConversationRepository.find(workspaceId);
@@ -168,6 +217,9 @@ export class CommentService {
         } catch (aiErr) {
           console.error("Failed to generate AI comment webhook DM:", aiErr);
         }
+
+        // Enforce outgoing content filtering on automated DM
+        dmContent = sanitizeOutgoingReply(dmContent);
 
         // Add customer comment trigger message
         ConversationRepository.createMessage({

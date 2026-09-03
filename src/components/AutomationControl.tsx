@@ -429,6 +429,26 @@ export const AutomationControl: React.FC = () => {
     }
   };
 
+  const handleToggleRule = async (rule: AutomationRule) => {
+    try {
+      const res = await fetch(`/api/automation/rules/${rule.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          isEnabled: !rule.isEnabled
+        })
+      });
+      if (res.ok) {
+        setRules(prev => prev.map(r => r.id === rule.id ? { ...r, isEnabled: !r.isEnabled } : r));
+      }
+    } catch (e) {
+      console.error("Failed to toggle rule:", e);
+    }
+  };
+
   // Find currently selected product details from database
   const activeProduct = products.find(p => p.id === selectedPostId);
 
@@ -554,11 +574,12 @@ export const AutomationControl: React.FC = () => {
       {activeTab === "comment_automation" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Create New Rule Form (Left Column) */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-155 shadow-sm space-y-6">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Create New Rule</h3>
-            
-            <form onSubmit={handleDeployCommentAutomation} className="space-y-5">
+          {/* Create New Rule Form & Deployment List (Left Column) */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white p-6 rounded-2xl border border-slate-155 shadow-sm space-y-6">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Create New Rule</h3>
+              
+              <form onSubmit={handleDeployCommentAutomation} className="space-y-5">
               
               {/* Row 1 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -758,6 +779,17 @@ export const AutomationControl: React.FC = () => {
                 </div>
               )}
 
+              {/* Creator Automation Consent & Policy Notice */}
+              <div className="p-3.5 bg-indigo-50/60 dark:bg-slate-800/60 rounded-xl border border-indigo-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-400 text-xs">
+                  <Shield className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <span>Creator Automation Notice & Consent</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
+                  By deploying this automation, you authorize TaQ Bot to monitor incoming comments on this selected post and send automated responses or direct messages to matching commenters in compliance with TikTok platform policies. You can toggle this rule on/off or delete it at any time from your dashboard.
+                </p>
+              </div>
+
               <button
                 type="submit"
                 className="w-full bg-indigo-650 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl text-xs shadow-sm shadow-indigo-100 flex items-center justify-center gap-1.5 transition-colors"
@@ -767,6 +799,69 @@ export const AutomationControl: React.FC = () => {
 
             </form>
           </div>
+
+          {/* Comment Rules Deployment List with On/Off Toggle */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-150 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Deployed Comment Automations ({rules.filter(r => r.type === "COMMENT").length})
+              </h4>
+              <span className="text-[10px] text-slate-400">Toggle active status to pause/resume rules</span>
+            </div>
+            
+            <div className="divide-y divide-slate-100">
+              {rules.filter(r => r.type === "COMMENT").length === 0 ? (
+                <div className="py-6 text-center text-slate-400 text-xs font-semibold">
+                  No comment automation rules deployed yet. Configure and deploy one above!
+                </div>
+              ) : (
+                rules.filter(r => r.type === "COMMENT").map(rule => (
+                  <div key={rule.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-extrabold text-slate-800">
+                          Trigger: "{rule.triggerKeyword.join(', ')}"
+                        </p>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          rule.isEnabled ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-slate-100 text-slate-500 border border-slate-200"
+                        }`}>
+                          {rule.isEnabled ? "ACTIVE" : "PAUSED"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 italic">"{rule.replyTemplate}"</p>
+                      <p className="text-[9px] text-slate-400">Action: {rule.actionType} • Replies sent: {rule.usageCount}</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleRule(rule)}
+                        className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                          rule.isEnabled
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 shadow-xs"
+                            : "bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200"
+                        }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${rule.isEnabled ? "bg-emerald-500" : "bg-slate-400"}`} />
+                        {rule.isEnabled ? "Active" : "Paused"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRule(rule.id)}
+                        className="text-xs text-rose-600 hover:bg-rose-50 px-2.5 py-1.5 rounded-xl border border-rose-100 font-bold transition-all cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+        </div>
 
           {/* Right Live Preview Column */}
           <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-150 shadow-sm flex flex-col items-center justify-center">
@@ -929,16 +1024,37 @@ export const AutomationControl: React.FC = () => {
                   rules.filter(r => r.type === "STORY").map(rule => (
                     <div key={rule.id} className="py-4 flex items-center justify-between gap-4">
                       <div className="space-y-1">
-                        <p className="text-xs font-extrabold text-slate-800">Trigger Keyword: "{rule.triggerKeyword.join(', ')}"</p>
-                        <p className="text-[10px] text-slate-400 italic">" {rule.replyTemplate} "</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-extrabold text-slate-800">Trigger: "{rule.triggerKeyword.join(', ')}"</p>
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                            rule.isEnabled ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-slate-100 text-slate-500 border border-slate-200"
+                          }`}>
+                            {rule.isEnabled ? "ACTIVE" : "PAUSED"}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 italic">"{rule.replyTemplate}"</p>
                       </div>
                       
-                      <button
-                        onClick={() => handleDeleteRule(rule.id)}
-                        className="text-xs text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100 font-bold transition-all"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleRule(rule)}
+                          className={`flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                            rule.isEnabled
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 shadow-xs"
+                              : "bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200"
+                          }`}
+                        >
+                          <span className={`w-2 h-2 rounded-full ${rule.isEnabled ? "bg-emerald-500" : "bg-slate-400"}`} />
+                          {rule.isEnabled ? "Active" : "Paused"}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRule(rule.id)}
+                          className="text-xs text-rose-600 hover:bg-rose-50 px-2.5 py-1.5 rounded-xl border border-rose-100 font-bold transition-all cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -1067,7 +1183,22 @@ export const AutomationControl: React.FC = () => {
                           <p className="font-extrabold text-slate-800 text-xs truncate">Trigger: "{rule.triggerKeyword.join(', ')}"</p>
                         </div>
                         <p className="text-[9px] text-slate-450 font-semibold uppercase">Rule Type: text</p>
-                        <p className="text-[9px] text-slate-300 font-mono font-bold mt-1">Active</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleRule(rule);
+                            }}
+                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+                              rule.isEnabled
+                                ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100"
+                                : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200"
+                            }`}
+                          >
+                            {rule.isEnabled ? "● Active" : "○ Paused"}
+                          </button>
+                        </div>
                       </div>
                       
                       <div className="text-[9px] text-slate-400 font-bold self-center shrink-0">

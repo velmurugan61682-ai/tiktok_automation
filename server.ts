@@ -779,7 +779,7 @@ app.put("/api/workspace/settings", authenticateJWT, requireAdmin, (req: any, res
   if (!updated) {
     return res.status(404).json({ error: "Workspace not found" });
   }
-  res.json(updated);
+  res.json({ success: true });
 });
 
 app.get("/api/tiktok/accounts", authenticateJWT, requireAdmin, async (req: any, res) => {
@@ -1105,10 +1105,10 @@ app.get("/api/tiktok/config", authenticateJWT, requireAdmin, (req: any, res) => 
   const capabilities = {
     canReadProfile: scopes.includes("user.info.basic") || scopes.includes("user.info.profile"),
     canReadVideos: scopes.includes("video.list"),
-    canReadComments: false,
-    canReplyComments: false,
-    canDeleteComments: false,
-    canModerateComments: false
+    canReadComments: scopes.includes("comment.list") || scopes.includes("video.list"),
+    canReplyComments: scopes.includes("comment.list.manage") || scopes.includes("video.list"),
+    canDeleteComments: scopes.includes("comment.list.manage") || scopes.includes("video.list"),
+    canModerateComments: scopes.includes("comment.list.manage") || scopes.includes("video.list")
   };
 
   res.json({
