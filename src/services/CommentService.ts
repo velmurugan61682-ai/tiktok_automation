@@ -115,7 +115,7 @@ export class CommentService {
 
     const textLower = text.toLowerCase();
 
-    // 3. Toxicity & Custom Bad Words Moderation Rules (Creator Review Safeguard)
+    // 3. Toxicity & Custom Bad Words Moderation Rules (Creator Review & Active Removal)
     const moderationRules = AutomationRepository.findRules(workspaceId).filter(
       r => r.isEnabled && r.type === "MODERATION"
     );
@@ -124,29 +124,85 @@ export class CommentService {
     );
 
     const hasToxicWords = TOXIC_WORDS.some(word => textLower.includes(word));
+    let aiToxicity = { isToxic: false, score: 0, action: "NONE" as "DELETED" | "HIDDEN" | "NONE", reason: "" };
+    
     if (hasToxicWords || matchedModRule) {
       const isSevere = textLower.includes("scam") || textLower.includes("fraud") || textLower.includes("abuse") || textLower.includes("insult");
-      const moderationAction: "DELETED" | "HIDDEN" = isSevere ? "DELETED" : "HIDDEN";
-      const toxicityScore = isSevere ? 92 : 78;
-      const moderationExplanation = isSevere 
-        ? "Comment contains severe allegations or toxic language flagged by AI moderation pipeline. Flagged for creator review."
-        : "Comment contains potential negative sentiment or spam content flagged by AI moderation. Flagged for creator review.";
+      aiToxicity = {
+        isToxic: true,
+        score: isSevere ? 95 : 78,
+        action: isSevere ? "DELETED" : "HIDDEN",
+        reason: isSevere ? "Severe scam/abuse violation" : "Spam/negative sentiment detected"
+      };
+    } else {
+      // Evaluate semantic toxicity with Gemini AI
+      try {
+        aiToxicity = await AIService.evaluateToxicity(text);
+      } catch (e) {
+        // Safe fallback
+      }
+    }
 
-      console.log(`Flagging comment for creator review (${moderationAction}): "${text}"`);
+    if (aiToxicity.isToxic) {
+      const moderationAction: "DELETED" | "HIDDEN" = aiToxicity.action === "DELETED" ? "DELETED" : "HIDDEN";
+      const toxicityScore = aiToxicity.score || 85;
+      const moderationExplanation = `[AI Moderation] ${aiToxicity.reason}. Automatically executing ${moderationAction} on TikTok.`;
+
+      console.log(`[TikTok Toxic Comment Protection] Action ${moderationAction} for comment "${text}" on post ${postId}`);
       
-      // Update comment as FLAGGED in database for creator review in Moderation dashboard
+      // Update comment in database
       const updated = CommentRepository.update(workspaceId, comment.id, {
         status: "FLAGGED",
         moderationAction,
         toxicityScore,
         moderationExplanation
       });
+
+      // Execute real-time deletion or hiding on TikTok API
+      TikTokService.deleteOrHideComment(workspaceId, postId, comment.id, moderationAction).catch(err =>
+        console.error(`Failed to execute ${moderationAction} on TikTok API:`, err)
+      );
+
       return updated || comment;
     }
 
-    // 4. Keyword comment automation reply/DM rules
+    // 4. Live Stream Comment Auto-Reply Support
+    const isLiveStream = comment.postType === "LIVESTREAM" || comment.isLiveStream;
+    if (isLiveStream) {
+      const liveRules = AutomationRepository.findRules(workspaceId).filter(
+        r => r.isEnabled && (r.type === "LIVESTREAM" || (r as any).isLiveStream)
+      );
+      const matchedLiveRule = liveRules.find(r =>
+        r.triggerKeyword.some(kw => textLower.includes(kw.toLowerCase()))
+      );
+
+      let liveReply = "";
+      if (matchedLiveRule) {
+        liveReply = matchedLiveRule.replyTemplate || (matchedLiveRule as any).replyCommentText || "";
+      } else {
+        // AI Live Stream Co-host Reply
+        liveReply = await AIService.generateLiveStreamCommentReply(workspaceId, text);
+      }
+
+      liveReply = sanitizeOutgoingReply(liveReply);
+      console.log(`[TikTok LIVE Reply] Responding to viewer ${customerName}: "${liveReply}"`);
+
+      // Post live reply to TikTok comment
+      TikTokService.replyToComment(workspaceId, postId, comment.id, liveReply).catch(err =>
+        console.error("Failed to post TikTok live stream comment reply:", err)
+      );
+
+      const updated = CommentRepository.update(workspaceId, comment.id, {
+        replyText: liveReply,
+        status: "REPLIED",
+        isLiveStream: true
+      });
+      return updated || comment;
+    }
+
+    // 5. Keyword comment automation reply/DM rules
     const rules = AutomationRepository.findRules(workspaceId).filter(
-      r => r.isEnabled && r.type === "COMMENT"
+      r => r.isEnabled && (r.type === "COMMENT" || r.type === "STORY")
     );
 
     const matchedRule = rules.find(rule =>
@@ -189,7 +245,14 @@ export class CommentService {
       // Enforce 150-char limit, profanity check, and URL sanitize on outgoing reply
       replyText = sanitizeOutgoingReply(replyText);
 
-      // If DM was triggered, create a conversation and message in local Chat Inbox
+      // Post reply to TikTok comment on the video
+      if (replyText) {
+        TikTokService.replyToComment(workspaceId, postId, comment.id, replyText).catch(err =>
+          console.error("Failed to post reply to TikTok video comment:", err)
+        );
+      }
+
+      // If DM was triggered, create a conversation and message in local Chat Inbox and send via TikTok API
       if (dmSent) {
         const conversations = ConversationRepository.find(workspaceId);
         let conv = conversations.find(c => c.customerId === customerId);

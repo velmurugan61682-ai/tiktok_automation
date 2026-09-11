@@ -98,6 +98,117 @@ Rules:
     }
   }
 
+  /**
+   * Evaluate toxicity, hate speech, scam, spam, and profanity in comments
+   */
+  static async evaluateToxicity(text: string): Promise<{
+    isToxic: boolean;
+    score: number;
+    action: "DELETED" | "HIDDEN" | "NONE";
+    reason: string;
+  }> {
+    const textLower = text.toLowerCase();
+    const severeWords = ["scam", "fraud", "abuse", "insult", "kill", "die", "bastard", "idiot", "cheat", "thief"];
+    const moderateWords = ["fake", "bad", "useless", "hate", "harass", "spam", "worst", "rubbish", "garbage"];
+
+    const isSevere = severeWords.some(w => textLower.includes(w));
+    const isModerate = moderateWords.some(w => textLower.includes(w));
+
+    if (isSevere) {
+      return {
+        isToxic: true,
+        score: 95,
+        action: "DELETED",
+        reason: "Severe toxic / abusive language or fraud allegation detected."
+      };
+    }
+
+    if (isModerate) {
+      return {
+        isToxic: true,
+        score: 75,
+        action: "HIDDEN",
+        reason: "Spam or negative profanity detected."
+      };
+    }
+
+    // Call Gemini AI for deeper semantic toxicity detection if API key exists
+    if (process.env.GEMINI_API_KEY && text.length > 5) {
+      try {
+        const prompt = `Analyze this social media comment for toxicity, hate speech, harassment, spam, or scams.
+Comment: "${text}"
+
+Respond strictly with JSON format:
+{
+  "isToxic": true or false,
+  "score": integer between 0 and 100,
+  "action": "DELETED" (if hate/abuse/scam > 80), "HIDDEN" (if spam/mild insult 50-80), or "NONE",
+  "reason": "short explanation"
+}`;
+
+        const response = await ai.models.generateContent({
+          model: "gemini-3.5-flash",
+          contents: prompt,
+          config: {
+            temperature: 0.1,
+          },
+        });
+
+        const respText = (response.text || "").trim();
+        const cleaned = respText.replace(/```json/gi, "").replace(/```/g, "").trim();
+        const parsed = JSON.parse(cleaned);
+        return {
+          isToxic: Boolean(parsed.isToxic),
+          score: Number(parsed.score) || 0,
+          action: parsed.action === "DELETED" || parsed.action === "HIDDEN" ? parsed.action : "NONE",
+          reason: parsed.reason || "AI sentiment evaluation"
+        };
+      } catch (e) {
+        // Fallback to non-toxic
+      }
+    }
+
+    return {
+      isToxic: false,
+      score: 10,
+      action: "NONE",
+      reason: "Comment is safe"
+    };
+  }
+
+  /**
+   * Generate real-time reply for TikTok Live Stream comments
+   */
+  static async generateLiveStreamCommentReply(
+    workspaceId: string,
+    commentText: string,
+    streamTopic?: string
+  ): Promise<string> {
+    try {
+      const prompt = `You are a live stream co-host and chat moderator responding to a viewer during a TikTok LIVE.
+Viewer Comment: "${commentText}"
+Stream Topic: "${streamTopic || "General Store Q&A"}"
+
+Rules:
+1. Keep the response energetic, friendly, and very short (under 25 words).
+2. Directly answer their question or shout them out.
+3. If they ask about orders/products, tell them to check the pinned link or send a DM.`;
+
+      if (process.env.GEMINI_API_KEY) {
+        const response = await ai.models.generateContent({
+          model: "gemini-3.5-flash",
+          contents: prompt,
+          config: { temperature: 0.7 },
+        });
+        const ans = (response.text || "").trim();
+        if (ans) return ans;
+      }
+    } catch (e) {
+      console.warn("Live stream AI reply fallback:", e);
+    }
+    return `Hey thanks for tuning into the LIVE! Check the pinned link or message us for details!`;
+  }
+
   private static simulateFallbackReply(message: string, kbContext: string, prodContext: string): string {
     const msgLower = message.toLowerCase();
     

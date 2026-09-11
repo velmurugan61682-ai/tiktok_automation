@@ -6,27 +6,36 @@ export class CommentRepository {
     return getCollection("comments").filter(c => c.workspaceId === workspaceId);
   }
 
-  static create(comment: Omit<Comment, "id" | "createdAt">): Comment {
+  static create(comment: Partial<Comment> & {
+    workspaceId: string;
+    customerId: string;
+    customerName: string;
+    postType: Comment["postType"];
+    postId: string;
+    text: string;
+  }): Comment {
     const comments = getCollection("comments");
 
-    // Deduplication check: verify if identical comment text on same post was already recorded
+    // Deduplication check: check by comment id or identical customer+post+text
     const existing = comments.find(c =>
-      c.workspaceId === comment.workspaceId &&
-      c.postId === comment.postId &&
-      c.customerId === comment.customerId &&
-      c.text.trim().toLowerCase() === comment.text.trim().toLowerCase()
+      (comment.id && c.id === comment.id) ||
+      (c.workspaceId === comment.workspaceId &&
+       c.postId === comment.postId &&
+       c.customerId === comment.customerId &&
+       c.text.trim().toLowerCase() === comment.text.trim().toLowerCase())
     );
 
     if (existing) {
-      console.warn(`[DEDUPLICATION WARNING] Duplicate comment detected for customer ${comment.customerName} on post ${comment.postId}. Returning existing comment (${existing.id}).`);
+      console.warn(`[DEDUPLICATION] Existing comment detected (${existing.id}). Skipping re-creation.`);
       return existing;
     }
 
-    const newId = `c-${comments.length + 1}`;
+    const newId = comment.id || `c-${comments.length + 1}`;
     const newComment: Comment = {
+      status: "PENDING",
       ...comment,
       id: newId,
-      createdAt: new Date().toISOString()
+      createdAt: comment.createdAt || new Date().toISOString()
     };
     comments.push(newComment);
     saveCollection("comments", comments);

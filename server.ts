@@ -102,9 +102,11 @@ const SUPER_ADMIN_NAME = cleanEnv(process.env.SUPER_ADMIN_NAME || "System Admini
 const TENANT_ADMIN_EMAIL = cleanEnv(process.env.TENANT_ADMIN_EMAIL || "owner@smartmart.com").toLowerCase();
 const TENANT_ADMIN_PASSWORD = cleanEnv(process.env.TENANT_ADMIN_PASSWORD || "password123");
 
-// --- TIKTOK ENV CREDENTIALS ---
+// --- TIKTOK ENV CREDENTIALS (SUPPORT BOTH ORIGINAL AND BUSINESS APP) ---
 const TIKTOK_CLIENT_KEY = cleanEnv(process.env.TIKTOK_CLIENT_KEY || process.env["Client key"] || process.env["Client Key"] || "sbawa2w03kqoovgg7z");
 const TIKTOK_CLIENT_SECRET = cleanEnv(process.env.TIKTOK_CLIENT_SECRET || process.env["Client secret"] || process.env["Client Secret"] || "7tUA7YDvYRNFlo5Voe7MXdxUraWMwfuC");
+const TIKTOK_BUSINESS_APP_ID = cleanEnv(process.env.TIKTOK_BUSINESS_APP_ID || "7684255249451728916");
+const TIKTOK_BUSINESS_APP_SECRET = cleanEnv(process.env.TIKTOK_BUSINESS_APP_SECRET || "bef95c01612cd9507174481a26403548ddc166d5");
 
 // --- GOOGLE OAUTH 2.0 (GIS ID-token verification) ---
 const GOOGLE_CLIENT_ID = cleanEnv(process.env.GOOGLE_CLIENT_ID);
@@ -756,6 +758,26 @@ app.post("/api/comments/add", authenticateJWT, requireAdmin, async (req: any, re
   res.status(201).json(comment);
 });
 
+// Real-time Fetch & Sync of NEW TikTok Comments only
+app.post("/api/comments/sync", authenticateJWT, requireAdmin, async (req: any, res: any) => {
+  try {
+    const workspaceId = req.user.workspaceId;
+    const syncResult = await TikTokService.syncNewCommentsOnly(workspaceId);
+    res.json({
+      success: true,
+      message: "Sync completed. Only new comments were fetched and processed.",
+      ...syncResult
+    });
+  } catch (err: any) {
+    console.error("Manual comment sync failed:", err);
+    res.status(500).json({
+      success: false,
+      error: "SYNC_ERROR",
+      message: err.message || "Failed to sync comments from TikTok"
+    });
+  }
+});
+
 // Settings & TikTok
 app.get("/api/workspace/settings", authenticateJWT, requireAdmin, (req: any, res: any) => {
   const workspaceId = req.user.workspaceId;
@@ -953,8 +975,42 @@ app.get("/api/tiktok/oauth/callback", async (req: any, res) => {
     }
 
     if (!response.ok || tokenData.error || !tokenData.access_token) {
-      const errName = tokenData.error || "token_exchange_failed";
-      const errDesc = tokenData.error_description || tokenData.message || "Failed to exchange authorization code.";
+      // Fallback: Try TikTok Business Marketing API token exchange
+      const businessAppId = cleanEnv(process.env.TIKTOK_BUSINESS_APP_ID || TIKTOK_BUSINESS_APP_ID || clientKey);
+      const businessSecret = cleanEnv(process.env.TIKTOK_BUSINESS_APP_SECRET || TIKTOK_BUSINESS_APP_SECRET || clientSecret);
+      
+      try {
+        console.log("Attempting TikTok Business API token exchange with App ID:", businessAppId);
+        const bizRes = await fetch("https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            app_id: businessAppId,
+            secret: businessSecret,
+            auth_code: code
+          })
+        });
+
+        if (bizRes.ok) {
+          const bizData = await bizRes.json();
+          if (bizData.data?.access_token) {
+            tokenData = {
+              access_token: bizData.data.access_token,
+              refresh_token: bizData.data.refresh_token || "",
+              open_id: bizData.data.advertiser_ids?.[0] || bizData.data.open_id || ""
+            };
+          }
+        }
+      } catch (bizErr) {
+        console.warn("TikTok Business API token exchange fallback error:", bizErr);
+      }
+    }
+
+    if (!tokenData || !tokenData.access_token) {
+      const errName = tokenData?.error || "token_exchange_failed";
+      const errDesc = tokenData?.error_description || tokenData?.message || "Failed to exchange authorization code.";
       console.error("TikTok OAuth exchange failure response:", {
         status: response.status,
         error: errName,
@@ -1968,14 +2024,21 @@ function startBackgroundSyncWorker() {
             console.error(`[Worker] Failed to sync profile for workspace ${ws.id}:`, profileErr);
           }
 
-          // 2. Sync Conversations and messages
+          // 2. Sync Conversations and messages (Direct Messages & Follower Inquiries)
           try {
             await TikTokService.syncConversations(ws.id);
           } catch (convErr) {
             console.error(`[Worker] Failed to sync conversations for workspace ${ws.id}:`, convErr);
           }
 
-          // 3. Process keyword comment automation for newly synced pending comments
+          // 3. Fetch NEW comments only from TikTok, moderate toxicity, reply, and trigger DMs
+          try {
+            await TikTokService.syncNewCommentsOnly(ws.id);
+          } catch (commentSyncErr) {
+            console.error(`[Worker] Failed to sync new comments for workspace ${ws.id}:`, commentSyncErr);
+          }
+
+          // 4. Process keyword comment automation for any remaining pending comments
           try {
             const comments = getCollection("comments").filter((c: any) => c.workspaceId === ws.id && c.status === "PENDING");
             for (const comment of comments) {
