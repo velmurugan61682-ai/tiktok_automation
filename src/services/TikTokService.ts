@@ -23,7 +23,7 @@ export class TikTokService {
       username: username.replace(/\s+/g, "").toLowerCase(),
       status: "CONNECTED",
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-      accessToken: accessToken || "mock_access_token_xyz123",
+      accessToken: accessToken || process.env.TIKTOK_SANDBOX_ACCESS_TOKEN || "mock_access_token_xyz123",
       refreshToken: refreshToken || "mock_refresh_token_abc987",
       connectedAt: new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" }),
       followerCount: extraData?.followerCount ?? 0,
@@ -79,7 +79,7 @@ export class TikTokService {
       videoCount = 2;
     }
 
-    if (accessToken) {
+    if (accessToken && accessToken !== "mock_access_token_xyz123") {
       try {
         console.log(`Calling TikTok User Info API for user @${username}...`);
         const userResponse = await fetch("https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name,username,follower_count,following_count,likes_count,video_count", {
@@ -101,7 +101,7 @@ export class TikTokService {
           }
         }
       } catch (err) {
-        console.error("Failed to sync TikTok profile stats:", err);
+        console.log("[TikTokService.syncProfile] Could not fetch remote profile stats:", (err as any)?.message || err);
       }
     }
 
@@ -140,8 +140,9 @@ export class TikTokService {
     );
     const activeTiktok = accounts[0];
     const accessToken = activeTiktok?.accessToken;
+    const isRealToken = Boolean(accessToken && accessToken !== "mock_access_token_xyz123");
 
-    if (accessToken) {
+    if (isRealToken) {
       try {
         console.log(`[TikTokService.getVideos] Access token found. Calling TikTok Video List API for user @${username} (cursor: ${cursor}, limit: ${limit})...`);
         const reqBody: any = { max_count: limit };
@@ -196,51 +197,53 @@ export class TikTokService {
             return { videos: [], hasMore: false };
           }
         } else {
-          console.warn(`[TikTokService.getVideos] TikTok Video List API returned status ${apiResponse.status}. Trying fallbacks.`);
+          console.log(`[TikTokService.getVideos] TikTok Video List API returned status ${apiResponse.status}. Falling back to mock generator.`);
         }
       } catch (apiErr) {
-        console.warn("[TikTokService.getVideos] TikTok Video List API request failed. Using profile fallback:", apiErr);
+        console.log("[TikTokService.getVideos] TikTok Video List API request failed. Falling back to mock generator:", (apiErr as any)?.message || apiErr);
       }
     } else {
-      console.log(`[TikTokService.getVideos] No access token found. Skipping live API call.`);
+      console.log(`[TikTokService.getVideos] No real access token found for @${username}. Skipping external network calls.`);
     }
 
-    // 2. Fallback: Parse the public profile page if the official API is restricted in the sandbox
+    // 2. Optional Fallback: Parse the public profile page (gated behind ENABLE_SCRAPE_FALLBACK)
     const videoIds: string[] = [];
-    console.log(`[TikTokService.getVideos] Attempting public profile scrape fallback...`);
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-      const response = await fetch(`https://www.tiktok.com/@${username}`, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-        }
-      });
-      clearTimeout(timeoutId);
-      if (response.ok) {
-        const text = await response.text();
-        const escapedUsername = username.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-        const videoRegex = new RegExp(`/@${escapedUsername}/video/(\\d+)`, "g");
-        const matches = [...text.matchAll(videoRegex)];
-        
-        const seenIds = new Set();
-        for (const m of matches) {
-          const id = m[1];
-          if (seenIds.has(id)) {
-            console.warn(`[DEDUPLICATION WARNING] Duplicate video ID detected in scraper profile regex matches: ${id}`);
-          } else {
-            seenIds.add(id);
-            videoIds.push(id);
+    if (process.env.ENABLE_SCRAPE_FALLBACK === "true") {
+      console.log(`[TikTokService.getVideos] Scrape fallback enabled. Attempting public profile scrape...`);
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const response = await fetch(`https://www.tiktok.com/@${username}`, {
+          signal: controller.signal,
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
           }
+        });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          const text = await response.text();
+          const escapedUsername = username.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+          const videoRegex = new RegExp(`/@${escapedUsername}/video/(\\d+)`, "g");
+          const matches = [...text.matchAll(videoRegex)];
+          
+          const seenIds = new Set();
+          for (const m of matches) {
+            const id = m[1];
+            if (seenIds.has(id)) {
+              console.warn(`[DEDUPLICATION WARNING] Duplicate video ID detected in scraper profile regex matches: ${id}`);
+            } else {
+              seenIds.add(id);
+              videoIds.push(id);
+            }
+          }
+          console.log(`[TikTokService.getVideos] Scrape fallback found ${videoIds.length} video IDs.`);
         }
-        console.log(`[TikTokService.getVideos] Scrape fallback found ${videoIds.length} video IDs.`);
-      }
-    } catch (err: any) {
-      if (err.name === "AbortError") {
-        console.warn(`[TikTokService.getVideos] Public profile fetch for @${username} timed out. Using fallback mock videos.`);
-      } else {
-        console.warn(`[TikTokService.getVideos] Public profile fetch for @${username} unavailable: ${err.message || err}`);
+      } catch (err: any) {
+        if (err.name === "AbortError") {
+          console.log(`[TikTokService.getVideos] Public profile fetch for @${username} timed out. Using fallback mock videos.`);
+        } else {
+          console.log(`[TikTokService.getVideos] Public profile fetch for @${username} unavailable: ${err.message || err}`);
+        }
       }
     }
 
