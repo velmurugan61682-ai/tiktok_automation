@@ -62,10 +62,12 @@ export class CommentService {
     customerName: string,
     postType: Comment["postType"],
     postId: string,
-    text: string
+    text: string,
+    customCommentId?: string
   ): Promise<Comment> {
-    // 1. Save comment in database first
+    // 1. Save comment in database first (CommentRepository.create performs deduplication check by comment id)
     const comment = CommentRepository.create({
+      id: customCommentId,
       workspaceId,
       customerId,
       customerName,
@@ -88,9 +90,15 @@ export class CommentService {
       return comment;
     }
 
+    // 2. Atomic Idempotency Check & Status Lock
     if (comment.status !== "PENDING") {
+      console.log(`[Idempotency Safeguard] Comment ${comment.id} already has status '${comment.status}'. Skipping duplicate execution.`);
       return comment;
     }
+
+    // Acquire lock by marking status as PROCESSING
+    CommentRepository.update(workspaceId, comment.id, { status: "PROCESSING" });
+    comment.status = "PROCESSING";
 
     // 2. Per-user cooldown & deduplication safeguard (24h window per user per post)
     const existingComments = CommentRepository.find(workspaceId);
@@ -247,9 +255,10 @@ export class CommentService {
 
       // Post reply to TikTok comment on the video
       if (replyText) {
-        TikTokService.replyToComment(workspaceId, postId, comment.id, replyText).catch(err =>
-          console.error("Failed to post reply to TikTok video comment:", err)
-        );
+        const posted = await TikTokService.replyToComment(workspaceId, postId, comment.id, replyText);
+        if (!posted) {
+          console.warn(`[TikTok API Notice] Outgoing reply recorded locally, but TikTok API returned 404/error. Real automated comment replies require TikTok Business / Commercial Content API approval.`);
+        }
       }
 
       // If DM was triggered, create a conversation and message in local Chat Inbox and send via TikTok API
@@ -323,10 +332,14 @@ export class CommentService {
         dmSent,
         status: "REPLIED"
       });
-
       return updated || comment;
     }
 
-    return comment;
+    // 6. Default fallback for non-toxic comments without keyword rule triggers
+    const updated = CommentRepository.update(workspaceId, comment.id, {
+      status: "PROCESSED"
+    });
+
+    return updated || comment;
   }
 }

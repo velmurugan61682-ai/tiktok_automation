@@ -641,52 +641,95 @@ export class TikTokService {
   ): Promise<boolean> {
     const accounts = this.getConnectedAccounts(workspaceId);
     const activeTiktok = accounts.find(ca => ca.platform === "TIKTOK" && ca.status === "CONNECTED");
-    if (!activeTiktok || !activeTiktok.accessToken || activeTiktok.accessToken === "mock_access_token_xyz123") {
-      console.log(`[TikTok Reply Simulation] Replied to comment ${commentId} on post ${postId}: "${text}"`);
-      return true;
-    }
+    const bizToken = process.env.TIKTOK_BUSINESS_ACCESS_TOKEN || process.env.TIKTOK_SANDBOX_ACCESS_TOKEN || "a5e7936b840af2d53fada468bd4b3583f9594ed2";
 
+    const bizUrl = "https://business-api.tiktok.com/open_api/v1.3/business/comment/reply/create/";
+    const bizBody = {
+      business_id: activeTiktok?.open_id || "7684255249451728916",
+      comment_id: commentId,
+      text
+    };
+
+    console.log(`\n=================== OUTGOING TIKTOK BUSINESS REPLY API REQUEST ===================`);
+    console.log(`Method: POST`);
+    console.log(`URL: ${bizUrl}`);
+    console.log(`Headers: Access-Token: ${bizToken.slice(0, 10)}... | Content-Type: application/json`);
+    console.log(`Body: ${JSON.stringify(bizBody, null, 2)}`);
+    console.log(`==================================================================================\n`);
+
+    // 1. Try TikTok Business API endpoint (with 3s timeout)
     try {
-      console.log(`Sending real TikTok comment reply to ${commentId} on post ${postId}...`);
-      // 1. Official TikTok v2 reply endpoint
-      const res = await fetch("https://open.tiktokapis.com/v2/post/comment/reply/", {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      const bizRes = await fetch(bizUrl, {
         method: "POST",
+        signal: controller.signal,
         headers: {
-          "Authorization": `Bearer ${activeTiktok.accessToken}`,
+          "Access-Token": bizToken,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          video_id: postId,
-          comment_id: commentId,
-          text
-        })
+        body: JSON.stringify(bizBody)
       });
+      clearTimeout(timeoutId);
+
+      const bizText = await bizRes.text();
+      console.log(`\n=================== TIKTOK BUSINESS REPLY API RESPONSE ===================`);
+      console.log(`HTTP Status: ${bizRes.status} ${bizRes.statusText}`);
+      console.log(`Response Body: ${bizText}`);
+      console.log(`==========================================================================\n`);
+
+      if (bizRes.ok) {
+        console.log(`Successfully replied via TikTok Business API to comment ${commentId}`);
+        return true;
+      }
+    } catch (bizErr: any) {
+      if (bizErr?.name === "AbortError") {
+        console.log(`[TikTok Business Reply] Timeout (3s) connecting to business-api.tiktok.com`);
+      } else {
+        console.log(`[TikTok Business Reply] Failed to connect to business-api.tiktok.com: ${bizErr?.message || bizErr}`);
+      }
+    }
+
+    // 2. Fallback: TikTok v2 Display / Open API reply endpoint
+    const displayUrl = "https://open.tiktokapis.com/v2/post/comment/reply/";
+    const displayBody = {
+      video_id: postId,
+      comment_id: commentId,
+      text
+    };
+
+    const userAccessToken = activeTiktok?.accessToken || "mock_access_token_xyz123";
+
+    console.log(`\n=================== FALLBACK: OUTGOING TIKTOK DISPLAY API REQUEST ===================`);
+    console.log(`Method: POST`);
+    console.log(`URL: ${displayUrl}`);
+    console.log(`Headers: Authorization: Bearer ${userAccessToken.slice(0, 10)}... | Content-Type: application/json`);
+    console.log(`Body: ${JSON.stringify(displayBody, null, 2)}`);
+    console.log(`=====================================================================================\n`);
+
+    try {
+      const res = await fetch(displayUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${userAccessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(displayBody)
+      });
+
+      const resText = await res.text();
+      console.log(`\n=================== TIKTOK DISPLAY API RESPONSE ===================`);
+      console.log(`HTTP Status: ${res.status} ${res.statusText}`);
+      console.log(`Response Body: ${resText}`);
+      console.log(`====================================================================\n`);
 
       if (res.ok) {
         console.log(`Successfully replied to TikTok comment ${commentId}`);
         return true;
       }
 
-      // 2. Fallback: TikTok Business Marketing API endpoint
-      const bizRes = await fetch("https://business-api.tiktok.com/open_api/v1.3/business/comment/reply/", {
-        method: "POST",
-        headers: {
-          "Access-Token": activeTiktok.accessToken,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          comment_id: commentId,
-          text
-        })
-      });
-
-      if (bizRes.ok) {
-        console.log(`Successfully replied via Business API to comment ${commentId}`);
-        return true;
-      }
-
-      const errText = await res.text();
-      console.error(`TikTok reply API returned status ${res.status}: ${errText}`);
+      console.error(`TikTok reply API returned error status ${res.status}`);
       return false;
     } catch (err) {
       console.error("Failed to reply to comment via TikTok API:", err);
@@ -707,59 +750,76 @@ export class TikTokService {
   }>> {
     const accounts = this.getConnectedAccounts(workspaceId);
     const activeTiktok = accounts.find(ca => ca.platform === "TIKTOK" && ca.status === "CONNECTED");
-    if (!activeTiktok || !activeTiktok.accessToken || activeTiktok.accessToken === "mock_access_token_xyz123") {
-      return [];
-    }
+    const bizToken = process.env.TIKTOK_BUSINESS_ACCESS_TOKEN || process.env.TIKTOK_SANDBOX_ACCESS_TOKEN || "a5e7936b840af2d53fada468bd4b3583f9594ed2";
 
+    // 1. Try Business API comment list
     try {
-      // 1. TikTok v2 API
-      const res = await fetch("https://open.tiktokapis.com/v2/post/comment/list/", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${activeTiktok.accessToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          video_id: videoId,
-          max_count: maxCount
-        })
-      });
+      const bizController = new AbortController();
+      const bizTimeout = setTimeout(() => bizController.abort(), 3000);
+      const bizListUrl = `https://business-api.tiktok.com/open_api/v1.3/business/comment/list/?business_id=${activeTiktok?.open_id || "7684255249451728916"}&item_id=${videoId}`;
 
-      if (res.ok) {
-        const payload = await res.json();
-        const commentsList = payload.data?.comments || payload.comments || [];
-        return commentsList.map((c: any) => ({
-          id: String(c.id || c.comment_id),
-          text: c.text || c.content || "",
-          userId: String(c.user?.id || c.user_id || c.user?.open_id || `u-${Date.now()}`),
-          userName: c.user?.display_name || c.user?.username || c.user_name || "TikTok User",
-          createTime: c.create_time ? new Date(Number(c.create_time) * 1000).toISOString() : new Date().toISOString()
-        }));
-      }
-
-      // 2. TikTok Business API
-      const bizRes = await fetch(`https://business-api.tiktok.com/open_api/v1.3/business/comment/list/?video_id=${videoId}&page_size=${maxCount}`, {
+      const bizRes = await fetch(bizListUrl, {
         method: "GET",
+        signal: bizController.signal,
         headers: {
-          "Access-Token": activeTiktok.accessToken,
-          "Content-Type": "application/json"
+          "Access-Token": bizToken
         }
       });
+      clearTimeout(bizTimeout);
 
       if (bizRes.ok) {
         const payload = await bizRes.json();
-        const commentsList = payload.data?.list || payload.data?.comments || [];
-        return commentsList.map((c: any) => ({
-          id: String(c.comment_id || c.id),
-          text: c.text || "",
-          userId: String(c.user_id || c.unique_id || `u-${Date.now()}`),
-          userName: c.user_name || c.display_name || "TikTok User",
-          createTime: c.create_time ? new Date(Number(c.create_time) * 1000).toISOString() : new Date().toISOString()
-        }));
+        const commentsList = payload.data?.comments || payload.data?.list || [];
+        if (commentsList.length > 0) {
+          return commentsList.map((c: any) => ({
+            id: String(c.comment_id || c.id),
+            text: c.text || c.content || "",
+            userId: String(c.user_id || c.user?.id || `u-${Date.now()}`),
+            userName: c.user_name || c.user?.display_name || "TikTok User",
+            createTime: c.create_time ? new Date(Number(c.create_time) * 1000).toISOString() : new Date().toISOString()
+          }));
+        }
       }
-    } catch (err) {
-      console.error(`Failed to fetch comments for video ${videoId}:`, err);
+    } catch (bizErr: any) {
+      // Clean fallback if unreachable or timeout
     }
+
+    // 2. Try TikTok v2 Display API (with 3-second timeout)
+    if (activeTiktok && activeTiktok.accessToken && activeTiktok.accessToken !== "mock_access_token_xyz123") {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+        const res = await fetch("https://open.tiktokapis.com/v2/post/comment/list/", {
+          method: "POST",
+          signal: controller.signal,
+          headers: {
+            "Authorization": `Bearer ${activeTiktok.accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            video_id: videoId,
+            max_count: maxCount
+          })
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const payload = await res.json();
+          const commentsList = payload.data?.comments || payload.comments || [];
+          return commentsList.map((c: any) => ({
+            id: String(c.id || c.comment_id),
+            text: c.text || c.content || "",
+            userId: String(c.user?.id || c.user_id || c.user?.open_id || `u-${Date.now()}`),
+            userName: c.user?.display_name || c.user?.username || c.user_name || "TikTok User",
+            createTime: c.create_time ? new Date(Number(c.create_time) * 1000).toISOString() : new Date().toISOString()
+          }));
+        }
+      } catch (err: any) {
+        // Clean fallback
+      }
+    }
+
     return [];
   }
 
@@ -769,7 +829,7 @@ export class TikTokService {
     toxicRemovedCount: number;
     repliedCount: number;
   }> {
-    console.log(`[TikTokSync] Starting 'new comments only' sync for workspace ${workspaceId}...`);
+    console.log(`[TikTokSync] Running webhook comment processor for workspace ${workspaceId}...`);
     let newProcessedCount = 0;
     let toxicRemovedCount = 0;
     let repliedCount = 0;
@@ -781,62 +841,19 @@ export class TikTokService {
       return { fetchedCount: 0, newProcessedCount: 0, toxicRemovedCount: 0, repliedCount: 0 };
     }
 
-    // Get existing recorded comment IDs and timestamps
-    const existingComments = getCollection("comments").filter(c => c.workspaceId === workspaceId);
-    const existingCommentIds = new Set(existingComments.map(c => c.id));
-    
-    // Find the latest comment timestamp to strictly filter out old comments
-    let lastSyncTimestamp = 0;
-    for (const c of existingComments) {
-      const t = new Date(c.createdAt || 0).getTime();
-      if (t > lastSyncTimestamp) lastSyncTimestamp = t;
-    }
-
-    // Get active videos to check comments for
-    const videosRes = await this.getVideos(activeTiktok.username, undefined, 10, workspaceId);
-    const videos = videosRes.videos || [];
-
-    // Lazy load CommentService
+    // Process pending comments landed via TikTok Webhook endpoint (/api/webhook/tiktok)
     const { CommentService } = await import("./CommentService.js");
+    const comments = getCollection("comments").filter(c => c.workspaceId === workspaceId && c.status === "PENDING");
+    fetchedCount = comments.length;
 
-    for (const video of videos) {
-      if (!video || !video.id) continue;
-      const comments = await this.fetchVideoComments(workspaceId, video.id, 20);
-      fetchedCount += comments.length;
-
-      for (const item of comments) {
-        // Strict "NEW COMMENT ONLY - NOT OLD" check:
-        // 1. Skip if already processed in database
-        if (existingCommentIds.has(item.id)) {
-          continue;
-        }
-
-        // 2. Skip if comment creation time is older than last known sync (if lastSyncTimestamp is established)
-        const commentTime = new Date(item.createTime).getTime();
-        if (lastSyncTimestamp > 0 && commentTime < (lastSyncTimestamp - 60000)) {
-          continue;
-        }
-
-        // It is a genuine NEW comment!
-        console.log(`[TikTokSync] Found NEW comment (${item.id}): "${item.text}" by ${item.userName} on video ${video.id}`);
-        existingCommentIds.add(item.id);
-
-        const processed = await CommentService.addCommentAndProcess(
-          workspaceId,
-          item.userId,
-          item.userName,
-          "TIKTOK",
-          video.id,
-          item.text
-        );
-
-        newProcessedCount++;
-        if (processed.status === "FLAGGED") toxicRemovedCount++;
-        if (processed.status === "REPLIED") repliedCount++;
-      }
+    for (const comment of comments) {
+      const processed = await CommentService.processCommentAutomation(comment);
+      newProcessedCount++;
+      if (processed.status === "FLAGGED") toxicRemovedCount++;
+      if (processed.status === "REPLIED") repliedCount++;
     }
 
-    console.log(`[TikTokSync] Completed. Fetched: ${fetchedCount}, New Processed: ${newProcessedCount}, Toxic Moderated: ${toxicRemovedCount}, Replied: ${repliedCount}`);
+    console.log(`[TikTokSync] Webhook Comment Sync Completed. Queued: ${fetchedCount}, Processed: ${newProcessedCount}, Toxic Moderated: ${toxicRemovedCount}, Replied: ${repliedCount}`);
     return { fetchedCount, newProcessedCount, toxicRemovedCount, repliedCount };
   }
 }

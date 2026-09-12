@@ -199,7 +199,7 @@ export interface Comment {
   text: string;
   replyText?: string;
   dmSent?: boolean;
-  status: "PENDING" | "REPLIED" | "FLAGGED";
+  status: "PENDING" | "PROCESSING" | "PROCESSED" | "REPLIED" | "FLAGGED";
   moderationAction?: "DELETED" | "HIDDEN";
   toxicityScore?: number;
   moderationExplanation?: string;

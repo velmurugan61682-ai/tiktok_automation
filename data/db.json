@@ -408,23 +408,23 @@
       "platform": "TIKTOK",
       "username": "tech.vaseegrah",
       "status": "CONNECTED",
-      "expiresAt": "2026-09-17T08:00:43.152Z",
-      "accessToken": "act.4IXQ6Kewka505elIxtPKMUq41gBFruDwakOpXHM25zGNH9yTGR20u4POdQ5s!5186.s1",
-      "refreshToken": "rft.urZFi6K1kZP9Obh2a1ahvkoJVZQrSe6t0JG4aFpQ1PlFCBy3wo81kaxYlHHP!5209.s1",
-      "connectedAt": "August 18, 2026",
-      "followerCount": 2277,
+      "expiresAt": "2026-10-12T04:57:11.904Z",
+      "accessToken": "act.6pL2Ka7s95aLVN2n9Yggx4mFfsVpX6sV8viDIMTITX1FMBvvoT5to8KuLC6v!5180.s1",
+      "refreshToken": "rft.gAch1hgP5X8uUt6OFwkQnJdI5MuHxuwbo3pH0qc0LMLmN7rG1hutLKe5Kp3A!5249.s1",
+      "connectedAt": "September 12, 2026",
+      "followerCount": 2272,
       "followingCount": 1,
-      "likesCount": 11781,
+      "likesCount": 11778,
       "display_name": "Tech Vaseegrah",
-      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=864a53e1&x-expires=1787220000&x-signature=mE2Ej7n2qUpyGUPH3BqPwgsKzZk%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=1cc686c9&x-expires=1789372800&x-signature=ULiRwPgEs5A3yjvQXDrKZPLMGOM%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
       "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
       "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
       "videoCount": 234,
       "scopes": [
-        "user.info.profile",
         "user.info.stats",
         "video.list",
-        "user.info.basic"
+        "user.info.basic",
+        "user.info.profile"
       ]
     },
     {
@@ -1660,6 +1660,28 @@
       "createdAt": "2026-07-17T12:04:20.998Z",
       "replyText": "Hello! I am having a tiny technical glitch but a human teammate is on standby to assist you directly!",
       "dmSent": true
+    },
+    {
+      "status": "PROCESSED",
+      "workspaceId": "ws-11",
+      "customerId": "cust-test-user-888",
+      "customerName": "Rahul Sharma",
+      "postType": "TIKTOK",
+      "postId": "7673483097924717831",
+      "text": "Price check please! Is this available for delivery?",
+      "id": "c-6",
+      "createdAt": "2026-09-12T05:11:13.689Z"
+    },
+    {
+      "status": "PROCESSED",
+      "workspaceId": "ws-11",
+      "customerId": "cust-dup-user-777",
+      "customerName": "Anita Kumar",
+      "postType": "TIKTOK",
+      "postId": "7673483097924717831",
+      "text": "PRICE check please! Is this available for delivery?",
+      "id": "c-7",
+      "createdAt": "2026-09-12T05:20:19.640Z"
     }
   ],
   "notifications": [
@@ -2926,6 +2948,48 @@
       "workspaceId": "ws-13",
       "codeVerifier": "a11976882b8f6cee062db84851a793b88658961f8aa5531891eb3a6cb9d545d8",
       "createdAt": "2026-09-12T04:24:41.494Z"
+    },
+    {
+      "state": "eyJub25jZSI6IjdlYzU3Nzg5YzVlYmI5ZWFlNjI3ZWJlMGQ0YzkxYTJhIiwid29ya3NwYWNlSWQiOiJ3cy0xMCIsImNvZGVWZXJpZmllciI6ImQ3YTYxNmYwZGEzZTU2YWVhYjNhYjJlODUzYTIwNTNhNzA5YzgwOWMwYmY2NzM1MzY4NGFiYTY1MWJmMjIzMDEiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTEyVDA0OjUxOjQyLjYyOFoifQ.zxQrg0hk2Xl1p4TXdGl5wU2-COkIVd7YZIrx4n6UIDA",
+      "rawState": "7ec57789c5ebb9eae627ebe0d4c91a2a",
+      "workspaceId": "ws-10",
+      "codeVerifier": "d7a616f0da3e56aeab3ab2e853a2053a709c809c0bf67353684aba651bf22301",
+      "createdAt": "2026-09-12T04:51:42.628Z"
+    },
+    {
+      "state": "eyJub25jZSI6ImQwMjk1MWRhNWE4MGUzMDBhZTA1NDMyMjk2ZmNjMjFlIiwid29ya3NwYWNlSWQiOiJ3cy0xMSIsImNvZGVWZXJpZmllciI6IjM1ODE2ZjM5MGQ5ZmI3OGVlZjRlZjBjODY1OWFkNWRhZjI4YTg3ZWNiNTQ4MmViNjQxMmRkYmY1YTU3M2FiZTgiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTEyVDA0OjUyOjMzLjYyMVoifQ.voyyL79WX2pRK9oQJXTlYQCDS6ycLLv3jDSVZE78P18",
+      "rawState": "d02951da5a80e300ae05432296fcc21e",
+      "workspaceId": "ws-11",
+      "codeVerifier": "35816f390d9fb78eef4ef0c8659ad5daf28a87ecb5482eb6412ddbf5a573abe8",
+      "createdAt": "2026-09-12T04:52:33.621Z"
+    },
+    {
+      "state": "eyJub25jZSI6IjkyYjVmMmJjODZlNWQyNzVlZTdkYWVlZjRkZjQ3MmQzIiwid29ya3NwYWNlSWQiOiJ3cy0xMSIsImNvZGVWZXJpZmllciI6ImI0MzYyYTJjMzU5ZDQ2NDNiNGI2MGQwMDZjYjExYjlhYWQ3OTQxY2M5YTdjZGQ4YTZkODhiNDE5MDQ1ZmVhYmUiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTEyVDA0OjU3OjE2Ljc0NVoifQ.9WOSvx-val9cR7yqGYC4OXlB6oy-QVjcgpOmbuTwuwg",
+      "rawState": "92b5f2bc86e5d275ee7daeef4df472d3",
+      "workspaceId": "ws-11",
+      "codeVerifier": "b4362a2c359d4643b4b60d006cb11b9aad7941cc9a7cdd8a6d88b419045feabe",
+      "createdAt": "2026-09-12T04:57:16.745Z"
+    },
+    {
+      "state": "eyJub25jZSI6ImU3Zjg1YzVlYTIwN2I0Y2MzNDI4ZDk0MDUxYmJkZmYzIiwid29ya3NwYWNlSWQiOiJ3cy0xMSIsImNvZGVWZXJpZmllciI6IjVmYTAzNTllY2U1YjYyZjgzNTMzMjdkNDkzMWI2ZGIyYjFjNjA0YmYwNGU2ZGViZjk5NWZiYWNmZGM2MTRiOTMiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTEyVDA0OjU3OjE3LjEwNFoifQ.HnltbPF7Pq18HdGauISxMx1T97F8MGv95eJzPleEPp8",
+      "rawState": "e7f85c5ea207b4cc3428d94051bbdff3",
+      "workspaceId": "ws-11",
+      "codeVerifier": "5fa0359ece5b62f8353327d4931b6db2b1c604bf04e6debf995fbacfdc614b93",
+      "createdAt": "2026-09-12T04:57:17.104Z"
+    },
+    {
+      "state": "eyJub25jZSI6ImMyM2IyN2I0ZDlmMDI0MWU1NmZjMjUxZjQ1NjJjYTYwIiwid29ya3NwYWNlSWQiOiJ3cy0xMSIsImNvZGVWZXJpZmllciI6IjgxNTY1NDUzZjRhZDBlZmExNjgzNmY2NWE3MzdhNzE5MGNlNjBmM2I2MjAzMWJhNmY0OWVkYzIzYjg1OGIzNzkiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTEyVDA0OjU4OjA3LjU5NVoifQ.sV-KpTD-1b_MVn0EyFf8iciRYCNbtHEiosH3RTFeiG4",
+      "rawState": "c23b27b4d9f0241e56fc251f4562ca60",
+      "workspaceId": "ws-11",
+      "codeVerifier": "81565453f4ad0efa16836f65a737a7190ce60f3b62031ba6f49edc23b858b379",
+      "createdAt": "2026-09-12T04:58:07.595Z"
+    },
+    {
+      "state": "eyJub25jZSI6IjU0NTc4YzI4NWU5MmNiNzNkZmM3ZjE2ZTJlMzI3OWQ1Iiwid29ya3NwYWNlSWQiOiJ3cy0xMSIsImNvZGVWZXJpZmllciI6ImZmY2JiYjY1OTVlMDMzYWIwYTYzMTc4MGFlODViZDVkNWNlMmZmZGFhMzdhZTQyMjhiMmUzMmFiYzAxMWNkODUiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTEyVDA1OjMzOjUyLjk2NFoifQ.wuJjxL6pdl7v7a1tCtLJgNkuaprS7L8HvqhmXhsb0r0",
+      "rawState": "54578c285e92cb73dfc7f16e2e3279d5",
+      "workspaceId": "ws-11",
+      "codeVerifier": "ffcbbb6595e033ab0a631780ae85bd5d5ce2ffdaa37ae4228b2e32abc011cd85",
+      "createdAt": "2026-09-12T05:33:52.964Z"
     }
   ]
 }

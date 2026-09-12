@@ -1918,13 +1918,15 @@ app.post("/api/webhook/tiktok", async (req, res) => {
       targetWorkspaceId = activeWorkspace ? activeWorkspace.id : "ws-1";
     }
 
+    const externalCommentId = data.comment_id || data.id || event.comment_id || undefined;
     const comment = await CommentService.addCommentAndProcess(
       targetWorkspaceId,
       commenterId,
       commenterName,
       "TIKTOK",
       commentPostId,
-      commentText
+      commentText,
+      externalCommentId
     );
 
     console.log(`Processed comment webhook successfully for workspace ${targetWorkspaceId}:`, comment);
