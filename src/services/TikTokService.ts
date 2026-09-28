@@ -122,6 +122,60 @@ export class TikTokService {
     return account;
   }
 
+  static async refreshAccessToken(account: ConnectedAccount): Promise<string | null> {
+    if (!account.refreshToken || account.refreshToken === "mock_refresh_token_abc987") {
+      return null;
+    }
+
+    try {
+      console.log(`[TikTokService] Attempting to refresh access token for @${account.username}...`);
+      const clientKey = process.env.TIKTOK_CLIENT_KEY;
+      const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+
+      if (!clientKey || !clientSecret) return null;
+
+      const bodyParams = new URLSearchParams({
+        client_key: clientKey,
+        client_secret: clientSecret,
+        grant_type: "refresh_token",
+        refresh_token: account.refreshToken
+      });
+
+      const res = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Cache-Control": "no-cache"
+        },
+        body: bodyParams.toString()
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const newAccess = data.data?.access_token || data.access_token;
+        const newRefresh = data.data?.refresh_token || data.refresh_token || account.refreshToken;
+        if (newAccess) {
+          const accounts = getCollection("connectedAccounts");
+          const idx = accounts.findIndex(ca => ca.id === account.id);
+          if (idx !== -1) {
+            accounts[idx].accessToken = newAccess;
+            accounts[idx].refreshToken = newRefresh;
+            accounts[idx].expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            saveCollection("connectedAccounts", accounts);
+          }
+          console.log(`[TikTokService] Successfully refreshed access token for @${account.username}!`);
+          return newAccess;
+        }
+      } else {
+        const errText = await res.text();
+        console.warn(`[TikTokService] Token refresh returned status ${res.status}: ${errText}`);
+      }
+    } catch (e: any) {
+      console.error("[TikTokService] Token refresh error:", e.message || e);
+    }
+    return null;
+  }
+
   static async getVideos(
     username: string,
     cursor?: number,
@@ -139,7 +193,7 @@ export class TikTokService {
       ca.status === "CONNECTED"
     );
     const activeTiktok = accounts[0];
-    const accessToken = activeTiktok?.accessToken;
+    let accessToken = activeTiktok?.accessToken;
     const isRealToken = Boolean(accessToken && accessToken !== "mock_access_token_xyz123");
 
     if (isRealToken) {
@@ -150,7 +204,7 @@ export class TikTokService {
           reqBody.cursor = cursor;
         }
 
-        const apiResponse = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,embed_link,view_count,like_count,comment_count,share_count,create_time", {
+        let apiResponse = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,embed_link,view_count,like_count,comment_count,share_count,create_time", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${accessToken}`,
@@ -158,6 +212,23 @@ export class TikTokService {
           },
           body: JSON.stringify(reqBody)
         });
+
+        // Auto-refresh token on 401 Unauthorized
+        if (apiResponse.status === 401 && activeTiktok?.refreshToken) {
+          console.log(`[TikTokService.getVideos] Token expired (401). Attempting auto-refresh...`);
+          const refreshedToken = await this.refreshAccessToken(activeTiktok);
+          if (refreshedToken) {
+            accessToken = refreshedToken;
+            apiResponse = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,embed_link,view_count,like_count,comment_count,share_count,create_time", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(reqBody)
+            });
+          }
+        }
 
         if (apiResponse.ok) {
           const apiData = await apiResponse.json();
@@ -424,7 +495,9 @@ export class TikTokService {
       });
 
       if (!res.ok) {
-        console.warn(`TikTok conversations API endpoint returned status ${res.status}. Skipping remote DM sync.`);
+        if (res.status !== 404) {
+          console.warn(`TikTok conversations API endpoint returned status ${res.status}. Skipping remote DM sync.`);
+        }
         return;
       }
 

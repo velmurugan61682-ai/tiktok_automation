@@ -383,15 +383,15 @@
       "platform": "TIKTOK",
       "username": "velmuruganr45",
       "status": "CONNECTED",
-      "expiresAt": "2026-09-17T09:06:13.235Z",
-      "accessToken": "act.mE7cecF4DgOTbod0YE1ibT8Vfu2OWvgwveHJONuuYyRjecfRHLpTqt71Xo2W!6438.u1",
+      "expiresAt": "2026-09-29T06:49:34.919Z",
+      "accessToken": "act.MsLMXEA8IIQsladdCJsy4qr7v6qxAqy4JZPmHLe52xyTZcP4SUkv9qaqTYtA!6454.u1",
       "refreshToken": "rft.r4EuoX3m1F4Rz85efIllhc77L3IqcOginAxDQoaK6VlTNeUef5xv5rrgENkK!6397.u1",
       "connectedAt": "August 18, 2026",
       "followerCount": 0,
       "followingCount": 0,
-      "likesCount": 1,
+      "likesCount": 5,
       "display_name": "wwqui8lm",
-      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=8d3f1de2&x-expires=1787220000&x-signature=VllZjxXvwfqBp%2BFXja%2FJr8rwSek%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
+      "avatar_url": "https://p16-common-sign.tiktokcdn-us.com/tos-useast5-avt-0068-tx/305cbe83ea2bb709f6bebaa6b6c07623~tplv-tiktokx-cropcenter:168:168.jpeg?dr=9638&refresh_token=ca804f68&x-expires=1790751600&x-signature=fLevysPZo2xbnDdUSc8aApTsFVE%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=useast5",
       "open_id": "-000NEF0ocsmR0PAumKE3gTE253VXCN2UR2M",
       "union_id": "976d35e6-29b4-50bc-bfe7-fef2d9ff91bd",
       "videoCount": 1,
@@ -408,18 +408,18 @@
       "platform": "TIKTOK",
       "username": "tech.vaseegrah",
       "status": "CONNECTED",
-      "expiresAt": "2026-10-12T04:57:11.904Z",
-      "accessToken": "act.6pL2Ka7s95aLVN2n9Yggx4mFfsVpX6sV8viDIMTITX1FMBvvoT5to8KuLC6v!5180.s1",
+      "expiresAt": "2026-09-29T06:19:31.394Z",
+      "accessToken": "act.hz3wcDrd0Ky8YJM3w2pFNPFYyNPjf2tY6lGAkTRscBvZ5kTB3HrJ1F3wqaUS!5206.s1",
       "refreshToken": "rft.gAch1hgP5X8uUt6OFwkQnJdI5MuHxuwbo3pH0qc0LMLmN7rG1hutLKe5Kp3A!5249.s1",
       "connectedAt": "September 12, 2026",
       "followerCount": 2272,
       "followingCount": 1,
-      "likesCount": 11778,
+      "likesCount": 11782,
       "display_name": "Tech Vaseegrah",
-      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=1cc686c9&x-expires=1789372800&x-signature=ULiRwPgEs5A3yjvQXDrKZPLMGOM%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=276dd66a&x-expires=1790751600&x-signature=Pf83QTS8VgwW%2BDqtoECFIQVxCzQ%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my2",
       "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
       "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
-      "videoCount": 234,
+      "videoCount": 238,
       "scopes": [
         "user.info.stats",
         "video.list",
@@ -452,18 +452,18 @@
       "platform": "TIKTOK",
       "username": "tech.vaseegrah",
       "status": "CONNECTED",
-      "expiresAt": "2026-09-16T06:14:11.255Z",
-      "accessToken": "act.ggAkx9Aowh5nVPX46l8KD6n5LRUf2hnBtKogkDAEY4GgIPdpRBCeeXiYq3K8!5216.s1",
+      "expiresAt": "2026-09-29T06:08:12.208Z",
+      "accessToken": "act.hz3wcDrd0Ky8YJM3w2pFNPFYyNPjf2tY6lGAkTRscBvZ5kTB3HrJ1F3wqaUS!5206.s1",
       "refreshToken": "rft.NDGuJDJS1eX6jlTiu02orVplcazB1DYIYny5alBe3YXLm3OevyvfMTq3ZJEb!5235.s1",
       "connectedAt": "August 17, 2026",
-      "followerCount": 2277,
+      "followerCount": 2272,
       "followingCount": 1,
-      "likesCount": 11781,
+      "likesCount": 11782,
       "display_name": "Tech Vaseegrah",
-      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=cd8a471a&x-expires=1787205600&x-signature=5%2FQ%2BeAeQe1D8T4VB1867Fk5wYng%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=276dd66a&x-expires=1790751600&x-signature=Pf83QTS8VgwW%2BDqtoECFIQVxCzQ%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my2",
       "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
       "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
-      "videoCount": 234,
+      "videoCount": 238,
       "scopes": [
         "user.info.basic",
         "user.info.profile",
@@ -1007,6 +1007,16 @@
       "lastMessageAt": "2025-03-02T13:40:00Z",
       "unreadCount": 0,
       "lastMessageText": "Hi, are you currently offering free delivery inside Chennai?"
+    },
+    {
+      "workspaceId": "ws-1",
+      "customerId": "cust-default",
+      "status": "OPEN",
+      "aiEnabled": false,
+      "channel": "TIKTOK",
+      "unreadCount": 0,
+      "id": "conv-13",
+      "lastMessageAt": "2026-09-28T06:06:15.874Z"
     }
   ],
   "messages": [
@@ -1229,6 +1239,28 @@
       "readStatus": false,
       "isInternalNote": false,
       "createdAt": "2025-03-02T13:40:00Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "conversationId": "conv-13",
+      "senderId": "CUSTOMER",
+      "senderName": "TikTok User",
+      "text": "[Commented on Video 7662284635610680583] \"How much is the price?\"",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-21",
+      "createdAt": "2026-09-28T06:06:15.868Z"
+    },
+    {
+      "workspaceId": "ws-1",
+      "conversationId": "conv-13",
+      "senderId": "AI",
+      "senderName": "AI Assistant",
+      "text": "Welcome! What can I help you?",
+      "readStatus": true,
+      "isInternalNote": false,
+      "id": "m-22",
+      "createdAt": "2026-09-28T06:06:15.874Z"
     }
   ],
   "orders": [
@@ -1521,8 +1553,49 @@
       "followersOnly": false,
       "workspaceId": "ws-1",
       "id": "rule-15",
-      "usageCount": 0,
+      "usageCount": 1,
       "createdAt": "2026-08-17"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "nice"
+      ],
+      "replyTemplate": "[Carousel Response: Untitled Card]",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7689852292450766088",
+      "replyCommentText": "thank you",
+      "followersOnly": false,
+      "carouselCards": [
+        {
+          "imageUrl": "",
+          "title": "",
+          "description": "",
+          "btnLabel": "",
+          "link": ""
+        }
+      ],
+      "workspaceId": "ws-11",
+      "id": "rule-16",
+      "usageCount": 0,
+      "createdAt": "2026-09-28"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "nice"
+      ],
+      "replyTemplate": "thank u",
+      "actionType": "REPLY_COMMENT",
+      "isEnabled": true,
+      "postId": "7675301446635556110",
+      "replyCommentText": "thank u",
+      "followersOnly": false,
+      "workspaceId": "ws-10",
+      "id": "rule-17",
+      "usageCount": 2,
+      "createdAt": "2026-09-28"
     }
   ],
   "knowledgeBases": [
@@ -1682,6 +1755,45 @@
       "text": "PRICE check please! Is this available for delivery?",
       "id": "c-7",
       "createdAt": "2026-09-12T05:20:19.640Z"
+    },
+    {
+      "status": "REPLIED",
+      "id": "c-8",
+      "workspaceId": "ws-1",
+      "customerId": "cust-default",
+      "customerName": "TikTok User",
+      "postType": "TIKTOK",
+      "postId": "7662284635610680583",
+      "text": "How much is the price?",
+      "createdAt": "2026-09-28T06:06:11.889Z",
+      "replyText": "Just sent you a DM! Promo code is on its way.",
+      "dmSent": true
+    },
+    {
+      "status": "REPLIED",
+      "id": "c_test_1790578743212",
+      "workspaceId": "ws-10",
+      "customerId": "cust-default",
+      "customerName": "TikTok User",
+      "postType": "TIKTOK",
+      "postId": "7675301446635556110",
+      "text": "nice",
+      "createdAt": "2026-09-28T06:59:03.396Z",
+      "replyText": "thank u",
+      "dmSent": false
+    },
+    {
+      "status": "REPLIED",
+      "id": "comment_live_1790579526764",
+      "workspaceId": "ws-10",
+      "customerId": "cust_tech_vaseegrah_99",
+      "customerName": "Tech Vaseegrah",
+      "postType": "TIKTOK",
+      "postId": "7675301446635556110",
+      "text": "nice",
+      "createdAt": "2026-09-28T07:12:06.923Z",
+      "replyText": "thank u",
+      "dmSent": false
     }
   ],
   "notifications": [
@@ -2990,6 +3102,13 @@
       "workspaceId": "ws-11",
       "codeVerifier": "ffcbbb6595e033ab0a631780ae85bd5d5ce2ffdaa37ae4228b2e32abc011cd85",
       "createdAt": "2026-09-12T05:33:52.964Z"
+    },
+    {
+      "state": "eyJub25jZSI6ImJiYzMzOGUwN2EyN2JiNDFmMWM5NGNhMmNkYjljNmJiIiwid29ya3NwYWNlSWQiOiJ3cy0xMyIsImNvZGVWZXJpZmllciI6IjdkM2MyY2NkMWJkMGEwMGE3NzgzZDg5OWJhMTEwNTk4YzU1Nzg4ZjFhOTQxMzU4NzRjMTNiOGVjYjFiMzExYjAiLCJjcmVhdGVkQXQiOiIyMDI2LTA5LTI4VDA1OjU2OjE3LjIwMFoifQ.C7omPVzEhj__Jhxr3bwZpW73oS0f-60JO--wSfbaaGI",
+      "rawState": "bbc338e07a27bb41f1c94ca2cdb9c6bb",
+      "workspaceId": "ws-13",
+      "codeVerifier": "7d3c2ccd1bd0a00a7783d899ba110598c55788f1a94135874c13b8ecb1b311b0",
+      "createdAt": "2026-09-28T05:56:17.200Z"
     }
   ]
 }

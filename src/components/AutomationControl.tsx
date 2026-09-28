@@ -347,7 +347,10 @@ export const AutomationControl: React.FC = () => {
   const handleDeployCommentAutomation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!triggerKeyword) return;
-    if (replyType === "Text" && !automatedDmContent) return;
+    if (replyType === "Text" && !automatedDmContent && !replyCommentText) {
+      alert("Please provide either a Reply Comment or Automated DM Content.");
+      return;
+    }
 
     try {
       const res = await fetch("/api/automation/rules", {
@@ -359,11 +362,11 @@ export const AutomationControl: React.FC = () => {
         body: JSON.stringify({
           type: "COMMENT",
           triggerKeyword: triggerKeyword.split(",").map(k => k.trim()),
-          replyTemplate: replyType === "Text" ? automatedDmContent : `[Carousel Response: ${carouselCards[0]?.title || "Untitled Card"}]`,
-          actionType: "AUTO_DM",
+          replyTemplate: replyType === "Text" ? (automatedDmContent || replyCommentText) : `[Carousel Response: ${carouselCards[0]?.title || "Untitled Card"}]`,
+          actionType: automatedDmContent ? "AUTO_DM" : "REPLY_COMMENT",
           isEnabled: true,
           postId: selectedPostId || "",
-          replyCommentText,
+          replyCommentText: replyCommentText || (replyType === "Text" ? automatedDmContent : ""),
           followersOnly,
           carouselCards: replyType === "Carousel" ? carouselCards : undefined
         })
@@ -673,11 +676,10 @@ export const AutomationControl: React.FC = () => {
               {/* Row 4: DM Content OR Carousel Cards */}
               {replyType === "Text" ? (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">4. Automated DM Content</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">4. Automated DM Content (Optional)</label>
                   <textarea
-                    required
                     rows={4}
-                    placeholder="Enter the private message users will receive..."
+                    placeholder="Enter the private message users will receive (leave blank if comment reply only)..."
                     value={automatedDmContent}
                     onChange={e => setAutomatedDmContent(e.target.value)}
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none resize-none"
