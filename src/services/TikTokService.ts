@@ -714,7 +714,7 @@ export class TikTokService {
   ): Promise<boolean> {
     const accounts = this.getConnectedAccounts(workspaceId);
     const activeTiktok = accounts.find(ca => ca.platform === "TIKTOK" && ca.status === "CONNECTED");
-    const bizToken = process.env.TIKTOK_BUSINESS_ACCESS_TOKEN || process.env.TIKTOK_SANDBOX_ACCESS_TOKEN || "a5e7936b840af2d53fada468bd4b3583f9594ed2";
+    const bizToken = process.env.TIKTOK_BUSINESS_ACCESS_TOKEN || process.env.TIKTOK_SANDBOX_ACCESS_TOKEN || "ba823fb206aa6a5d6315cbcaa06bd34bfcf4c1ef";
 
     const bizUrl = "https://business-api.tiktok.com/open_api/v1.3/business/comment/reply/create/";
     const bizBody = {
@@ -823,7 +823,7 @@ export class TikTokService {
   }>> {
     const accounts = this.getConnectedAccounts(workspaceId);
     const activeTiktok = accounts.find(ca => ca.platform === "TIKTOK" && ca.status === "CONNECTED");
-    const bizToken = process.env.TIKTOK_BUSINESS_ACCESS_TOKEN || process.env.TIKTOK_SANDBOX_ACCESS_TOKEN || "a5e7936b840af2d53fada468bd4b3583f9594ed2";
+    const bizToken = process.env.TIKTOK_BUSINESS_ACCESS_TOKEN || process.env.TIKTOK_SANDBOX_ACCESS_TOKEN || "ba823fb206aa6a5d6315cbcaa06bd34bfcf4c1ef";
 
     // 1. Try Business API comment list
     try {
@@ -914,7 +914,7 @@ export class TikTokService {
       return { fetchedCount: 0, newProcessedCount: 0, toxicRemovedCount: 0, repliedCount: 0 };
     }
 
-    // Process pending comments landed via TikTok Webhook endpoint (/api/webhook/tiktok)
+    // 1. Process pending comments landed via TikTok Webhook endpoint (/api/webhook/tiktok)
     const { CommentService } = await import("./CommentService.js");
     const comments = getCollection("comments").filter(c => c.workspaceId === workspaceId && c.status === "PENDING");
     fetchedCount = comments.length;
@@ -926,7 +926,58 @@ export class TikTokService {
       if (processed.status === "REPLIED") repliedCount++;
     }
 
-    console.log(`[TikTokSync] Webhook Comment Sync Completed. Queued: ${fetchedCount}, Processed: ${newProcessedCount}, Toxic Moderated: ${toxicRemovedCount}, Replied: ${repliedCount}`);
+    // 2. Active Fallback Polling: Fetch recent comments directly from TikTok videos every 60s
+    if (activeTiktok.accessToken && activeTiktok.accessToken !== "mock_access_token_xyz123") {
+      try {
+        const { AutomationRepository } = await import("../repository/AutomationRepository.js");
+        const rules = AutomationRepository.findRules(workspaceId).filter(
+          r => r.isEnabled && (r.type === "COMMENT" || r.type === "MODERATION")
+        );
+
+        const targetVideoIds = new Set<string>();
+        for (const rule of rules) {
+          if (rule.postId && rule.postId !== "ALL") {
+            targetVideoIds.add(rule.postId);
+          }
+        }
+
+        // If no specific post IDs are bound or rules apply to all, fetch recent 3 videos to monitor
+        if (targetVideoIds.size === 0 && activeTiktok.username) {
+          const videoData = await this.getVideos(activeTiktok.username, undefined, 3, workspaceId);
+          for (const v of (videoData.videos || []).slice(0, 3)) {
+            if (v.id) targetVideoIds.add(v.id);
+          }
+        }
+
+        const existingCommentIds = new Set((getCollection("comments") || []).map((c: any) => c.id));
+
+        for (const vid of targetVideoIds) {
+          const remoteComments = await this.fetchVideoComments(workspaceId, vid, 10);
+          for (const rc of remoteComments) {
+            if (!existingCommentIds.has(rc.id)) {
+              existingCommentIds.add(rc.id);
+              fetchedCount++;
+              const processed = await CommentService.addCommentAndProcess(
+                workspaceId,
+                rc.userId,
+                rc.userName,
+                "TIKTOK",
+                vid,
+                rc.text,
+                rc.id
+              );
+              newProcessedCount++;
+              if (processed.status === "FLAGGED") toxicRemovedCount++;
+              if (processed.status === "REPLIED") repliedCount++;
+            }
+          }
+        }
+      } catch (pollErr) {
+        console.error(`[TikTokSync] Error during active video comment polling:`, pollErr);
+      }
+    }
+
+    console.log(`[TikTokSync] Comment Sync Completed. Queued/Fetched: ${fetchedCount}, Processed: ${newProcessedCount}, Toxic Moderated: ${toxicRemovedCount}, Replied: ${repliedCount}`);
     return { fetchedCount, newProcessedCount, toxicRemovedCount, repliedCount };
   }
 }

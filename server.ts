@@ -1273,14 +1273,65 @@ app.get("/api/tiktok/video/:id", authenticateJWT, requireAdmin, async (req: any,
   const username = activeTiktok ? activeTiktok.username : "user9136354359278";
   const videoUrl = `https://www.tiktok.com/@${username}/video/${videoId}`;
 
+  // 1. Look up directly from TikTok API video list (fast, no external oembed block)
   try {
-    const oembedResponse = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`);
+    if (activeTiktok && username) {
+      const videoResult = await TikTokService.getVideos(username, undefined, 20, workspaceId);
+      const matched = (videoResult.videos || []).find((v: any) => v.id === videoId);
+      if (matched) {
+        return res.json(matched);
+      }
+    }
+  } catch (lookupErr) {
+    console.warn("[/api/tiktok/video/:id] Local/API video lookup fallback:", lookupErr);
+  }
+
+  // 2. Query TikTok Open API for this specific video ID if access token is available
+  if (activeTiktok && activeTiktok.accessToken && activeTiktok.accessToken !== "mock_access_token_xyz123") {
+    try {
+      const qRes = await fetch("https://open.tiktokapis.com/v2/video/query/?fields=id,title,video_description,duration,cover_image_url,embed_link", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${activeTiktok.accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          filters: { video_ids: [videoId] }
+        }),
+        signal: AbortSignal.timeout(3000)
+      });
+      if (qRes.ok) {
+        const qData = await qRes.json();
+        const v = qData.data?.videos?.[0];
+        if (v) {
+          return res.json({
+            id: v.id,
+            name: v.title || v.video_description || "TikTok Video",
+            sku: `TT-VIDEO-${v.id.slice(-4)}`,
+            price: 0,
+            stock: 1,
+            images: [v.cover_image_url || ""],
+            description: v.video_description || "",
+            url: v.embed_link || videoUrl
+          });
+        }
+      }
+    } catch (qErr) {
+      // Ignore and proceed to fallback
+    }
+  }
+
+  // 3. Fallback: Quick non-blocking oembed attempt (1.5s timeout max, silent if ISP blocked)
+  try {
+    const oembedResponse = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`, {
+      signal: AbortSignal.timeout(1500)
+    });
     if (oembedResponse.ok) {
       const oembedData = await oembedResponse.json();
       return res.json({
         id: videoId,
         name: oembedData.title || "Taqbot AI",
-        sku: "TT-VIDEO-01",
+        sku: `TT-VIDEO-${videoId.slice(-4)}`,
         price: 0,
         stock: 1,
         images: [oembedData.thumbnail_url || ""],
@@ -1289,12 +1340,13 @@ app.get("/api/tiktok/video/:id", authenticateJWT, requireAdmin, async (req: any,
       });
     }
   } catch (err) {
-    console.error("Failed to fetch TikTok oembed for video details:", err);
+    // www.tiktok.com is blocked by some regional ISPs; fallback gracefully without error
   }
+
   res.json({
     id: videoId,
-    name: "Taqbot AI",
-    sku: "TT-VIDEO-01",
+    name: "TikTok Video",
+    sku: `TT-VIDEO-${videoId.slice(-4)}`,
     price: 0,
     images: [],
     description: "TikTok Video",

@@ -116,6 +116,15 @@
       "workspaceId": "ws-13",
       "id": "u-13",
       "createdAt": "2026-08-13T06:40:30.082Z"
+    },
+    {
+      "name": "Google User",
+      "email": "admin",
+      "passwordHash": "$2b$10$4EqOOZdHf1irSBIRGikXTOJf6GBa9a9M3UVyv/FqCqIggWTG5N.wu",
+      "role": "ADMIN",
+      "workspaceId": "ws-14",
+      "id": "u-14",
+      "createdAt": "2026-10-01T04:56:33.335Z"
     }
   ],
   "workspaces": [
@@ -263,7 +272,20 @@
       "endDate": "2026-08-27",
       "smsCount": 100,
       "id": "ws-13",
-      "createdAt": "2026-08-13"
+      "createdAt": "2026-08-13",
+      "aiTemplateEnabled": true,
+      "aiTemplateText": "thank you"
+    },
+    {
+      "name": "Google User",
+      "phone": "",
+      "shopName": "Google's Brand",
+      "status": "ACTIVE",
+      "plan": "TRIAL",
+      "endDate": "2026-10-15",
+      "smsCount": 100,
+      "id": "ws-14",
+      "createdAt": "2026-10-01"
     }
   ],
   "connectedAccounts": [
@@ -452,24 +474,44 @@
       "platform": "TIKTOK",
       "username": "tech.vaseegrah",
       "status": "CONNECTED",
-      "expiresAt": "2026-09-29T06:08:12.208Z",
-      "accessToken": "act.hz3wcDrd0Ky8YJM3w2pFNPFYyNPjf2tY6lGAkTRscBvZ5kTB3HrJ1F3wqaUS!5206.s1",
+      "expiresAt": "2026-10-02T04:57:25.573Z",
+      "accessToken": "act.X2GbTw6nge8194LHumO8GnLej5E2pMjXLEU43YluPtkJr9DWGwfmUplkTD0u!5228.s1",
       "refreshToken": "rft.NDGuJDJS1eX6jlTiu02orVplcazB1DYIYny5alBe3YXLm3OevyvfMTq3ZJEb!5235.s1",
       "connectedAt": "August 17, 2026",
-      "followerCount": 2272,
+      "followerCount": 2271,
       "followingCount": 1,
-      "likesCount": 11782,
+      "likesCount": 11783,
       "display_name": "Tech Vaseegrah",
-      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=276dd66a&x-expires=1790751600&x-signature=Pf83QTS8VgwW%2BDqtoECFIQVxCzQ%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my2",
+      "avatar_url": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/7392112913152442384~tplv-tiktokx-cropcenter:168:168.jpeg?dr=14577&refresh_token=91c4b8ee&x-expires=1791003600&x-signature=nVFj0KDkVNSzYkFteSp%2BYzCwb1U%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=8aecc5ac&idc=my",
       "open_id": "-000OLAPb9U6GaNG6WxXCPp6P-Ouk7Ck9ryL",
       "union_id": "06cd657d-5e0a-5da7-a928-990ca4ebd608",
-      "videoCount": 238,
+      "videoCount": 240,
       "scopes": [
         "user.info.basic",
         "user.info.profile",
         "user.info.stats",
         "video.list"
       ]
+    },
+    {
+      "id": "ca-13",
+      "workspaceId": "ws-14",
+      "platform": "TIKTOK",
+      "username": "google'sbrand",
+      "status": "CONNECTED",
+      "expiresAt": "2026-10-31T04:56:33.341Z",
+      "accessToken": "ba823fb206aa6a5d6315cbcaa06bd34bfcf4c1ef",
+      "refreshToken": "mock_refresh_token_abc987",
+      "connectedAt": "October 1, 2026",
+      "followerCount": 0,
+      "followingCount": 0,
+      "likesCount": 0,
+      "display_name": "google'sbrand",
+      "avatar_url": "",
+      "open_id": "",
+      "union_id": "",
+      "videoCount": 0,
+      "scopes": []
     }
   ],
   "categories": [
@@ -1596,6 +1638,22 @@
       "id": "rule-17",
       "usageCount": 2,
       "createdAt": "2026-09-28"
+    },
+    {
+      "type": "COMMENT",
+      "triggerKeyword": [
+        "nice video"
+      ],
+      "replyTemplate": "thank you",
+      "actionType": "AUTO_DM",
+      "isEnabled": true,
+      "postId": "7689852292450766088",
+      "replyCommentText": "thank you",
+      "followersOnly": false,
+      "workspaceId": "ws-13",
+      "id": "rule-18",
+      "usageCount": 0,
+      "createdAt": "2026-10-01"
     }
   ],
   "knowledgeBases": [
@@ -1668,6 +1726,13 @@
       "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
       "id": "kb-10",
       "createdAt": "2026-08-13T06:40:30.086Z"
+    },
+    {
+      "workspaceId": "ws-14",
+      "question": "What are your shipping rates?",
+      "answer": "We offer FREE shipping for orders above Rs. 499, and a flat fee of Rs. 50 for smaller orders.",
+      "id": "kb-11",
+      "createdAt": "2026-10-01T04:56:33.338Z"
     }
   ],
   "comments": [
@@ -3109,6 +3174,20 @@
       "workspaceId": "ws-13",
       "codeVerifier": "7d3c2ccd1bd0a00a7783d899ba110598c55788f1a94135874c13b8ecb1b311b0",
       "createdAt": "2026-09-28T05:56:17.200Z"
+    },
+    {
+      "state": "eyJub25jZSI6IjEzNmIxNmY3ODMwOGI1MmUzMTQ3MGRkMjU5NWQ2NjE1Iiwid29ya3NwYWNlSWQiOiJ3cy0xMyIsImNvZGVWZXJpZmllciI6IjZkOGEzNGE3YTI4MDgzMGVkNDI5NGIwZjFmMzdkYzEwZGY2NGM0Y2Y5MGFjOTUwNDMxNWYxY2Q2YjMwYzFlOTQiLCJjcmVhdGVkQXQiOiIyMDI2LTEwLTAxVDA0OjU3OjI5LjAzMFoifQ.dCOqrKu8PxUTWzjZPfQB9HyW03E2kRxEcpnzvs46ays",
+      "rawState": "136b16f78308b52e31470dd2595d6615",
+      "workspaceId": "ws-13",
+      "codeVerifier": "6d8a34a7a280830ed4294b0f1f37dc10df64c4cf90ac9504315f1cd6b30c1e94",
+      "createdAt": "2026-10-01T04:57:29.030Z"
+    },
+    {
+      "state": "eyJub25jZSI6ImJiZmNlOThhZTI1Mzg1NDY5N2U5Yjk4NjQzOWVhYjgxIiwid29ya3NwYWNlSWQiOiJ3cy0xMyIsImNvZGVWZXJpZmllciI6IjUxYWUxZjU2MmRiYTc0OGQ4NjUxNWM0ODJlMTFjNWY4ODY4NDllOTM2N2Y0NjA1NjNkNjY0ZDAzMWUyY2ZkZmMiLCJjcmVhdGVkQXQiOiIyMDI2LTEwLTAxVDA1OjIyOjUzLjQ5M1oifQ._JWW4maN3O5AznR-_4MUKOOD3IK-l1mr4B34uDHB264",
+      "rawState": "bbfce98ae253854697e9b986439eab81",
+      "workspaceId": "ws-13",
+      "codeVerifier": "51ae1f562dba748d86515c482e11c5f886849e9367f460563d664d031e2cfdfc",
+      "createdAt": "2026-10-01T05:22:53.493Z"
     }
   ]
 }
